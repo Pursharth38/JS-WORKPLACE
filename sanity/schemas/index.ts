@@ -8,6 +8,7 @@ import { calloutBox, ctaBand, dataTable } from "./objects";
 import poshSection from "./poshSection";
 import post, { category } from "./post";
 import question from "./question";
+import quickReference from "./quickReference";
 import service from "./service";
 import siteSettings from "./siteSettings";
 import testimonial from "./testimonial";
@@ -26,6 +27,7 @@ export const schemaTypes: SchemaTypeDefinition[] = [
 
   // Marketing + content
   poshSection,
+  quickReference,
   post,
   category,
   service,

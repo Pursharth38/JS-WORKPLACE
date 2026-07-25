@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { BackToTop } from "@/components/marketing/back-to-top";
 import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
+import { LeadMagnetForm } from "@/components/marketing/lead-magnet-form";
 import { ProseBlock } from "@/components/marketing/prose-block";
 import { ReadingProgress } from "@/components/marketing/reading-progress";
 import { TocSidebar, type TocGroup } from "@/components/marketing/toc-sidebar";
@@ -120,6 +121,26 @@ export default async function PoshActPage() {
                 </section>
               );
             })}
+
+            {/*
+              Lead magnet at the FOOT of the guide, not as a timed pop-up.
+              Someone who has read this far has demonstrated intent; an
+              interstitial that interrupts them mid-section would undercut the
+              exact impression this page exists to create.
+            */}
+            <section className="mt-16 rounded-[var(--radius-lg)] border border-[var(--brand-line)] bg-[var(--brand-elevated)] p-6 md:p-8">
+              <h2 className="font-serif text-[25px] font-semibold">
+                Take the checklist with you
+              </h2>
+              <p className="mt-3 max-w-[62ch] text-[17px] leading-[1.65] text-[var(--brand-muted)]">
+                A one-page PDF of the eight obligations an employer needs to be
+                able to evidence — useful for working through with your
+                committee.
+              </p>
+              <div className="mt-6 max-w-md">
+                <LeadMagnetForm compact />
+              </div>
+            </section>
           </div>
         </div>
       </Container>

@@ -107,12 +107,12 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 ## PHASE 5 — CONTENT & CONVERSION  [Dev A]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P5-01 | Blog list, detail, category, related, RSS | **A** | ⬜ | |
-| P5-02 | FAQ page + FAQPage schema | **A** | ⬜ | |
-| P5-03 | Lead magnet: gated checklist PDF + Resend delivery | **A** | ⬜ | E2 |
-| P5-04 | /posh-compliance-check — 8 questions, score, emailed report | **A** | ⬜ | E3 — highest-converting asset |
-| P5-05 | IC Quick-Reference tables | **A** | ⬜ | E4 |
-| P5-R | /qa on the marketing site — **SHIP STAGE 1 HERE** | **A** | ⬜ | Let it start ranking while LMS is built |
+| P5-01 | Blog list, detail, category, related, RSS | **A** | ✅ | List, detail (+ reading time, tags, related), category pages, and RSS at `/feed.xml` with XML escaping. Posts link back to Hub anchors via a first-class Sanity field — cluster→pillar linking is the content strategy, not an afterthought. |
+| P5-02 | FAQ page + FAQPage schema | **A** | ✅ | Accordion-based, grouped by the client's own category order. `FAQPage` JSON-LD deferred with the rest of SEO; markup is structured so adding it later is a pure addition. |
+| P5-03 | Lead magnet: gated checklist PDF + Resend delivery | **A** | ✅ | E2. `@react-pdf/renderer` checklist built from the SAME `QUESTIONS` list as the self-check, so PDF and web tool cannot drift. Delivered by email via an HMAC-signed, 7-day expiring link. Placed inline at the foot of /posh-act and on /ic-quick-reference — deliberately NOT a timed pop-up. |
+| P5-04 | /posh-compliance-check — 8 questions, score, emailed report | **A** | ✅ | E3. 8 questions, scored by ONE shared `lib/compliance-check.ts` used by both browser and server, so the on-screen result and the emailed report can never disagree. Result shows BEFORE the email gate. 'Not sure' scores zero — an unevidenced arrangement is a real gap. |
+| P5-05 | IC Quick-Reference tables | **A** | ✅ | E4. New Sanity `quickReference` type at /ic-quick-reference. No timeline or penalty figure is hardcoded — they are the client's to state and keep current. |
+| P5-R | /qa on the marketing site — **SHIP STAGE 1 HERE** | **A** | ⬜ | **Cannot run — `/qa` is a gstack skill and gstack skills need a Claude Code restart to register.** Run after restarting. This is the Ship-Stage-1 gate. |
 
 ## PHASE 6 — AUTH  [Dev B]
 | ID | Task | Owner | Status | Notes |

@@ -38,6 +38,7 @@ export const PRIMARY_NAV: readonly NavLink[] = [
 
 export const RESOURCE_NAV: readonly NavLink[] = [
   { href: "/posh-act", label: "POSH Act guide" },
+  { href: "/ic-quick-reference", label: "IC quick reference" },
   { href: "/posh-compliance-check", label: "Compliance self-check" },
   { href: "/faq", label: "Frequently asked questions" },
   { href: "/blog", label: "Blog" },

@@ -148,6 +148,15 @@ export type Post = PostSummary & {
 
 export type Category = { title: string; slug: string; description?: string };
 
+export type QuickReference = {
+  _id: string;
+  title: string;
+  anchor: string;
+  order: number;
+  intro?: string;
+  body: PortableTextBlock[];
+};
+
 export type ServiceSummary = {
   _id: string;
   title: string;
@@ -219,6 +228,16 @@ export function getPoshSections(): Promise<PoshSection[]> {
   return sanityFetch<PoshSection[]>({
     query: `*[_type == "poshSection"] | order(group asc, order asc){
       _id, title, "anchor": anchor.current, group, order, summary, isFaq, body
+    }`,
+    tags: [TAGS.poshSection],
+    fallback: [],
+  });
+}
+
+export function getQuickReferences(): Promise<QuickReference[]> {
+  return sanityFetch<QuickReference[]>({
+    query: `*[_type == "quickReference"] | order(order asc){
+      _id, title, "anchor": anchor.current, order, intro, body
     }`,
     tags: [TAGS.poshSection],
     fallback: [],

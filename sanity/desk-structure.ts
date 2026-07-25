@@ -39,6 +39,14 @@ export const deskStructure: StructureResolver = (S) =>
         ),
 
       S.listItem()
+        .title("IC quick reference")
+        .child(
+          S.documentTypeList("quickReference")
+            .title("Quick reference cards")
+            .defaultOrdering([{ field: "order", direction: "asc" }]),
+        ),
+
+      S.listItem()
         .title("Blog")
         .child(
           S.list()
