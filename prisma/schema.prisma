@@ -1,0 +1,271 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ⚠️  FILE OWNER: DEV A (task P1-05). Transcribed here by DEV B to unblock
+//     offline work on Phases 6/7/10. Source of truth for every model below is
+//     ARCHITECTURE.md §5 and orchestrate/data-model.md — this is a transcription,
+//     not a redesign. On merge: take Dev A's version, then diff against this file
+//     for the four Dev-B-specific additions listed in MERGE-NOTES.md.
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── IDENTITY ────────────────────────────────────────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  emailVerified  DateTime?
+  passwordHash   String? // null for OAuth-only accounts. NEVER selected into a response.
+  name           String // printed on the certificate — legal name
+  nameLocked     Boolean   @default(false) // flips true on first certificate issue
+  phone          String?
+  image          String?
+  role           Role      @default(LEARNER)
+  // DPDP ADDITION (Dev B): timestamped evidence that the learner ticked the
+  // (unticked-by-default) privacy consent box at signup. A boolean would not
+  // survive an audit asking *when* consent was given.
+  consentGivenAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  enrollments    Enrollment[]
+  moduleProgress ModuleProgress[]
+  attempts       AssessmentAttempt[]
+  certificates   Certificate[]
+  payments       Payment[]
+}
+
+enum Role {
+  LEARNER
+  ADMIN
+}
+
+// Auth.js v5 Prisma adapter models — standard schema, do not hand-roll.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// DEV B ADDITION (not in data-model.md): password reset needs its own single-use
+// store. Reusing VerificationToken would let an email-verification token be
+// replayed as a password-reset token, which is a full account takeover.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique // sha256 of the emailed token — the raw token is never stored
+  expires   DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ── COURSE STRUCTURE (mirror of Sanity — structure only, never body copy) ────
+
+model Course {
+  id            String  @id @default(cuid())
+  sanityId      String  @unique
+  slug          String  @unique
+  title         String
+  priceInPaise  Int // ★ the only price authority — checkout reads this
+  isPublished   Boolean @default(false)
+  passThreshold Int     @default(85) // final test %
+
+  enrollments Enrollment[]
+  chapters    Chapter[]
+}
+
+model Chapter {
+  id            String @id @default(cuid())
+  sanityId      String @unique
+  courseId      String
+  order         Int
+  title         String
+  passThreshold Int    @default(80) // chapter assessment %
+
+  course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  modules  Module[]
+  attempts AssessmentAttempt[]
+
+  @@unique([courseId, order])
+}
+
+model Module {
+  id              String  @id @default(cuid())
+  sanityId        String  @unique
+  chapterId       String
+  order           Int
+  title           String
+  videoUid        String // Cloudflare Stream UID — NEVER emitted for a locked module
+  durationSeconds Int
+  isFreePreview   Boolean @default(false)
+
+  chapter  Chapter          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  progress ModuleProgress[]
+
+  @@unique([chapterId, order])
+}
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+
+// Kept as a join table on purpose: a future B2B layer (Organization → Seat →
+// Enrollment) bolts on without migrating learner data. Do not collapse into User.
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  courseId    String
+  paymentId   String?   @unique
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+}
+
+model ModuleProgress {
+  id              String    @id @default(cuid())
+  userId          String
+  moduleId        String
+  secondsWatched  Int       @default(0) // cumulative, SERVER-CLAMPED
+  lastPositionSec Int       @default(0) // resume point
+  lastHeartbeatAt DateTime? // clamp basis for the next delta
+  completedAt     DateTime? // set at secondsWatched ≥ 0.9 × durationSeconds
+
+  user   User   @relation(fields: [userId], references: [id])
+  module Module @relation(fields: [moduleId], references: [id])
+
+  @@unique([userId, moduleId])
+}
+
+model AssessmentAttempt {
+  id           String    @id @default(cuid())
+  userId       String
+  chapterId    String? // null ⇒ final test
+  courseId     String // denormalized for the final-test query
+  scorePercent Int
+  passed       Boolean
+  answers      Json // { questionId: selectedOptionId }
+  startedAt    DateTime  @default(now())
+  submittedAt  DateTime?
+
+  user    User     @relation(fields: [userId], references: [id])
+  chapter Chapter? @relation(fields: [chapterId], references: [id])
+
+  @@index([userId, chapterId])
+  // DEV B ADDITION: the H5 eligibility read in /api/certificate/issue filters on
+  // (userId, courseId, chapterId IS NULL, passed). Without this it is a seq scan.
+  @@index([userId, courseId, passed])
+}
+
+model Certificate {
+  id           String    @id @default(cuid())
+  certId       String    @unique // JSWW-2026-A7K2P9 — human-readable, non-sequential
+  userId       String
+  courseId     String
+  learnerName  String // snapshot at issue time — NOT a live join
+  issuedAt     DateTime  @default(now())
+  pdfUrl       String
+  revokedAt    DateTime?
+  revokeReason String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  // Idempotency is enforced by a PARTIAL unique index that Prisma cannot express
+  // in schema syntax. It is created by raw SQL in the migration:
+  //   CREATE UNIQUE INDEX cert_active_unique
+  //     ON "Certificate"("userId","courseId") WHERE "revokedAt" IS NULL;
+  @@index([userId, courseId])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  userId            String
+  courseId          String
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?       @unique // set by the webhook
+  amountInPaise     Int // copied from Course at order creation
+  currency          String        @default("INR")
+  status            PaymentStatus @default(CREATED)
+  invoiceUrl        String?
+  invoiceNumber     String?       @unique // DEV B ADDITION: sequential-per-FY GST invoice number
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// DEV B ADDITION: GST invoice numbers must be sequential within an Indian
+// financial year (1 April – 31 March). Deriving the number from `count(*)` is
+// not safe under concurrency — two simultaneous payments both read the same
+// count and mint the same number. This row is incremented atomically instead.
+model InvoiceCounter {
+  financialYear String   @id // "2026-27"
+  lastNumber    Int      @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
+model Lead {
+  id              String   @id @default(cuid())
+  name            String
+  email           String
+  phone           String?
+  organization    String?
+  employeeCount   String?
+  serviceInterest String?
+  message         String?
+  source          String // 'demo'|'checklist'|'assessment'|'newsletter'
+  consentGiven    Boolean // DPDP — must come from an UNTICKED checkbox
+  createdAt       DateTime @default(now())
+
+  @@index([source, createdAt])
+}
