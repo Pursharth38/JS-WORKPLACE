@@ -25,9 +25,16 @@ export function Header({
   const [open, setOpen] = useState(false);
 
   // Close the drawer on navigation — otherwise it stays open over the new page.
-  useEffect(() => {
+  //
+  // Adjusted during render rather than in an effect. React's documented pattern
+  // for "reset state when a value changes" is exactly this; doing it in an
+  // effect fires a second render pass and trips react-hooks/set-state-in-effect
+  // under React 19.
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   // Lock scroll behind the open drawer.
   useEffect(() => {

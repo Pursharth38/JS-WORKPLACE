@@ -8,9 +8,12 @@ import { LEGAL_NAV, PRIMARY_NAV, RESOURCE_NAV } from "./nav-links";
  * Every contact detail here comes from Sanity `siteSettings`. Nothing is
  * hardcoded — see platform-agent.md HARD RULES.
  *
- * ⚠️ NO CLAIMS OF EMPANELMENT OR GOVERNMENT RECOGNITION. CLAUDE.md §1 lists the
- * exact strings CI greps for; the client is not MWCD empanelled and saying
- * otherwise is a legal exposure, not a marketing flourish.
+ * ⚠️ NO CLAIMS OF EMPANELMENT OR GOVERNMENT RECOGNITION may appear here.
+ * CLAUDE.md §1 lists the exact forbidden strings — deliberately NOT quoted in
+ * this comment, because CI greps source as well as built output and a comment
+ * explaining the rule would fail the very check it describes. The client does
+ * not hold the ministry empanelment the reference competitor does; claiming
+ * otherwise is legal exposure, not a marketing flourish.
  */
 export function Footer({ settings }: { settings: SiteSettings }) {
   const year = new Date().getFullYear();

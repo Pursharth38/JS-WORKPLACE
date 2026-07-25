@@ -65,12 +65,12 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
 | P1-01 | Next.js 16 + TS strict + Tailwind v4 repo | **A** | ✅ | Scaffolded in place. `npm run build` / `typecheck` / `lint` all clean. Fonts (Fraunces + Inter) self-hosted via next/font. **No palette committed** — globals.css `@theme` holds typography only. |
-| P1-02 | Design tokens → `@theme` in app/globals.css | **A** | ❌ | Blocked on P0-03 board pick. Tailwind v4 is CSS-first — no `tailwind.config.ts`. ⚠️ A **provisional Board A palette is already committed** post-merge because Dev B's lane needs `--brand-*` defined. Edit only the SEMANTIC block. Inputs: ARCHITECTURE §14 + `design/colour-boards/CONTRAST-REPORT.md` |
+| P1-02 | Design tokens → `@theme` in app/globals.css | **A** | ✅ | Full token set: colour, 1.25 type scale, spacing, radius, elevation. ⚠️ Colour values remain PROVISIONAL Board A pending P0-03 — but behind a SEMANTIC block, so the board pick is now a values-only edit of one file. Was blocked on P0-03 board pick; Tailwind v4 is CSS-first — no `tailwind.config.ts`. ⚠️ A **provisional Board A palette is already committed** post-merge because Dev B's lane needs `--brand-*` defined. Edit only the SEMANTIC block. Inputs: ARCHITECTURE §14 + `design/colour-boards/CONTRAST-REPORT.md` |
 | P1-02b | Retire legacy colour-named aliases (`--brand-teal` → `--brand-primary`) | **A** | ⬜ | Mechanical sed over 164 refs / 25 Dev B files. Do after P1-02 lands, not before. |
-| P1-03 | Layout shell: Header, Footer, WhatsAppFAB, Container | **A** | ❌ | Palette-dependent → blocked on P1-02. **This is the H1 Day-3 commitment.** Note B and C are *no longer hard-blocked* by it — B shipped without it and C has H3/H4. |
-| P1-04 | UI primitives (Button, Input, Select, Checkbox, Card, Badge, Modal, Toast, Skeleton, Accordion, Tabs) | **A** | ⬜ | ⚠️ Dev B built ad-hoc form/button markup inline in `components/auth/form-fields.tsx` etc. Reconcile: primitives should absorb those, not duplicate them. |
+| P1-03 | Layout shell: Header, Footer, WhatsAppFAB, Container | **A** | ✅ | Container, sticky Header + mobile drawer, Footer, WhatsAppFAB. All contact details from Sanity `siteSettings` — nothing hardcoded. Home moved into `(marketing)` to inherit the shell. **H1 satisfied.** Formerly blocked on P1-02. **This is the H1 Day-3 commitment.** Note B and C are *no longer hard-blocked* by it — B shipped without it and C has H3/H4. |
+| P1-04 | UI primitives (Button, Input, Select, Checkbox, Card, Badge, Modal, Toast, Skeleton, Accordion, Tabs) | **A** | ✅ | + Field, Textarea, Honeypot, ConsentCheckbox, Turnstile. Button's `accent` variant is forced to 18px (amber below that fails AA); ConsentCheckbox cannot be pre-ticked. |
 | P1-05 | Prisma schema initial + first migration | **A** | 🔄 | **Changed from build → REVIEW.** Dev B's `prisma/schema.prisma` (271 lines) + 2 migrations were adopted in the merge. Dev A must review and re-own. Dev B's 5 additions are documented in MERGE-NOTES.md §3. |
-| P1-06 | lib/response.ts apiResponse() + Zod schema folder | **A** | 🔄 | **Changed from build → REVIEW.** Dev B's `lib/response.ts`, `lib/db.ts`, `lib/ratelimit.ts` and `lib/schemas/{auth,checkout,certificate}.ts` were adopted. `apiResponse()` matches CONTRACTS.md and adds `paginated()`, `apiError()`, `invalidInput()`. Dev A still owes `lib/schemas/leads.ts`. |
+| P1-06 | lib/response.ts apiResponse() + Zod schema folder | **A** | ✅ | **Was REVIEW after the merge.** Dev B's `response.ts`/`db.ts`/`ratelimit.ts` adopted; Dev A added `schemas/leads.ts`, `schemas/sanity-webhook.ts`, `lib/turnstile.ts`, `lib/cn.ts`, `lib/posh-groups.ts` and `rateLimit.leadsIp`. |
 | P1-07 | CI: typecheck → lint → test → build → forbidden-claims grep → Lighthouse | **A** | ⬜ | Grep list from CLAUDE.md §1 |
 | P1-08 | Branch protection, PR template, .env.example, README setup docs | **A** | ⬜ | |
 | P1-R | /plan-design-review on tokens before any page is built | **A** | ⬜ | |
@@ -78,31 +78,31 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 ## PHASE 2 — SANITY CMS  [Dev A]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P2-01 | Schemas: course, chapter, module, question | **A** | ⬜ | → **H2: C unblocked on quiz** |
-| P2-02 | Schemas: post, service, poshSection, faq, testimonial, siteSettings | **A** | ⬜ | |
-| P2-03 | Studio at /studio + custom desk structure | **A** | ⬜ | Exclude from auth middleware matcher |
-| P2-04 | /api/webhooks/sanity — secret verify, structure upsert, revalidate | **A** | ⬜ | |
-| P2-05 | Typed GROQ helpers in lib/sanity.ts | **A** | ⬜ | |
+| P2-01 | Schemas: course, chapter, module, question | **A** | ✅ | → **H2: C UNBLOCKED on quiz.** `question.options[].isCorrect` documented as never leaving the server; exactly-one-correct is schema-validated. |
+| P2-02 | Schemas: post, service, poshSection, faq, testimonial, siteSettings | **A** | ✅ | + category, and reusable `calloutBox` / `dataTable` / `ctaBand` objects. Testimonials require `consentOnFile` — real ones only. |
+| P2-03 | Studio at /studio + custom desk structure | **A** | ✅ | Task-shaped nav; `siteSettings` pinned as a singleton so a duplicate can't be created. Confirmed absent from the middleware matcher. |
+| P2-04 | /api/webhooks/sanity — secret verify, structure upsert, revalidate | **A** | ✅ | `timingSafeEqual` secret check, structure-only upsert, 409 when a parent isn't synced yet, `revalidateTag`. Node runtime. |
+| P2-05 | Typed GROQ helpers in lib/sanity.ts | **A** | ✅ | Typed helpers + cache tags. Degrades to empty content when Sanity is unconfigured so the build stays green pre-launch. |
 | P2-06 | Client-facing "how to edit your site" guide | **A** | ⬜ | Prevents months of support requests |
 
 ## PHASE 3 — MARKETING PAGES  [Dev A]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P3-01 | Home page | **A** | ⬜ | Lottie slots stubbed; C fills in Phase 11 |
-| P3-02 | About | **A** | ⬜ | Real credentials only |
-| P3-03 | Services + /services/[slug] | **A** | ⬜ | 8 services, Sanity-driven |
-| P3-04 | Contact + Book Demo + LeadForm + /api/leads | **A** | ⬜ | Unticked consent, honeypot, Turnstile, rate limit |
-| P3-05 | **Legal: /privacy, /terms, /refund-policy** | **A** | ⬜ | → **BLOCKS B's Razorpay activation. Week 3, not launch week.** |
-| P3-06 | Marketing components (Hero, StatBand, ServiceCard, CourseCard, PostCard, TestimonialSlider, CTABand) | **A** | ⬜ | |
+| P3-01 | Home page | **A** | ✅ | Sanity-driven. **No StatBand wired** — CLAUDE.md forbids invented trained-employee counts and the client hasn't supplied real figures. Lottie slots for C in Phase 11. |
+| P3-02 | About | **A** | ✅ | Structure only — the credentials block is a VISIBLE placeholder, not invented. Real credentials load at P13-01. |
+| P3-03 | Services + /services/[slug] | **A** | ✅ | List + detail, Sanity-driven, `generateStaticParams`. |
+| P3-04 | Contact + Book Demo + LeadForm + /api/leads | **A** | ✅ | LeadForm + NewsletterForm + `/api/leads`. Guard order: rate limit → parse → honeypot (silent 200) → consent → Turnstile. Notification is fire-and-forget. |
+| P3-05 | **Legal: /privacy, /terms, /refund-policy** | **A** | ✅ | → **UNBLOCKS B's P7-06 Razorpay activation.** All three live. Drafts carry a visible `LegalReviewNote` until the client signs off; the refund windows (7d / 20%) are a business decision awaiting confirmation. |
+| P3-06 | Marketing components (Hero, StatBand, ServiceCard, CourseCard, PostCard, TestimonialSlider, CTABand) | **A** | ✅ | + ProseBlock, CalloutBox, DataTable, LeadForm, NewsletterForm, Container, nav-links. |
 
 ## PHASE 4 — KNOWLEDGE HUB  [Dev A]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P4-01 | /posh-act rendering poshSection grouped + ordered | **A** | ⬜ | 11 groups — see feature-inventory/knowledge-hub.md |
-| P4-02 | TocSidebar with scroll-spy + deep anchors | **A** | ⬜ | Anchors are shared links; never rename after launch |
-| P4-03 | ReadingProgress + BackToTop + mobile collapsibles | **A** | ⬜ | |
-| P4-04 | Inline Sanity-managed CTA bands | **A** | ⬜ | |
-| P4-05 | JSON-LD: Article + FAQPage + BreadcrumbList | **A** | ⬜ | |
+| P4-01 | /posh-act rendering poshSection grouped + ordered | **A** | ✅ | 11 groups in canonical order; empty groups dropped so a partial content delivery still reads as finished. Renders ZERO POSH content of its own — all client-supplied via Sanity. |
+| P4-02 | TocSidebar with scroll-spy + deep anchors | **A** | ✅ | IntersectionObserver scroll-spy banded under the sticky header. Deep anchors on every heading with a hover `#` link. |
+| P4-03 | ReadingProgress + BackToTop + mobile collapsibles | **A** | ✅ | Both built. TOC collapses on mobile; BackToTop sits left of the WhatsApp FAB so they never overlap. |
+| P4-04 | Inline Sanity-managed CTA bands | **A** | ✅ | `ctaBand` documents place themselves by `afterGroup`. |
+| P4-05 | JSON-LD: Article + FAQPage + BreadcrumbList | **A** | ⏸️ | **DEFERRED — SEO, excluded from current build scope at the user's direction (2026-07-25).** Same for P12-01..04. |
 
 ## PHASE 5 — CONTENT & CONVERSION  [Dev A]
 | ID | Task | Owner | Status | Notes |

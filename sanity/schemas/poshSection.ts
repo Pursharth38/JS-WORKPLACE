@@ -1,26 +1,15 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 
+import { POSH_GROUPS } from "@/lib/posh-groups";
+
 /**
  * One H2 section of the Knowledge Hub (`/posh-act`) — the SEO centerpiece.
  * Each section is its own document so the client can add, edit and reorder
  * without a deploy.
  *
- * Groups are fixed and ordered; the list mirrors
- * .claude/documentation/feature-inventory/knowledge-hub.md.
+ * The group list is imported from lib/posh-groups.ts rather than declared here,
+ * so the public page can read it without pulling the Studio into its bundle.
  */
-export const POSH_GROUPS = [
-  "Compliance",
-  "Policy",
-  "Internal Committee",
-  "Local Committee",
-  "Definitions",
-  "Complaints",
-  "Redressal",
-  "False Complaints",
-  "Confidentiality",
-  "Appeal",
-  "Background",
-] as const;
 
 export default defineType({
   name: "poshSection",
