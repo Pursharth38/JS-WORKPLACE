@@ -72,7 +72,7 @@ export function PaymentPendingBanner({ courseSlug }: { courseSlug: string }) {
     >
       {state === 'waiting' ? (
         <>
-          <p className="text-[17px] font-semibold text-[var(--brand-teal)]">
+          <p className="text-[17px] font-semibold text-[var(--brand-primary)]">
             Confirming your payment…
           </p>
           <p className="mt-1 text-[15px] leading-relaxed text-[var(--brand-muted)]">
@@ -93,7 +93,7 @@ export function PaymentPendingBanner({ courseSlug }: { courseSlug: string }) {
           </p>
           <a
             href="/contact"
-            className="mt-3 inline-block text-[15px] font-medium text-[var(--brand-teal)] underline"
+            className="mt-3 inline-block text-[15px] font-medium text-[var(--brand-primary)] underline"
           >
             Contact support
           </a>

@@ -167,7 +167,7 @@ export function CheckoutButton({
     return (
       <a
         href={`/learn/${courseSlug}`}
-        className="block w-full rounded-md bg-[var(--brand-teal)] px-5 py-3.5 text-center text-[18px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+        className="block w-full rounded-md bg-[var(--brand-primary)] px-5 py-3.5 text-center text-[18px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
       >
         Continue the course
       </a>
@@ -178,7 +178,7 @@ export function CheckoutButton({
     return (
       <a
         href={`/login?redirectTo=/courses/${courseSlug}`}
-        className="block w-full rounded-md bg-[var(--brand-amber)] px-5 py-3.5 text-center text-[18px] font-semibold text-white hover:bg-[var(--brand-amber-hover)]"
+        className="block w-full rounded-md bg-[var(--brand-accent)] px-5 py-3.5 text-center text-[18px] font-semibold text-white hover:bg-[var(--brand-accent-hover)]"
       >
         Sign in to enrol — {formatInr(priceInPaise)}
       </a>
@@ -191,7 +191,7 @@ export function CheckoutButton({
         type="button"
         onClick={start}
         disabled={busy}
-        className="w-full rounded-md bg-[var(--brand-amber)] px-5 py-3.5 text-[18px] font-semibold text-white hover:bg-[var(--brand-amber-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-md bg-[var(--brand-accent)] px-5 py-3.5 text-[18px] font-semibold text-white hover:bg-[var(--brand-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {busy ? 'Opening checkout…' : `Enrol now — ${formatInr(priceInPaise)}`}
       </button>

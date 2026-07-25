@@ -77,10 +77,10 @@ export default async function AdminPage() {
   ])
 
   return (
-    <div className="min-h-screen bg-[var(--brand-sand)]">
+    <div className="min-h-screen bg-[var(--brand-surface)]">
       <header className="border-b border-[var(--brand-line)] bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-          <span className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[var(--brand-teal)]">
+          <span className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[var(--brand-primary)]">
             Admin — JS Workplace Wellness
           </span>
           <Link href="/dashboard" className="ml-auto text-[15px] text-[var(--brand-muted)] hover:underline">
@@ -165,7 +165,7 @@ export default async function AdminPage() {
           </p>
           <a
             href="/api/admin/leads.csv"
-            className="inline-block rounded-md bg-[var(--brand-teal)] px-5 py-2.5 text-[16px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+            className="inline-block rounded-md bg-[var(--brand-primary)] px-5 py-2.5 text-[16px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
           >
             Download leads.csv
           </a>
@@ -179,7 +179,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
   return (
     <div className="rounded-lg border border-[var(--brand-line)] bg-white p-5">
       <dt className="text-[13px] uppercase tracking-wide text-[var(--brand-muted)]">{label}</dt>
-      <dd className="mt-1 text-[26px] font-semibold text-[var(--brand-teal)]">{value}</dd>
+      <dd className="mt-1 text-[26px] font-semibold text-[var(--brand-primary)]">{value}</dd>
       {hint && <p className="text-[13px] text-[var(--brand-muted)]">{hint}</p>}
     </div>
   )
@@ -215,7 +215,7 @@ function Table({
     <div className="overflow-x-auto rounded-lg border border-[var(--brand-line)] bg-white">
       <table className="w-full min-w-[640px] border-collapse text-[14px]">
         <thead>
-          <tr className="border-b border-[var(--brand-line)] bg-[var(--brand-sand)] text-left">
+          <tr className="border-b border-[var(--brand-line)] bg-[var(--brand-surface)] text-left">
             {head.map((h) => (
               <th key={h} scope="col" className="px-4 py-3 font-semibold">
                 {h}

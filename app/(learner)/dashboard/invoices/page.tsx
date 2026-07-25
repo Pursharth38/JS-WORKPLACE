@@ -12,7 +12,7 @@ const STATUS_COPY: Record<string, { label: string; color: string }> = {
   CREATED: { label: 'Not completed', color: 'var(--brand-muted)' },
   PAID: { label: 'Paid', color: 'var(--brand-success)' },
   FAILED: { label: 'Failed', color: 'var(--brand-danger)' },
-  REFUNDED: { label: 'Refunded', color: 'var(--brand-amber)' },
+  REFUNDED: { label: 'Refunded', color: 'var(--brand-accent)' },
 }
 
 export default async function InvoicesPage() {
@@ -60,7 +60,7 @@ export default async function InvoicesPage() {
           <table className="w-full min-w-[640px] border-collapse text-[15px]">
             <caption className="sr-only">Your payment history</caption>
             <thead>
-              <tr className="border-b border-[var(--brand-line)] bg-[var(--brand-sand)] text-left">
+              <tr className="border-b border-[var(--brand-line)] bg-[var(--brand-surface)] text-left">
                 <th scope="col" className="px-4 py-3 font-semibold">Date</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Course</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Amount</th>
@@ -96,7 +96,7 @@ export default async function InvoicesPage() {
                       {downloadable ? (
                         <a
                           href={`/api/invoice/${p.id}`}
-                          className="font-medium text-[var(--brand-teal)] underline"
+                          className="font-medium text-[var(--brand-primary)] underline"
                         >
                           {p.invoiceNumber ?? 'Download PDF'}
                         </a>

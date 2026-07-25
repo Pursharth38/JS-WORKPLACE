@@ -28,7 +28,7 @@ export default async function LoginPage({
 
       <p className="mt-6 text-center text-[15px] text-[var(--brand-muted)]">
         Don&apos;t have an account?{' '}
-        <Link href="/signup" className="font-medium text-[var(--brand-teal)] hover:underline">
+        <Link href="/signup" className="font-medium text-[var(--brand-primary)] hover:underline">
           Create one
         </Link>
       </p>

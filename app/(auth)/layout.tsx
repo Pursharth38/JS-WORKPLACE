@@ -5,11 +5,11 @@ import Link from 'next/link'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--brand-sand)]">
+    <div className="flex min-h-screen flex-col bg-[var(--brand-surface)]">
       <header className="px-6 py-6">
         <Link
           href="/"
-          className="font-[family-name:var(--font-heading)] text-[19px] font-semibold text-[var(--brand-teal)]"
+          className="font-[family-name:var(--font-heading)] text-[19px] font-semibold text-[var(--brand-primary)]"
         >
           JS Workplace Wellness
         </Link>

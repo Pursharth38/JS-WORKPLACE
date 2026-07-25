@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Placeholder values so `next build` can run without real secrets. Nothing here
+  # reaches a real service: Sanity degrades to empty content when the project id
+  # is absent, and no test in this suite makes a network call.
+  DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
+  NEXTAUTH_SECRET: ci-placeholder-secret-not-used-anywhere-real
+  NEXTAUTH_URL: http://localhost:3000
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+jobs:
+  verify:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Prisma Client is generated, not committed. Typecheck fails without it
+      # because every db.* call is typed from the generated client.
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # ── The legal gate. See CLAUDE.md §1. ────────────────────────────────
+      # Jyoti Solaria is NOT empanelled by the Ministry of Women and Child
+      # Development; the reference competitor is. These claims appearing on the
+      # site would be a false-authority problem the client personally carries.
+      #
+      # Scans SOURCE and BUILT OUTPUT — a string can reach the page from a
+      # dependency or from Sanity-shaped fixture content without ever appearing
+      # in our own files.
+      #
+      # Also scans design/ and client/, which are not shipped but are sent
+      # directly to the client and are held to the same standard.
+      - name: Forbidden claims check
+        run: |
+          set -uo pipefail
+          PATTERN='POSH Certified|certified under the POSH Act|government (recognized|approved|recognised)|MWCD empanell?ed|Ministry empanell?ed'
+          echo "Scanning for forbidden authority claims…"
+          if grep -rniE "$PATTERN" \
+               app/ components/ lib/ emails/ sanity/ design/ client/ .next/server/ 2>/dev/null; then
+            echo ""
+            echo "::error::Forbidden authority claim found. See CLAUDE.md §1."
+            echo "The client is not empanelled by the MWCD. These strings must never ship."
+            exit 1
+          fi
+          echo "OK — no forbidden claims."
+
+      # ── Leak gate. See CLAUDE.md "SELF-CHECK AFTER EVERY GATED ROUTE". ───
+      # A locked module's Cloudflare Stream UID must never reach an RSC payload
+      # or a JSON response, and a correct answer must never leave the server.
+      #
+      # AUTHORISED FILES — each is allowed for a specific reason:
+      #   lib/unlock              the gating engine itself                [C]
+      #   api/video               mints the signed token; selects uid internally [C]
+      #   api/assessment          grades server-side, strips correctOptionId     [C]
+      #   api/webhooks/sanity     writes videoUid INTO Postgres — this is the    [A]
+      #                           structural mirror and the whole point of it
+      #   lib/schemas/sanity-webhook  the Zod schema for that payload            [A]
+      #
+      # The last two were added when the Sanity sync landed; CLAUDE.md's original
+      # three-file list predates it. Widening an allowlist weakens the gate, so
+      # the justification is written down rather than left implicit.
+      #
+      # Comment lines are stripped: a comment explaining this rule should not
+      # trip the rule.
+      - name: Gated-content leak check
+        run: |
+          set -uo pipefail
+          echo "Scanning for videoUid / correctOptionId outside authorised files…"
+          HITS=$(grep -rnE "videoUid|correctOptionId" app/ components/ lib/ \
+                   --include=*.ts --include=*.tsx 2>/dev/null \
+                 | grep -vE "lib/unlock|api/video|api/assessment|api/webhooks/sanity|lib/schemas/sanity-webhook" \
+                 | grep -vE '^[^:]+:[0-9]+: *(\*|//|/\*)' || true)
+          if [ -n "$HITS" ]; then
+            echo "$HITS"
+            echo "::error::Gated content referenced outside the authorised files listed in this workflow."
+            exit 1
+          fi
+          echo "OK — no leaks."
+
+      # ── Response-envelope gate. CONTRACTS.md "UNIVERSAL ENVELOPE". ───────
+      - name: apiResponse envelope check
+        run: |
+          set -uo pipefail
+          echo "Scanning for bare NextResponse.json in route handlers…"
+          HITS=$(grep -rn "NextResponse.json" app/api/ 2>/dev/null || true)
+          if [ -n "$HITS" ]; then
+            echo "$HITS"
+            echo "::error::Route handlers must return apiResponse() from lib/response.ts, never bare NextResponse.json."
+            exit 1
+          fi
+          echo "OK — every route uses apiResponse()."
+
+      # ── DPDP gate. A pre-ticked consent box is not consent. ──────────────
+      - name: Consent checkbox check
+        run: |
+          set -uo pipefail
+          echo "Scanning for a pre-ticked consent checkbox…"
+          HITS=$(grep -rnE "consentGiven[^)]*(defaultChecked|checked)\s*(=\s*\{?\s*true|$)" \
+                   app/ components/ --include=*.tsx 2>/dev/null || true)
+          if [ -n "$HITS" ]; then
+            echo "$HITS"
+            echo "::error::Consent checkbox appears pre-ticked. Under the DPDP Act consent must be an affirmative action."
+            exit 1
+          fi
+          echo "OK — consent is not pre-ticked."
+
+# ── NOT YET WIRED ──────────────────────────────────────────────────────────
+# Lighthouse (P12-04, ≥90 mobile on Home / Knowledge Hub / Course detail) is
+# deliberately absent. It needs a deployed preview URL to audit, which arrives
+# with the Vercel integration in P1-08 / P12. Adding a job now that audits
+# localhost would report numbers that do not reflect production and would train
+# everyone to ignore it.

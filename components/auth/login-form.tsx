@@ -36,7 +36,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
       <div className="mb-5 text-right">
         <Link
           href="/forgot-password"
-          className="text-[14px] text-[var(--brand-teal)] hover:underline"
+          className="text-[14px] text-[var(--brand-primary)] hover:underline"
         >
           Forgot your password?
         </Link>

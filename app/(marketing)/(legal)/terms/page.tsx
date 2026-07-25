@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { LegalReviewNote } from "@/components/marketing/legal-review-note";
 import { getSiteSettings } from "@/lib/sanity";
@@ -119,12 +120,12 @@ export default async function TermsPage() {
         stated otherwise. Payments are processed by a third-party payment
         provider; we do not receive or store your card details. Refunds are
         governed by our{" "}
-        <a
+        <Link
           href="/refund-policy"
           className="text-[var(--brand-primary)] underline underline-offset-2"
         >
           refund policy
-        </a>
+        </Link>
         .
       </p>
 

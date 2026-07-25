@@ -5,6 +5,7 @@ import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { ProseBlock } from "@/components/marketing/prose-block";
 import { getFaqs } from "@/lib/sanity";
+import Link from "next/link";
 
 export const revalidate = 3600;
 
@@ -38,12 +39,12 @@ export default async function FaqPage() {
         </h1>
         <p className="mt-4 max-w-[62ch] text-[19px] leading-[1.6] text-[var(--brand-muted)]">
           If your question is not here,{" "}
-          <a
+          <Link
             href="/contact"
             className="text-[var(--brand-primary)] underline underline-offset-2"
           >
             ask us directly
-          </a>
+          </Link>
           .
         </p>
 

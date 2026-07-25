@@ -208,9 +208,10 @@ model ModuleProgress {
   moduleId        String
   user            User      @relation(fields: [userId], references: [id])
   module          Module    @relation(fields: [moduleId], references: [id])
-  secondsWatched  Int       @default(0)
-  lastPositionSec Int       @default(0)
-  completedAt     DateTime?
+  secondsWatched  Int       @default(0)   // cumulative, SERVER-CLAMPED
+  lastPositionSec Int       @default(0)   // resume point
+  lastHeartbeatAt DateTime?               // ★ clamp basis for the next delta
+  completedAt     DateTime?               // set at secondsWatched ≥ 0.9 × durationSeconds
 
   @@unique([userId, moduleId])
 }

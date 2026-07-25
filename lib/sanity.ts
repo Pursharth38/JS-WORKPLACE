@@ -201,6 +201,27 @@ export type CourseSummary = {
   coverImage?: SanityImage;
 };
 
+export type CourseDetail = CourseSummary & {
+  description?: PortableTextBlock[];
+  learningOutcomes?: string[];
+  faqs?: { question: string; answer: string }[];
+  seoTitle?: string;
+  seoDescription?: string;
+  chapters?: {
+    _id: string;
+    title: string;
+    order: number;
+    summary?: string;
+    modules: {
+      _id: string;
+      title: string;
+      order: number;
+      isFreePreview?: boolean;
+      durationSeconds: number;
+    }[];
+  }[];
+};
+
 /* ───────────────────────────── QUERIES ──────────────────────────────────── */
 
 const SITE_SETTINGS_QUERY = `*[_type == "siteSettings"][0]{
@@ -355,6 +376,32 @@ export function getTestimonials(): Promise<Testimonial[]> {
     }`,
     tags: [TAGS.testimonial],
     fallback: [],
+  });
+}
+
+/**
+ * Course detail including the syllabus tree.
+ *
+ * ⚠️ `videoUid` is deliberately NOT projected here, at any depth. This is a
+ * PUBLIC marketing page — emitting a Stream UID for an unpurchased module would
+ * put it straight into the RSC payload, which CLAUDE.md treats as a hard
+ * security failure. The syllabus shows titles and durations only.
+ */
+export function getCourseBySlug(slug: string): Promise<CourseDetail | null> {
+  return sanityFetch<CourseDetail | null>({
+    query: `*[_type == "course" && slug.current == $slug && isPublished == true][0]{
+      _id, title, "slug": slug.current, summary, priceInPaise, durationMinutes,
+      coverImage, description, learningOutcomes, faqs, seoTitle, seoDescription,
+      "chapters": *[_type == "chapter" && course._ref == ^._id] | order(order asc){
+        _id, title, order, summary,
+        "modules": *[_type == "module" && chapter._ref == ^._id] | order(order asc){
+          _id, title, order, isFreePreview, durationSeconds
+        }
+      }
+    }`,
+    params: { slug },
+    tags: [TAGS.course],
+    fallback: null,
   });
 }
 

@@ -1,9 +1,42 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠️  FILE OWNER: DEV A (task P1-05). Transcribed here by DEV B to unblock
-//     offline work on Phases 6/7/10. Source of truth for every model below is
-//     ARCHITECTURE.md §5 and orchestrate/data-model.md — this is a transcription,
-//     not a redesign. On merge: take Dev A's version, then diff against this file
-//     for the four Dev-B-specific additions listed in MERGE-NOTES.md.
+// FILE OWNER: DEV A. Migrations are owned by each model's owner (codebase.md).
+//
+// ORIGIN: written by Dev B to unblock Phases 6/7/10 while Dev A's foundation was
+// on another branch, then ADOPTED WHOLESALE at the A+B merge — there was no Dev A
+// version to prefer, and retyping working, spec-conformant code would have been
+// waste. See MERGE-NOTES.md §1.
+//
+// ── P1-05 REVIEW (Dev A, 2026-07-25) ────────────────────────────────────────
+// Reviewed against ARCHITECTURE.md §5 and orchestrate/data-model.md. Conforms,
+// including all five Dev B additions (PasswordResetToken, the
+// (userId,courseId,passed) index, Payment.invoiceNumber/updatedAt/index, and
+// User.updatedAt/consentGivenAt). `ModuleProgress.lastHeartbeatAt` is present and
+// correct — it is the clamp basis for Dev C's heartbeat, and ARCHITECTURE.md §5
+// was the document that was wrong. That has now been corrected.
+//
+// ⚠️ ONE OPEN FINDING — REFERENTIAL ACTIONS. Eight relations below declare no
+// `onDelete`, so Prisma defaults them to `Restrict`:
+//
+//     Enrollment.user/.course · ModuleProgress.user/.module
+//     AssessmentAttempt.user/.chapter · Certificate.user · Payment.user
+//
+// Consequence: `db.user.delete()` THROWS for any learner who has ever watched a
+// lesson. The privacy policy at /privacy commits to honouring deletion requests,
+// so this will surface the first time someone exercises that right.
+//
+// It is NOT simply a bug, which is why Dev A has not unilaterally migrated it:
+//   · Certificate — Restrict is arguably CORRECT. A certificate must stay
+//     verifiable; the policy says we retain the minimum needed for that.
+//   · Payment — Restrict is CORRECT. Financial records are retained for tax.
+//   · ModuleProgress / AssessmentAttempt — should almost certainly Cascade.
+//     They have no independent value and retaining them blocks a lawful erasure.
+//   · Enrollment — depends on whether access history is treated as a financial
+//     record. A judgement call, not a technical one.
+//
+// OWNERSHIP: Certificate and Payment are Dev B's models; ModuleProgress and
+// AssessmentAttempt are Dev C's. Each owner decides and migrates their own.
+// Tracked as P1-05a in orchestrate/tasks.md. Do not "fix" this in one sweep —
+// cascading a financial record away is worse than the problem.
 // ─────────────────────────────────────────────────────────────────────────────
 
 generator client {

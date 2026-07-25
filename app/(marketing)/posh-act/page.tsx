@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { BackToTop } from "@/components/marketing/back-to-top";
 import { Container } from "@/components/marketing/container";
@@ -60,12 +61,12 @@ export default async function PoshActPage() {
         <p className="mt-5 text-[17px] leading-[1.7] text-[var(--brand-muted)]">
           This guide is being written. In the meantime, if you have a question
           about your obligations under the Act, please{" "}
-          <a
+          <Link
             href="/contact"
             className="text-[var(--brand-primary)] underline underline-offset-2"
           >
             get in touch
-          </a>
+          </Link>
           .
         </p>
       </Container>

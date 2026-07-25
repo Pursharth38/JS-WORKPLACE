@@ -23,7 +23,7 @@ export function RevokeForm() {
         name="certId"
         required
         placeholder="JSWW-2026-A7K2P9"
-        className="mb-4 w-full rounded-md border border-[var(--brand-line)] bg-white px-3 py-2.5 font-mono text-[15px] outline-none focus:border-[var(--brand-teal)]"
+        className="mb-4 w-full rounded-md border border-[var(--brand-line)] bg-white px-3 py-2.5 font-mono text-[15px] outline-none focus:border-[var(--brand-primary)]"
       />
 
       <label htmlFor="revoke-reason" className="mb-1.5 block text-[15px] font-medium">
@@ -37,7 +37,7 @@ export function RevokeForm() {
         minLength={3}
         maxLength={500}
         placeholder="e.g. Issued against a payment that was later charged back"
-        className="mb-4 w-full rounded-md border border-[var(--brand-line)] bg-white px-3 py-2.5 text-[15px] outline-none focus:border-[var(--brand-teal)]"
+        className="mb-4 w-full rounded-md border border-[var(--brand-line)] bg-white px-3 py-2.5 text-[15px] outline-none focus:border-[var(--brand-primary)]"
       />
 
       <p className="mb-4 text-[14px] leading-relaxed text-[var(--brand-muted)]">

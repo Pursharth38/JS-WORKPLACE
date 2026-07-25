@@ -281,9 +281,25 @@ Stream UID for a locked module.
 
 **Self-check after every gated route:**
 ```
-grep -rnE "videoUid|correctOptionId" app/ --include=*.tsx --include=*.ts | grep -v "lib/unlock\|api/video\|api/assessment"
+grep -rnE "videoUid|correctOptionId" app/ components/ lib/ --include=*.tsx --include=*.ts \
+  | grep -vE "lib/unlock|api/video|api/assessment|api/webhooks/sanity|lib/schemas/sanity-webhook" \
+  | grep -vE '^[^:]+:[0-9]+: *(\*|//|/\*)'
 ```
-Any hit outside the three authorized files is a leak. Fix before ✅.
+Any hit outside the **five** authorised files is a leak. Fix before ✅.
+
+| Authorised file | Why | Owner |
+|---|---|---|
+| `lib/unlock.ts` | the gating engine itself | C |
+| `app/api/video/token/*` | mints the signed token; selects the uid internally, never returns it | C |
+| `app/api/assessment/*` | grades server-side and strips `correctOptionId` | C |
+| `app/api/webhooks/sanity` | writes `videoUid` **into** Postgres — this is the structural mirror | A |
+| `lib/schemas/sanity-webhook.ts` | the Zod schema for that payload | A |
+
+> The last two were added on 2026-07-25 when the Sanity sync landed; the original
+> three-file list predated it. Widening this allowlist weakens a security gate, so any
+> further addition needs the same written justification. Comment lines are stripped so a
+> comment *explaining* the rule does not trip it. **CI enforces exactly this list** —
+> `.github/workflows/ci.yml`, "Gated-content leak check".
 
 ---
 

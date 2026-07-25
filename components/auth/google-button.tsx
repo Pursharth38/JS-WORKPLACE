@@ -14,7 +14,7 @@ export function GoogleButton({
       {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
       <button
         type="submit"
-        className="flex w-full items-center justify-center gap-2.5 rounded-md border border-[var(--brand-line)] bg-white px-4 py-3 text-[16px] font-medium text-[var(--brand-ink)] transition-colors hover:bg-[var(--brand-sand)]"
+        className="flex w-full items-center justify-center gap-2.5 rounded-md border border-[var(--brand-line)] bg-white px-4 py-3 text-[16px] font-medium text-[var(--brand-ink)] transition-colors hover:bg-[var(--brand-surface)]"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
           <path

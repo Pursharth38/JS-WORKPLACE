@@ -17,7 +17,7 @@ export function ConfirmEmailForm({ token }: { token: string }) {
         <FormAlert state={state} />
         <Link
           href="/login"
-          className="block w-full rounded-md bg-[var(--brand-teal)] px-4 py-3 text-center text-[17px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+          className="block w-full rounded-md bg-[var(--brand-primary)] px-4 py-3 text-center text-[17px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
         >
           Sign in
         </Link>
@@ -33,7 +33,7 @@ export function ConfirmEmailForm({ token }: { token: string }) {
 
       {state.status === 'error' && (
         <p className="mt-5 text-center text-[15px] text-[var(--brand-muted)]">
-          <Link href="/verify-email" className="text-[var(--brand-teal)] hover:underline">
+          <Link href="/verify-email" className="text-[var(--brand-primary)] hover:underline">
             Request a new confirmation link
           </Link>
         </p>

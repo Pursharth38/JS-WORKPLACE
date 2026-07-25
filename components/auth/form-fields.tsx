@@ -56,7 +56,7 @@ export function Field({
         placeholder={placeholder}
         inputMode={inputMode}
         aria-describedby={hintId}
-        className="w-full rounded-md border border-[var(--brand-line)] bg-white px-3 py-2.5 text-[16px] text-[var(--brand-ink)] outline-none transition-colors focus:border-[var(--brand-teal)]"
+        className="w-full rounded-md border border-[var(--brand-line)] bg-white px-3 py-2.5 text-[16px] text-[var(--brand-ink)] outline-none transition-colors focus:border-[var(--brand-primary)]"
       />
       {hint && (
         <p id={hintId} className="mt-1.5 text-[13px] leading-relaxed text-[var(--brand-muted)]">
@@ -86,7 +86,7 @@ export function ConsentCheckbox({
         name={name}
         type="checkbox"
         required
-        className="mt-1 h-4 w-4 shrink-0 accent-[var(--brand-teal)]"
+        className="mt-1 h-4 w-4 shrink-0 accent-[var(--brand-primary)]"
       />
       <label htmlFor={id} className="text-[14px] leading-relaxed text-[var(--brand-muted)]">
         {children}
@@ -111,7 +111,7 @@ export function SubmitButton({ children }: { children: React.ReactNode }) {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-md bg-[var(--brand-teal)] px-4 py-3 text-[17px] font-semibold text-white transition-colors hover:bg-[var(--brand-teal-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-md bg-[var(--brand-primary)] px-4 py-3 text-[17px] font-semibold text-white transition-colors hover:bg-[var(--brand-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? 'Please wait…' : children}
     </button>

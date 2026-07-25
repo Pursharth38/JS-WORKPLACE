@@ -55,13 +55,78 @@ touching a file. Task discipline: mark 🔄 before writing, ✅ after, ❌ + log
 
 ## Setup
 
+Requires **Node 20.9+** (CI runs 22) and npm.
+
 ```bash
-cp .env.example .env      # fill in — see documentation/DEPLOY.md §1 for account order
+git clone <this repo> && cd JS-WORKPLACE
+cp .env.example .env
 npm install
-npx prisma migrate dev
-npm run dev
+npx prisma generate        # Prisma Client is generated, not committed
+npm run dev                # http://localhost:3000
 ```
+
+### What you actually need in `.env` to get started
+
+Most of `.env.example` is optional. The app is built to degrade rather than crash
+when a third-party service is missing, so you can run the whole marketing site
+with almost nothing configured.
+
+| Want to… | You need |
+|---|---|
+| Run the marketing site | nothing — it renders with empty-state copy |
+| Run auth, dashboard, or anything DB-backed | `DATABASE_URL`, `NEXTAUTH_SECRET` |
+| See real content, or open `/studio` | `NEXT_PUBLIC_SANITY_PROJECT_ID`, `NEXT_PUBLIC_SANITY_DATASET` |
+| Receive emails locally | `RESEND_API_KEY` — without it, links are printed to the server console instead |
+| Test checkout | `RAZORPAY_*` test keys |
+
+With `DATABASE_URL` set, create the schema:
+
+```bash
+npx prisma migrate dev     # first run creates the local database
+```
+
+**Deliberate degradations** — these are design decisions, not bugs:
+
+- **No Sanity project** → every content read returns empty and pages render their
+  empty states. The build stays green, which is what lets Phases 1–3 proceed
+  before the client's CMS exists.
+- **No `RESEND_API_KEY`** → emails are not sent; the verification / reset /
+  download link is logged to the console so you can still walk the flow end to end.
+- **No `TURNSTILE_SECRET_KEY`** → bot verification is skipped with a warning. The
+  honeypot and rate limiter still apply. ⚠️ Must be set before launch.
+- **No `UPSTASH_*`** → rate limiting uses an in-memory sliding window instead of
+  Redis. Correct for a single instance; set Upstash only if you need limits shared
+  across serverless instances.
+
+### Scripts
+
+```bash
+npm run dev          # dev server
+npm run build        # production build
+npm run typecheck    # tsc --noEmit
+npm run lint         # eslint
+npm test             # vitest
+npm run db:migrate   # prisma migrate dev
+npm run db:studio    # prisma studio
+```
+
+### Before opening a PR
+
+CI runs typecheck, lint, test, build and four grep gates (forbidden claims,
+gated-content leaks, response envelope, consent checkbox). Run the first four
+locally first — the greps are in `.github/workflows/ci.yml` if you want to check
+them by hand.
+
+Branch protection settings are documented in `.github/BRANCH_PROTECTION.md`.
 
 ## Current status
 
-Pre-Phase-0. Nothing built. Four blockers open — see `orchestrate/tasks.md` BLOCKED TASKS.
+**Dev A** (foundation, CMS, marketing, Knowledge Hub) and **Dev B** (auth,
+commerce, certificates, admin) are merged and green. **Dev C** (video, unlock
+engine, assessments) has not started.
+
+Live board: `.claude/orchestrate/tasks.md`. Integration history and the reasoning
+behind the A+B merge: `MERGE-NOTES.md`.
+
+Open blockers are all **client-side** — colour board pick, Knowledge Hub content,
+and four sign-offs. See BLOCKED TASKS in `tasks.md`.

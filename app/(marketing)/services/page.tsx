@@ -4,6 +4,7 @@ import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { ServiceCard } from "@/components/marketing/service-card";
 import { getServices } from "@/lib/sanity";
+import Link from "next/link";
 
 export const revalidate = 3600;
 
@@ -37,12 +38,12 @@ export default async function ServicesPage() {
         ) : (
           <p className="mt-12 text-[17px] text-[var(--brand-muted)]">
             Services are being added. In the meantime, please{" "}
-            <a
+            <Link
               href="/contact"
               className="text-[var(--brand-primary)] underline underline-offset-2"
             >
               get in touch
-            </a>{" "}
+            </Link>{" "}
             and we will talk through what you need.
           </p>
         )}

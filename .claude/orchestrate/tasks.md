@@ -10,23 +10,23 @@
 ## CURRENT SESSION GOAL
 **Team:** three developers, split by vertical slice. A = Platform & Content · B = Identity & Commerce ·
 C = Learning Engine & Motion. Full detail: `team-division.md` at repo root.
-**State:** **DEV A + DEV B ARE MERGED** on branch `integration-a-b` (2026-07-25). Dev A's P1-01
-foundation (Next 16.2.11, React 19.2.4, TS strict, Tailwind v4) plus Dev B's code-complete Phases 6, 7
-and 10 (auth, commerce, certificates, admin). Dev C's lane has not started.
-Dev A's two Phase-0 deliverables are built and ready to send (P0-03 colour boards, P0-04 content
-request); both await the *client*. Six client sign-offs outstanding (P0-01, P0-02, P0-03 pick, P0-04
-reply, P0-05, P0-06).
-**Next action:** (1) send P0-03 + P0-04 to the client — P0-01 gates SHIPPING certificates and P0-05
-gates GSTIN on invoices, both of which are otherwise code-complete; (2) Dev A's next runnable task is
-**P1-07 CI** or **P1-04 UI primitives** (P1-05 and P1-06 are now *review* tasks, not build tasks — see
-below); (3) Dev C builds against Dev B's published H3 (`lib/session.ts`) and H4 (`lib/enrollment.ts`)
-contracts, which are implemented and not stubbed; (4) run `/cso` on the payment path (P7-R).
-**Blocking dependency:** client must supply original Knowledge Hub content. Still the single highest risk
-in the project. P0-04 mitigates it by splitting delivery into 3 waves (Wave 1 = 14 sections unblocks the
-build) and offering voice-note/interview routes so the request does not depend on her finding writing time.
-**Merge note:** `MERGE-NOTES.md` at repo root is Dev B's handover and is still the reference for *why*
-things are where they are. The `## MERGE RESOLUTION` section appended to it records what Dev A actually
-did, including the two places Dev A deviated from Dev B's instructions.
+**State:** **DEV A IS COMPLETE** except SEO (deferred by direction) and two gstack gates that
+need a Claude Code restart. Dev A + Dev B are merged and green on `integration-a-b`:
+build (36 routes), typecheck, lint, 57 tests, and all four CI grep gates pass.
+Dev C's lane has not started.
+**Dev A remaining:** P1-R and P5-R (both gstack — `/plan-design-review`, `/qa` — blocked on a
+restart), P4-05 + P12-01..04 (SEO, deferred by direction), P13-01 (needs client content).
+**Next action:** (1) send P0-03 + P0-04 to the client — everything else Dev A owns is done and
+five sign-offs are now the critical path; (2) **restart Claude Code**, then run `/qa` (P5-R) —
+that is the SHIP STAGE 1 gate and the marketing site is ready to go live behind it;
+(3) Dev C starts Phase 8 against Dev B's H3/H4 contracts and must overwrite the
+`lib/progress.ts` stub; (4) run `/cso` on the payment path (P7-R).
+**Unblocked by Dev A this session:** P7-06 Razorpay activation (legal pages are live) and
+H2 for Dev C (Sanity question schema).
+**Blocking dependency:** client must supply original Knowledge Hub content. Unchanged and still
+the single highest risk — the Hub renders 11 groups but currently has zero sections to render.
+**Merge note:** `MERGE-NOTES.md` at repo root is Dev B's handover; its `## MERGE RESOLUTION`
+section records what Dev A actually did, including three deliberate deviations.
 **Environment note:** gstack was missing and is now installed globally (`~/.claude/skills/gstack`, team
 mode). It needs `bun`, which was also installed. Skills require a Claude Code restart to register.
 
@@ -66,13 +66,14 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 |----|------|-------|--------|-------|
 | P1-01 | Next.js 16 + TS strict + Tailwind v4 repo | **A** | ✅ | Scaffolded in place. `npm run build` / `typecheck` / `lint` all clean. Fonts (Fraunces + Inter) self-hosted via next/font. **No palette committed** — globals.css `@theme` holds typography only. |
 | P1-02 | Design tokens → `@theme` in app/globals.css | **A** | ✅ | Full token set: colour, 1.25 type scale, spacing, radius, elevation. ⚠️ Colour values remain PROVISIONAL Board A pending P0-03 — but behind a SEMANTIC block, so the board pick is now a values-only edit of one file. Was blocked on P0-03 board pick; Tailwind v4 is CSS-first — no `tailwind.config.ts`. ⚠️ A **provisional Board A palette is already committed** post-merge because Dev B's lane needs `--brand-*` defined. Edit only the SEMANTIC block. Inputs: ARCHITECTURE §14 + `design/colour-boards/CONTRAST-REPORT.md` |
-| P1-02b | Retire legacy colour-named aliases (`--brand-teal` → `--brand-primary`) | **A** | ⬜ | Mechanical sed over 164 refs / 25 Dev B files. Do after P1-02 lands, not before. |
+| P1-02b | Retire legacy colour-named aliases (`--brand-teal` → `--brand-primary`) | **A** | ✅ | Done. 67 refs across 23 files rewritten to the semantic names; alias block removed from globals.css. `--brand-teal` would have become a lie the moment Board B won. |
 | P1-03 | Layout shell: Header, Footer, WhatsAppFAB, Container | **A** | ✅ | Container, sticky Header + mobile drawer, Footer, WhatsAppFAB. All contact details from Sanity `siteSettings` — nothing hardcoded. Home moved into `(marketing)` to inherit the shell. **H1 satisfied.** Formerly blocked on P1-02. **This is the H1 Day-3 commitment.** Note B and C are *no longer hard-blocked* by it — B shipped without it and C has H3/H4. |
 | P1-04 | UI primitives (Button, Input, Select, Checkbox, Card, Badge, Modal, Toast, Skeleton, Accordion, Tabs) | **A** | ✅ | + Field, Textarea, Honeypot, ConsentCheckbox, Turnstile. Button's `accent` variant is forced to 18px (amber below that fails AA); ConsentCheckbox cannot be pre-ticked. |
-| P1-05 | Prisma schema initial + first migration | **A** | 🔄 | **Changed from build → REVIEW.** Dev B's `prisma/schema.prisma` (271 lines) + 2 migrations were adopted in the merge. Dev A must review and re-own. Dev B's 5 additions are documented in MERGE-NOTES.md §3. |
+| P1-05 | Prisma schema initial + first migration | **A** | ✅ | **REVIEW DONE.** Conforms to ARCHITECTURE §5 + data-model.md, including all 5 Dev B additions. Also CORRECTED ARCHITECTURE.md §5, which was missing `ModuleProgress.lastHeartbeatAt` (Dev B flagged this; it is Dev C's clamp basis). ⚠️ One open finding → **P1-05a**. |
+| P1-05a | Referential actions: 8 relations default to `Restrict` | **B**+**C** | ⬜ | Dev A review finding. `db.user.delete()` throws for any learner with progress — and /privacy commits to honouring deletion requests. NOT a blanket fix: Certificate/Payment `Restrict` is arguably correct (verifiability, tax retention); ModuleProgress/AssessmentAttempt should almost certainly Cascade. Each owner decides and migrates their own models. Reasoning is written into prisma/schema.prisma's header. |
 | P1-06 | lib/response.ts apiResponse() + Zod schema folder | **A** | ✅ | **Was REVIEW after the merge.** Dev B's `response.ts`/`db.ts`/`ratelimit.ts` adopted; Dev A added `schemas/leads.ts`, `schemas/sanity-webhook.ts`, `lib/turnstile.ts`, `lib/cn.ts`, `lib/posh-groups.ts` and `rateLimit.leadsIp`. |
-| P1-07 | CI: typecheck → lint → test → build → forbidden-claims grep → Lighthouse | **A** | ⬜ | Grep list from CLAUDE.md §1 |
-| P1-08 | Branch protection, PR template, .env.example, README setup docs | **A** | ⬜ | |
+| P1-07 | CI: typecheck → lint → test → build → forbidden-claims grep → Lighthouse | **A** | ✅ | CI at `.github/workflows/ci.yml`: typecheck → lint → test → build, then FOUR grep gates — forbidden claims (source **and** `.next/server`), gated-content leak, apiResponse envelope, consent pre-tick. All four verified passing locally. Lighthouse deliberately deferred to P12-04: it needs a deployed preview URL, and auditing localhost would produce numbers everyone learns to ignore. |
+| P1-08 | Branch protection, PR template, .env.example, README setup docs | **A** | ✅ | PR template with ownership/security/legal/content checklists · `.github/BRANCH_PROTECTION.md` (settings live in GitHub, so they are documented to be reproducible) · `.env.example` rewritten with what is actually optional and why · README setup + deliberate-degradations table. **Removed `NEXT_PUBLIC_WHATSAPP_NUMBER`** — an env var is just a slower hardcode; it lives in Sanity `siteSettings`. |
 | P1-R | /plan-design-review on tokens before any page is built | **A** | ⬜ | |
 
 ## PHASE 2 — SANITY CMS  [Dev A]
@@ -83,7 +84,7 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 | P2-03 | Studio at /studio + custom desk structure | **A** | ✅ | Task-shaped nav; `siteSettings` pinned as a singleton so a duplicate can't be created. Confirmed absent from the middleware matcher. |
 | P2-04 | /api/webhooks/sanity — secret verify, structure upsert, revalidate | **A** | ✅ | `timingSafeEqual` secret check, structure-only upsert, 409 when a parent isn't synced yet, `revalidateTag`. Node runtime. |
 | P2-05 | Typed GROQ helpers in lib/sanity.ts | **A** | ✅ | Typed helpers + cache tags. Degrades to empty content when Sanity is unconfigured so the build stays green pre-launch. |
-| P2-06 | Client-facing "how to edit your site" guide | **A** | ⬜ | Prevents months of support requests |
+| P2-06 | Client-facing "how to edit your site" guide | **A** | ✅ | `client/how-to-edit-your-site.md`. Written for her, not for us. Leads with the two irreversible things (Link IDs, testimonial permission) and the two that affect money (price in paise, video length). |
 
 ## PHASE 3 — MARKETING PAGES  [Dev A]
 | ID | Task | Owner | Status | Notes |

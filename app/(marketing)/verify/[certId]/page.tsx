@@ -71,7 +71,7 @@ export default async function VerifyPage({
       <p className="mt-8 text-[15px] leading-relaxed text-[var(--brand-muted)]">
         Every Certificate of Completion we issue carries a unique ID and a QR code that
         links to this page. If you have questions about a result,{' '}
-        <Link href="/contact" className="text-[var(--brand-teal)] underline">
+        <Link href="/contact" className="text-[var(--brand-primary)] underline">
           contact us
         </Link>
         .

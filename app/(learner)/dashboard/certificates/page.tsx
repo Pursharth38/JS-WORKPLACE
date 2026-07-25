@@ -52,7 +52,7 @@ export default async function CertificatesPage() {
           </p>
           <Link
             href="/dashboard"
-            className="mt-6 inline-block rounded-md bg-[var(--brand-teal)] px-5 py-3 text-[17px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+            className="mt-6 inline-block rounded-md bg-[var(--brand-primary)] px-5 py-3 text-[17px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
           >
             Back to your courses
           </Link>

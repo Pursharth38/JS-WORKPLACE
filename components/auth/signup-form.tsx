@@ -27,7 +27,7 @@ export function SignupForm() {
         <p className="text-[15px] leading-relaxed text-[var(--brand-muted)]">
           The link is valid for 24 hours. If it does not arrive within a few minutes, check
           your spam folder, or{' '}
-          <Link href="/verify-email" className="text-[var(--brand-teal)] hover:underline">
+          <Link href="/verify-email" className="text-[var(--brand-primary)] hover:underline">
             request a new one
           </Link>
           .
@@ -69,11 +69,11 @@ export function SignupForm() {
       {/* DPDP Act: renders unticked, and the schema requires it to arrive true. */}
       <ConsentCheckbox name="consentGiven">
         I agree to the{' '}
-        <Link href="/terms" className="text-[var(--brand-teal)] underline">
+        <Link href="/terms" className="text-[var(--brand-primary)] underline">
           Terms of Service
         </Link>{' '}
         and consent to my personal data being processed as described in the{' '}
-        <Link href="/privacy" className="text-[var(--brand-teal)] underline">
+        <Link href="/privacy" className="text-[var(--brand-primary)] underline">
           Privacy Policy
         </Link>
         .

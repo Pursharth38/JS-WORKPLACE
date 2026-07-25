@@ -252,7 +252,7 @@ Phase 0 deliverables complete (non-app, see NON-APP DELIVERABLES above):
 - `design/colour-boards/index.html` + `CONTRAST-REPORT.md`  — P0-03 ✅ awaiting client pick
 - `client/P0-04-content-inventory-request.md` + `knowledge-hub-section-template.md` — P0-04 ✅ awaiting send
 
-### Dev A app files — 3 / 34 built by A, + 4 ADOPTED from Dev B
+### Dev A app files — COMPLETE (34+ built), + 4 ADOPTED from Dev B
 > Dev B transcribed 10 Dev-A-owned files to work offline. On merge, **6 were replaced by
 > Dev A's versions** (package.json, tsconfig.json, next.config.ts, postcss.config.mjs,
 > app/layout.tsx, app/globals.css) and **4 were ADOPTED as-is because Dev A had not built

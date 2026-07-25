@@ -44,7 +44,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <FormAlert state={state} />
         <a
           href="/login"
-          className="mt-2 block w-full rounded-md bg-[var(--brand-teal)] px-4 py-3 text-center text-[17px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+          className="mt-2 block w-full rounded-md bg-[var(--brand-primary)] px-4 py-3 text-center text-[17px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
         >
           Sign in
         </a>

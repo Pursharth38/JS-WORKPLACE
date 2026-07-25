@@ -55,12 +55,12 @@ export default async function DashboardPage({
       {showPending && course && <PaymentPendingBanner courseSlug={course} />}
 
       {user && !user.emailVerified && (
-        <div className="mb-8 rounded-lg border border-[var(--brand-amber)] bg-white p-5">
+        <div className="mb-8 rounded-lg border border-[var(--brand-accent)] bg-white p-5">
           <p className="text-[16px] font-semibold">Confirm your email address</p>
           <p className="mt-1 text-[15px] leading-relaxed text-[var(--brand-muted)]">
             We still need to confirm your email before we can issue a certificate in your
             name.{' '}
-            <Link href="/verify-email" className="text-[var(--brand-teal)] underline">
+            <Link href="/verify-email" className="text-[var(--brand-primary)] underline">
               Send a new confirmation link
             </Link>
             .
@@ -91,7 +91,7 @@ export default async function DashboardPage({
 
                 <Link
                   href={`/learn/${e.courseSlug}`}
-                  className="shrink-0 rounded-md bg-[var(--brand-teal)] px-5 py-2.5 text-[16px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+                  className="shrink-0 rounded-md bg-[var(--brand-primary)] px-5 py-2.5 text-[16px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
                 >
                   {e.progress.percentComplete > 0 ? 'Continue' : 'Start course'}
                 </Link>
@@ -103,7 +103,7 @@ export default async function DashboardPage({
                 <p className="mt-4 text-[15px]">
                   <Link
                     href="/dashboard/certificates"
-                    className="font-medium text-[var(--brand-teal)] underline"
+                    className="font-medium text-[var(--brand-primary)] underline"
                   >
                     Your Certificate of Completion is ready
                   </Link>
@@ -122,7 +122,7 @@ function ProgressBar({ percent }: { percent: number }) {
   return (
     <div className="mt-5">
       <div
-        className="h-2 w-full overflow-hidden rounded-full bg-[var(--brand-teal-tint)]"
+        className="h-2 w-full overflow-hidden rounded-full bg-[var(--brand-primary-tint)]"
         role="progressbar"
         aria-valuenow={clamped}
         aria-valuemin={0}
@@ -130,7 +130,7 @@ function ProgressBar({ percent }: { percent: number }) {
         aria-label="Course progress"
       >
         <div
-          className="h-full rounded-full bg-[var(--brand-teal)] transition-[width]"
+          className="h-full rounded-full bg-[var(--brand-primary)] transition-[width]"
           style={{ width: `${clamped}%` }}
         />
       </div>
@@ -150,13 +150,13 @@ function EmptyState() {
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link
           href="/courses"
-          className="rounded-md bg-[var(--brand-teal)] px-5 py-3 text-[17px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+          className="rounded-md bg-[var(--brand-primary)] px-5 py-3 text-[17px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
         >
           Browse courses
         </Link>
         <Link
           href="/posh-act"
-          className="rounded-md border border-[var(--brand-line)] px-5 py-3 text-[17px] font-medium hover:bg-[var(--brand-sand)]"
+          className="rounded-md border border-[var(--brand-line)] px-5 py-3 text-[17px] font-medium hover:bg-[var(--brand-surface)]"
         >
           Read the POSH Act guide
         </Link>

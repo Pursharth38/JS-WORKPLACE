@@ -4,6 +4,7 @@
 // Copy note (CLAUDE.md §1): describes a "Certificate of Completion" only.
 // None of the forbidden certification/government claim strings from §1 —
 // not quoted here so a source-level grep stays clean.
+import Link from 'next/link'
 
 export type VerifyOutcome =
   | { kind: 'valid'; learnerName: string; courseTitle: string; issuedAt: Date }
@@ -37,8 +38,8 @@ export function VerifyResult({ outcome, certId }: { outcome: VerifyOutcome; cert
 
   if (outcome.kind === 'revoked') {
     return (
-      <div className="rounded-lg border border-[var(--brand-amber)] bg-white p-7">
-        <p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--brand-amber)]">
+      <div className="rounded-lg border border-[var(--brand-accent)] bg-white p-7">
+        <p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--brand-accent)]">
           Revoked
         </p>
         <h2 className="mt-2 text-[24px]">This certificate has been withdrawn</h2>
@@ -48,9 +49,9 @@ export function VerifyResult({ outcome, certId }: { outcome: VerifyOutcome; cert
           <strong>{outcome.courseTitle}</strong>, but it has since been revoked by JS
           Workplace Wellness and is no longer valid. For questions about a revoked
           certificate,{' '}
-          <a href="/contact" className="text-[var(--brand-teal)] underline">
+          <Link href="/contact" className="text-[var(--brand-primary)] underline">
             contact us
-          </a>
+          </Link>
           .
         </p>
       </div>

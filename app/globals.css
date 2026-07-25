@@ -38,17 +38,14 @@
      Amber's 3.13:1 on Sand is too thin a margin. Teal is 8.44:1. */
   --brand-focus: var(--brand-primary);
 
-  /* ── LEGACY COLOUR-NAMED ALIASES ──────────────────────────────────────────
-     Dev B's merged lane references these directly (164 uses / 25 files). Kept
-     so a board switch never touches Dev B's files. DO NOT add new uses —
-     `--brand-teal` becomes a lie the moment Board B wins. Retiring them is
-     tracked as P1-02b. */
-  --brand-teal: var(--brand-primary);
-  --brand-teal-hover: var(--brand-primary-hover);
-  --brand-teal-tint: var(--brand-primary-tint);
-  --brand-amber: var(--brand-accent);
-  --brand-amber-hover: var(--brand-accent-hover);
-  --brand-sand: var(--brand-surface);
+  /* ── P1-02b (done, 2026-07-25) ────────────────────────────────────────────
+     The colour-NAMED aliases that used to live here (--brand-teal, --brand-amber,
+     --brand-sand …) have been retired. Every reference across app/ and
+     components/ now uses the semantic names above.
+
+     Why it mattered: `--brand-teal` becomes a lie the moment the client picks
+     Board B (Indigo), and a variable whose name contradicts its value is how a
+     palette quietly gets improvised at build time. Do not reintroduce them. */
 
   /* ── TYPOGRAPHY (locked — identical across both boards) ───────────────────
      Resolves to the next/font variables set on <html> in app/layout.tsx.

@@ -44,13 +44,13 @@ export function CertificateCard({
           <div className="flex shrink-0 flex-col gap-2">
             <a
               href={`/api/certificate/${certId}/pdf`}
-              className="rounded-md bg-[var(--brand-teal)] px-4 py-2.5 text-center text-[15px] font-semibold text-white hover:bg-[var(--brand-teal-hover)]"
+              className="rounded-md bg-[var(--brand-primary)] px-4 py-2.5 text-center text-[15px] font-semibold text-white hover:bg-[var(--brand-primary-hover)]"
             >
               Download PDF
             </a>
             <Link
               href={`/verify/${certId}`}
-              className="rounded-md border border-[var(--brand-line)] px-4 py-2.5 text-center text-[15px] font-medium hover:bg-[var(--brand-sand)]"
+              className="rounded-md border border-[var(--brand-line)] px-4 py-2.5 text-center text-[15px] font-medium hover:bg-[var(--brand-surface)]"
             >
               Public verification page
             </Link>
@@ -62,7 +62,7 @@ export function CertificateCard({
         <p className="mt-4 border-t border-[var(--brand-line)] pt-3 text-[14px] leading-relaxed text-[var(--brand-muted)]">
           This certificate has been withdrawn and can no longer be downloaded or verified.
           If you believe this is a mistake,{' '}
-          <Link href="/contact" className="text-[var(--brand-teal)] underline">
+          <Link href="/contact" className="text-[var(--brand-primary)] underline">
             contact us
           </Link>
           .
