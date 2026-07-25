@@ -1,6 +1,6 @@
 import "server-only";
 
-import imageUrlBuilder from "@sanity/image-url";
+import { createImageUrlBuilder } from "@sanity/image-url";
 import { createClient, type QueryParams } from "next-sanity";
 import type { PortableTextBlock } from "@portabletext/react";
 
@@ -18,7 +18,9 @@ export const sanityClient = createClient({
   perspective: "published",
 });
 
-const builder = imageUrlBuilder({ projectId, dataset });
+// Named export, not the default: image-url v2 deprecated the default and logs a
+// warning on every render that uses it.
+const builder = createImageUrlBuilder({ projectId, dataset });
 
 /**
  * Derived from the builder's own signature rather than imported from
