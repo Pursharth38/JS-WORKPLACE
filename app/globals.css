@@ -1,52 +1,48 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MERGED TOKEN LAYER  (Dev A P1-01 typography + Dev B's --brand-* contract)
+   DESIGN TOKENS — P1-02
 
-   ⚠️  THE COLOUR VALUES BELOW ARE PROVISIONAL — P1-02, still blocked on the
-   P0-03 client board pick. They are committed only because Dev B's merged
-   lane already carries 164 `var(--brand-*)` references across 25 files, and
-   leaving those undefined would ship a colourless UI. This is a Board A
-   (Deep Teal) placeholder, not a decision.
+   ⚠️  COLOUR IS PROVISIONAL until the client picks a board (P0-03).
+   These are Board A (Deep Teal). Board B is Indigo. The file is split so that
+   switching is a values-only edit of the SEMANTIC block below — no component,
+   in any lane, references a raw hex.
 
-   WHEN THE BOARD IS PICKED: edit the SEMANTIC block only. If Board B (Indigo)
-   wins, nothing outside this file changes — that is the point of the split.
-
-   Values are the canonical ones from CLAUDE.md / platform-agent.md, with the
-   three measured corrections from design/colour-boards/CONTRAST-REPORT.md
-   applied. Dev B's placeholder had drifted warm (ink #1c1a17, muted #5f5a52,
-   line #e4ded4) and is corrected back to spec here.
+   Sources: CLAUDE.md "Frontend" · platform-agent.md "DESIGN TOKENS" ·
+   DETAILED-PLAN.md §4.2–4.3 · measured ratios in
+   design/colour-boards/CONTRAST-REPORT.md
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── SEMANTIC — the only block P1-02 needs to touch ────────────────────── */
-  --brand-primary: #0f5257; /* Deep Teal   — 8.44:1 on Sand              */
-  --brand-primary-hover: #14746f; /* Teal 600                                  */
-  --brand-primary-tint: #eaf4f3; /* Teal 50     — section tints               */
+  /* ── SEMANTIC COLOUR — the only block P1-02 needs to touch on a board switch */
+  --brand-primary: #0f5257; /* Deep Teal  — 8.44:1 on Sand                 */
+  --brand-primary-hover: #14746f; /* Teal 600                                    */
+  --brand-primary-tint: #eaf4f3; /* Teal 50    — section tints                  */
 
-  --brand-accent: #c77d26; /* Amber 500   — 3.13:1 on Sand, ≥18px ONLY  */
+  --brand-accent: #c77d26; /* Amber 500  — 3.13:1 on Sand → ≥18px ONLY    */
   --brand-accent-hover: #9c5d1c;
-  --brand-accent-text: #9c5d1c; /* Amber 700   — 5.00:1, amber text <18px    */
-  --brand-accent-on: #101828; /* label ON an amber fill. NEVER white:       */
-  /* white-on-amber measures 3.29:1 and fails AA. */
+  --brand-accent-text: #9c5d1c; /* Amber 700  — 5.00:1, for amber text <18px   */
+  --brand-accent-on: #101828; /* label ON an amber fill. NEVER white —        */
+  /* white-on-amber is 3.29:1 and fails AA.       */
 
-  --brand-surface: #fbf9f5; /* Sand — page background, never pure white  */
-  --brand-ink: #101828; /* headings, body                            */
-  --brand-muted: #475467; /* Slate — secondary text                    */
-  --brand-line: #e4e7ec; /* Border                                    */
+  --brand-surface: #fbf9f5; /* Sand — page background, never pure white    */
+  --brand-elevated: #ffffff; /* cards sitting on Sand                       */
+  --brand-ink: #101828; /* headings, body                              */
+  --brand-muted: #475467; /* Slate — secondary text, 7.53:1 on Sand      */
+  --brand-line: #e4e7ec; /* borders                                     */
   --brand-danger: #b42318;
+  --brand-warning: #b54708;
   --brand-success: #067647;
 
-  /* Focus ring is Deep Teal, not Amber: a non-text indicator needs 3:1 and
+  /* Focus ring is Deep Teal, never Amber: a non-text indicator needs 3:1 and
      Amber's 3.13:1 on Sand is too thin a margin. Teal is 8.44:1. */
   --brand-focus: var(--brand-primary);
 
-  /* ── LEGACY COLOUR-NAMED ALIASES ───────────────────────────────────────
-     Dev B's merged code references these directly. Kept so the merge does
-     not touch 25 of Dev B's files. DO NOT add new uses — prefer the semantic
-     names above. `--brand-teal` becomes a lie the moment Board B wins, which
-     is exactly why the semantic layer exists.
-     Retiring these is a mechanical sed, tracked as P1-02b.                */
+  /* ── LEGACY COLOUR-NAMED ALIASES ──────────────────────────────────────────
+     Dev B's merged lane references these directly (164 uses / 25 files). Kept
+     so a board switch never touches Dev B's files. DO NOT add new uses —
+     `--brand-teal` becomes a lie the moment Board B wins. Retiring them is
+     tracked as P1-02b. */
   --brand-teal: var(--brand-primary);
   --brand-teal-hover: var(--brand-primary-hover);
   --brand-teal-tint: var(--brand-primary-tint);
@@ -54,30 +50,73 @@
   --brand-amber-hover: var(--brand-accent-hover);
   --brand-sand: var(--brand-surface);
 
-  /* ── TYPOGRAPHY (locked — identical in both boards, safe to commit) ─────
-     These resolve to the next/font variables set on <html> in app/layout.tsx.
-     Dev B's placeholder pointed at the literal family names 'Fraunces' /
-     'Inter', which next/font never registers — those would have silently
-     fallen back to Georgia and system-ui after the merge. Fixed here. */
+  /* ── TYPOGRAPHY (locked — identical across both boards) ───────────────────
+     Resolves to the next/font variables set on <html> in app/layout.tsx.
+     Naming a literal family here would silently fall back to Georgia, because
+     next/font self-hosts under generated names. */
   --font-heading: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
+  /* Fonts */
   --font-sans: var(--font-body);
   --font-serif: var(--font-heading);
 
-  --color-teal: var(--brand-primary);
-  --color-amber: var(--brand-accent);
-  --color-sand: var(--brand-surface);
+  /* Colours exposed as Tailwind utilities: bg-primary, text-ink, border-line… */
+  --color-primary: var(--brand-primary);
+  --color-primary-hover: var(--brand-primary-hover);
+  --color-primary-tint: var(--brand-primary-tint);
+  --color-accent: var(--brand-accent);
+  --color-accent-hover: var(--brand-accent-hover);
+  --color-accent-text: var(--brand-accent-text);
+  --color-accent-on: var(--brand-accent-on);
+  --color-surface: var(--brand-surface);
+  --color-elevated: var(--brand-elevated);
   --color-ink: var(--brand-ink);
   --color-muted: var(--brand-muted);
   --color-line: var(--brand-line);
+  --color-danger: var(--brand-danger);
+  --color-warning: var(--brand-warning);
+  --color-success: var(--brand-success);
+
+  /* Legacy utility names Dev B may reach for */
+  --color-teal: var(--brand-primary);
+  --color-amber: var(--brand-accent);
+  --color-sand: var(--brand-surface);
+
+  /* Type scale, 1.25 ratio — DETAILED-PLAN §4.2 */
+  --text-xs: 0.75rem; /* 12 */
+  --text-sm: 0.875rem; /* 14 */
+  --text-base: 1rem; /* 16 */
+  --text-body: 1.0625rem; /* 17 — body default */
+  --text-lg: 1.25rem; /* 20 */
+  --text-xl: 1.5625rem; /* 25 */
+  --text-2xl: 1.9375rem; /* 31 */
+  --text-3xl: 2.4375rem; /* 39 */
+  --text-4xl: 3.0625rem; /* 49 */
+  --text-5xl: 3.8125rem; /* 61 */
+
+  /* Radius — DETAILED-PLAN §4.3 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  /* Elevation — DETAILED-PLAN §4.3 */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.1);
+  --shadow-lg: 0 12px 16px -4px rgba(16, 24, 40, 0.08);
+
+  /* Knowledge Hub measure — 68ch, DETAILED-PLAN §4.2 */
+  --container-measure: 68ch;
 }
+
+/* ── BASE ─────────────────────────────────────────────────────────────────── */
 
 html {
   background: var(--brand-surface);
   color: var(--brand-ink);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -85,26 +124,81 @@ body {
   font-size: 17px;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5 {
   font-family: var(--font-heading);
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--brand-ink);
+  text-wrap: balance;
+}
+
+/* Numeric data (prices, timelines, tables) aligns on tabular figures. */
+table,
+[data-numeric] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── FOCUS ────────────────────────────────────────────────────────────────
+   Never `outline: none` without a replacement (DETAILED-PLAN §4.6). */
+:focus-visible {
+  outline: 2px solid var(--brand-focus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link — first tab stop on every page. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--brand-primary);
+  color: #fff;
+  border-radius: var(--radius-sm);
 }
 
 /* Amber clears 4.5:1 on Sand only at ≥18px — large CTAs only, never body text.
-   The label is Ink, not white. See CONTRAST-REPORT.md Finding 2. */
+   The label is Ink, not white. CONTRAST-REPORT.md Finding 2. */
 .cta-amber {
   background: var(--brand-accent);
   color: var(--brand-accent-on);
   font-size: 18px;
 }
 
-:focus-visible {
-  outline: 2px solid var(--brand-focus);
-  outline-offset: 2px;
+/* ── MOTION ───────────────────────────────────────────────────────────────
+   Global honour of prefers-reduced-motion. Lottie components additionally
+   skip loading entirely (Dev C, P11-04). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Deep anchors on the Knowledge Hub must not land under the sticky header. */
+[id] {
+  scroll-margin-top: 6rem;
 }

@@ -10,6 +10,9 @@
 import * as React from 'react'
 import { Resend } from 'resend'
 
+import { ComplianceReport } from '@/emails/compliance-report'
+import { LeadMagnet } from '@/emails/lead-magnet'
+import { LeadNotification } from '@/emails/lead-notification'
 import { Receipt } from '@/emails/receipt'
 import { ResetPassword } from '@/emails/reset-password'
 import { VerifyEmail } from '@/emails/verify-email'
@@ -113,6 +116,80 @@ export async function sendReceiptEmail(args: {
       paidAt: args.paidAt,
       courseUrl: `${SITE}/learn/${args.courseSlug}`,
       invoiceUrl: args.invoiceUrl ?? null,
+    }),
+  })
+}
+
+// ── DEV A — marketing & lead emails ─────────────────────────────────────────
+
+/**
+ * Internal notification to the client when a lead arrives.
+ *
+ * Fire-and-forget from the route: CONTRACTS.md is explicit that the response
+ * must never block on email. A visitor who filled in a form correctly should
+ * see success even if Resend is down — the Lead row is already committed.
+ */
+export async function sendLeadNotification(args: {
+  to: string
+  name: string
+  email: string
+  phone?: string | undefined
+  organization?: string | undefined
+  employeeCount?: string | undefined
+  serviceInterest?: string | undefined
+  message?: string | undefined
+  source: string
+}): Promise<boolean> {
+  return send({
+    to: args.to,
+    subject: `New enquiry — ${args.name}${args.organization ? ` (${args.organization})` : ''}`,
+    react: React.createElement(LeadNotification, {
+      name: args.name,
+      email: args.email,
+      phone: args.phone,
+      organization: args.organization,
+      employeeCount: args.employeeCount,
+      serviceInterest: args.serviceInterest,
+      message: args.message,
+      source: args.source,
+    }),
+  })
+}
+
+/** Delivers the gated compliance checklist (E2). */
+export async function sendLeadMagnetEmail(args: {
+  to: string
+  name: string
+  downloadPath: string
+}): Promise<boolean> {
+  return send({
+    to: args.to,
+    subject: 'Your POSH compliance checklist',
+    devHint: `${SITE}${args.downloadPath}`,
+    react: React.createElement(LeadMagnet, {
+      name: args.name,
+      downloadUrl: `${SITE}${args.downloadPath}`,
+    }),
+  })
+}
+
+/** Emails the result of the 8-question self-check (E3). */
+export async function sendComplianceReportEmail(args: {
+  to: string
+  name: string
+  scorePercent: number
+  bandLabel: string
+  gaps: string[]
+}): Promise<boolean> {
+  return send({
+    to: args.to,
+    subject: `Your POSH self-check result — ${args.bandLabel}`,
+    react: React.createElement(ComplianceReport, {
+      name: args.name,
+      scorePercent: args.scorePercent,
+      bandLabel: args.bandLabel,
+      gaps: args.gaps,
+      demoUrl: `${SITE}/book-demo`,
     }),
   })
 }

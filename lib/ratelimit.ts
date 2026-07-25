@@ -134,6 +134,11 @@ const certIssueByUser = make(10, 60 * MIN, 'rl:cert:user')
 // Public verification endpoint: block certId enumeration sweeps.
 const verifyByIp = make(30, 60 * MIN, 'rl:verify:ip')
 
+// CONTRACTS.md: /api/leads — 5 / hour / IP. Dev A. Every lead write sends a
+// notification email, so an unthrottled form is an email-bombing primitive
+// pointed at the client's own inbox.
+const leadsByIp = make(5, 60 * MIN, 'rl:leads:ip')
+
 async function check(limiter: Limiter, key: string): Promise<LimitResult> {
   try {
     return await limiter.limit(key)
@@ -153,6 +158,7 @@ export const rateLimit = {
   checkoutUser: (userId: string) => check(checkoutByUser, userId),
   certIssueUser: (userId: string) => check(certIssueByUser, userId),
   verifyIp: (ip: string) => check(verifyByIp, ip),
+  leadsIp: (ip: string) => check(leadsByIp, ip),
 }
 
 /**
