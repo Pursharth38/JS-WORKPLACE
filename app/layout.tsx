@@ -3,7 +3,8 @@ import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 
 /* Both faces are self-hosted by next/font at build time — no render-blocking
-   request to fonts.googleapis.com, and no third-party cookie surface. */
+   request to fonts.googleapis.com, and no third-party cookie surface.
+   globals.css maps --font-heading / --font-body onto these two variables. */
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",

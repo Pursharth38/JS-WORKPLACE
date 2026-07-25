@@ -211,16 +211,16 @@ Next.js and nothing here ships.
 
 ## CURRENT FILE STATUS
 
-**P1-01 ✅ — the repo is a Next.js app.** Next 16.2.11 · React 19.2.4 · TypeScript strict · Tailwind v4.
-`npm run build`, `npm run typecheck` and `npm run lint` are all clean; forbidden-claims grep clean across
-`app/ public/ design/ client/ .next/`.
+**Dev A P1-01 + Dev B Phases 6/7/10 are MERGED** (branch `integration-a-b`, 2026-07-25).
+Next 16.2.11 · React 19.2.4 · TypeScript strict · Tailwind v4.
 
 Root config (all [A]):
 ```
 package.json          npm. Scripts: dev · build · start · lint · typecheck
 tsconfig.json         strict + noUncheckedIndexedAccess + noImplicitOverride
                       + noFallthroughCasesInSwitch. allowJs false. Alias @/* → repo root.
-next.config.ts        typedRoutes: true · poweredByHeader: false
+next.config.ts        typedRoutes · poweredByHeader:false · serverExternalPackages
+                      ['@react-pdf/renderer']  ← Dev B's PDF routes need the last one
 eslint.config.mjs     next core-web-vitals + typescript; no-explicit-any and
                       ban-ts-comment escalated to error; design/ and client/ ignored
 postcss.config.mjs    @tailwindcss/postcss
@@ -229,14 +229,18 @@ public/.gitkeep       Next's default next.svg/vercel.svg and favicon were NOT ke
                       framework branding has no place on a client site
 ```
 
-App files that exist:
+Dev A app files:
 ```
 app/layout.tsx        Fraunces + Inter via next/font (self-hosted woff2, no Google
                       request, no third-party cookie surface). metadataBase from
                       NEXT_PUBLIC_SITE_URL. Plausible + Toaster still to come.
-app/globals.css       @import "tailwindcss" + @theme with --font-sans / --font-serif ONLY.
-                      ★ NO BRAND COLOUR IS COMMITTED — P1-02 fills this in after the
-                      P0-03 board pick. Do not guess a palette before then.
+app/globals.css       ★ MERGED TOKEN LAYER. Typography is locked and real. Colour is
+                      a PROVISIONAL Board A placeholder — committed only because Dev B's
+                      merged lane carries 164 var(--brand-*) refs across 25 files and
+                      undefined vars would ship a colourless UI. P1-02 edits the
+                      SEMANTIC block only; if Board B wins, no file outside this one
+                      changes. Legacy colour-named aliases (--brand-teal etc.) point at
+                      the semantic names — do not add new uses.
 app/page.tsx          P1-01 placeholder. Replaced by P3-01.
 ```
 
@@ -248,6 +252,48 @@ Phase 0 deliverables complete (non-app, see NON-APP DELIVERABLES above):
 - `design/colour-boards/index.html` + `CONTRAST-REPORT.md`  — P0-03 ✅ awaiting client pick
 - `client/P0-04-content-inventory-request.md` + `knowledge-hub-section-template.md` — P0-04 ✅ awaiting send
 
-### Dev A app files — 3 / 34   (layout, globals.css, page — all placeholders)
-### Dev B app files — 0 / 21
-### Dev C app files — 0 / 18
+### Dev A app files — 3 / 34 built by A, + 4 ADOPTED from Dev B
+> Dev B transcribed 10 Dev-A-owned files to work offline. On merge, **6 were replaced by
+> Dev A's versions** (package.json, tsconfig.json, next.config.ts, postcss.config.mjs,
+> app/layout.tsx, app/globals.css) and **4 were ADOPTED as-is because Dev A had not built
+> them yet** — `lib/db.ts`, `lib/response.ts`, `lib/ratelimit.ts`, `prisma/schema.prisma`.
+> Those four are now Dev A's to own and review; they are no longer "borrowed". See the
+> P1-05 / P1-06 rows in tasks.md, which changed from "create" to "review and extend".
+
+### Dev B app files — 21 / 21 code-complete ✅
+```
+lib/          auth.config.ts · auth.ts · session.ts (H3) · password.ts · tokens.ts
+              email.ts · enrollment.ts (H4) · razorpay.ts · invoice.ts · r2.ts
+              cert-id.ts · certificate.ts · admin-query.ts
+              schemas/auth.ts · schemas/checkout.ts · schemas/certificate.ts
+middleware.ts (edge-safe: imports auth.config only, never Prisma)
+app/(auth)/   layout · actions · login · signup · verify-email · forgot-password · reset-password
+app/(learner)/ layout · actions · dashboard · dashboard/certificates · dashboard/invoices
+app/admin/    page · actions
+app/(marketing)/verify/[certId]/page.tsx
+app/api/      auth/[...nextauth] · checkout/create-order · webhooks/razorpay
+              certificate/{issue, [certId]/verify, [certId]/pdf} · invoice/[paymentId]
+              dashboard/summary · admin/{enrollments, payments, learners/[id],
+              certificate/[certId]/revoke, leads.csv}
+components/   auth/* · commerce/{checkout-button, payment-pending-banner}
+              learn/certificate-card · marketing/verify-result · admin/revoke-form
+              pdf/{invoice-document, certificate-document}
+emails/       components/email-layout · verify-email · reset-password · welcome · receipt
+tests/        unit/{razorpay-signature, certId, invoice-numbering}
+              integration/{webhook-idempotency, cert-idempotency}   — 53 tests green
+prisma/migrations/20260725000001_certificate_active_unique/  ★ partial unique index
+```
+Extra routes beyond CONTRACTS.md (documented in MERGE-NOTES.md): `/api/invoice/[paymentId]`
+and `/api/certificate/[certId]/pdf` — authenticated downloads, because R2 objects are
+private and are never direct-linked.
+
+### Dev C app files — 0 / 18  (+ 1 stub carried over)
+> `lib/progress.ts` is a fail-closed STUB Dev B wrote so the dashboard typechecked.
+> MERGE-NOTES.md §2 said delete it on merge; **Dev A deliberately kept it** — three merged
+> Dev B call sites import `getCourseProgress`, so deleting it breaks `next build` for the
+> whole of Phase 8. The stub returns 0% / no current module / final test NOT passed, so it
+> cannot wrongly unlock anything. **P8-04 must overwrite it** — logged in BLOCKED TASKS.
+> The signature is the agreed H5 contract:
+> `getCourseProgress(userId, courseId) → { percentComplete, currentModuleId, finalTestPassed }`.
+> Dev B deliberately never created `lib/unlock.ts`, `lib/stream.ts` or `lib/grading.ts`,
+> and no Dev B route calls them.

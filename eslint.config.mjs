@@ -13,6 +13,17 @@ const eslintConfig = defineConfig([
         "error",
         { "ts-ignore": true, "ts-expect-error": "allow-with-description" },
       ],
+      // A leading underscore is the project's "deliberately unused" marker —
+      // used by contract stubs that must keep a signature they don't yet consume
+      // (e.g. lib/progress.ts until Dev C lands P8-04).
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   globalIgnores([

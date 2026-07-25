@@ -7,7 +7,9 @@
 
     /* strict + the extra checks CLAUDE.md's "no any, no @ts-ignore" rule implies.
        noUncheckedIndexedAccess is deliberate: lib/unlock.ts indexes chapters and
-       modules by order, and an undefined element there is a gating bug. */
+       modules by order, and an undefined element there is a gating bug.
+       Dev B's code was written against strict + noUncheckedIndexedAccess + @/*,
+       all three of which survive here (MERGE-NOTES.md §1). */
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
