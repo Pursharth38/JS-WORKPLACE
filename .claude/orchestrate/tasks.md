@@ -10,11 +10,21 @@
 ## CURRENT SESSION GOAL
 **Team:** three developers, split by vertical slice. A = Platform & Content · B = Identity & Commerce ·
 C = Learning Engine & Motion. Full detail: `team-division.md` at repo root.
-**State:** PRE-PHASE-0. Nothing built. Three client sign-offs outstanding (see BLOCKED TASKS).
-**Next action:** get the Phase 0 sign-offs, then Dev A ships the foundation by Day 3 — B and C are
-genuinely blocked until it lands.
-**Blocking dependency:** client must supply original Knowledge Hub content. This is the single highest
-risk in the project; the SEO strategy has no fallback if it does not arrive.
+**State:** PHASE 1 IN FLIGHT. **P1-01 is done — the repo is now a real Next.js app** (Next 16.2.11,
+React 19.2.4, TS strict, Tailwind v4; build + typecheck + lint clean). Dev A's two Phase-0 deliverables
+are built and ready to send (P0-03 colour boards, P0-04 content request); both await the *client*, not
+us. Six client sign-offs outstanding (P0-01, P0-02, P0-03 pick, P0-04 reply, P0-05, P0-06).
+**Next action:** send P0-03 + P0-04 to the client. Then P1-02 is ❌ blocked on the board pick, so the
+next *runnable* Dev A task is **P1-04 UI primitives** — buildable against unstyled/neutral classes and
+re-skinned when tokens land — or **P1-06 `lib/response.ts` + Zod folder**, which is entirely
+palette-independent and is a hard dependency for every route B and C write. Prefer P1-06.
+**Sequencing note:** P1-03 (layout shell) is the H1 handoff that unblocks B and C, but it is
+palette-dependent. If the board pick slips past Day 2, escalate — H1 is a Day-3 commitment.
+**Blocking dependency:** client must supply original Knowledge Hub content. Still the single highest risk
+in the project. P0-04 mitigates it by splitting delivery into 3 waves (Wave 1 = 14 sections unblocks the
+build) and offering voice-note/interview routes so the request does not depend on her finding writing time.
+**Environment note:** gstack was missing and is now installed globally (`~/.claude/skills/gstack`, team
+mode). It needs `bun`, which was also installed. Skills require a Claude Code restart to register.
 
 ---
 
@@ -42,16 +52,16 @@ risk in the project; the SEO strategy has no fallback if it does not arrive.
 |----|------|-------|--------|-------|
 | P0-01 | Client sign-off: certificate wording | Lead | ⬜ | "Certificate of Completion — POSH Awareness Training". Blocks Phase 10. |
 | P0-02 | Client sign-off: 80% pass threshold | Lead | ⬜ | Explain brute-force problem. Blocks Phase 9. |
-| P0-03 | Colour boards A (Deep Teal) + B (Indigo) → client picks | **A** | ⬜ | Static comps, not a live site. Blocks Phase 1. |
-| P0-04 | Content inventory request — Knowledge Hub section template | **A** | ⬜ | Send Week 1. Highest project risk. |
+| P0-03 | Colour boards A (Deep Teal) + B (Indigo) → client picks | **A** | ✅ | Built `design/colour-boards/index.html` (static, identical layout both boards) + measured `CONTRAST-REPORT.md`. **Awaiting client pick — still blocks P1-02.** |
+| P0-04 | Content inventory request — Knowledge Hub section template | **A** | ✅ | Built `client/P0-04-content-inventory-request.md` + `client/knowledge-hub-section-template.md`. Split 35 sections into 3 waves; Wave 1 = 14. **Awaiting send + client reply.** |
 | P0-05 | Confirm price, GST registration, coupon codes y/n | Lead | ⬜ | Blocks Phase 7. |
 | P0-06 | Decide Instagram: live API vs Sanity-managed grid | Lead | ⬜ | Recommend Sanity grid; API token dies every 60d. |
 
 ## PHASE 1 — FOUNDATION  [Dev A — must land Day 3]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P1-01 | Next.js 15 + TS strict + Tailwind repo | **A** | ⬜ | |
-| P1-02 | Design tokens → Tailwind theme extension | **A** | ⬜ | From ARCHITECTURE §14 |
+| P1-01 | Next.js 16 + TS strict + Tailwind v4 repo | **A** | ✅ | Scaffolded in place. `npm run build` / `typecheck` / `lint` all clean. Fonts (Fraunces + Inter) self-hosted via next/font. **No palette committed** — globals.css `@theme` holds typography only. |
+| P1-02 | Design tokens → `@theme` in app/globals.css | **A** | ❌ | Blocked on P0-03 board pick. Tailwind v4 is CSS-first — there is no `tailwind.config.ts`. Inputs: ARCHITECTURE §14 + `design/colour-boards/CONTRAST-REPORT.md` |
 | P1-03 | Layout shell: Header, Footer, WhatsAppFAB, Container | **A** | ⬜ | → **H1: B and C unblocked** |
 | P1-04 | UI primitives (Button, Input, Select, Checkbox, Card, Badge, Modal, Toast, Skeleton, Accordion, Tabs) | **A** | ⬜ | |
 | P1-05 | Prisma schema initial + first migration | **A** | ⬜ | Reviewed by B and C before applying |
@@ -190,6 +200,8 @@ risk in the project; the SEO strategy has no fallback if it does not arrive.
 | P9-01 | P0-02 client sign-off on 80% threshold | C | pre-start |
 | P10-01 | P0-01 client sign-off on certificate wording | B | pre-start |
 | P4-01 | P0-04 client-supplied Knowledge Hub content | A | pre-start |
+| P1-02 | P0-03 client pick of colour board — boards delivered 2026-07-25, awaiting decision | A | 2026-07-25 |
+| P1-03 | P1-02 tokens (Header/Footer/FAB are palette-dependent) — **this is the H1 Day-3 handoff to B and C** | A | 2026-07-25 |
 
 ---
 
@@ -208,3 +220,13 @@ None — nothing built yet.
 | pre-start | Instagram = Sanity grid, not API | Basic Display token expires every 60 days and fails silently on a weekend. |
 | pre-start | Plausible over GA4 | Cookieless — no DPDP consent banner needed. |
 | pre-start | Ship marketing site before LMS | SEO compounds over months; content should not wait on a video player. |
+| 2026-07-25 | Ink `#101828` on Amber fills, never white | **Measured:** white-on-Amber `#C77D26` = 3.29:1, fails AA. Ink-on-Amber = 5.40:1, passes at any size. Keeps the client-approved accent unchanged; only the label colour moves. See `design/colour-boards/CONTRAST-REPORT.md` Finding 2. |
+| 2026-07-25 | Add Amber 700 `#9C5D1C` for amber TEXT | Amber 500 is unusable below 18px (3.13:1). Without a compliant darker step the palette gets improvised at build time. 5.00:1 on Sand. Finding 3. |
+| 2026-07-25 | Focus ring = Deep Teal, not Amber | Non-text UI needs 3:1. Amber on Sand is 3.13:1 — too thin a margin for a focus indicator. Deep Teal is 8.44:1. |
+| 2026-07-25 | Knowledge Hub content requested in 3 waves | 35 sections in one ask is the likeliest way to get nothing. Wave 1 (14 sections) covers 6 of 8 target long-tail terms and unblocks the Phase 4 build on its own. Voice-note and interview routes offered as first-class alternatives. |
+| 2026-07-25 | Board B's Indigo 600 / Indigo 50 are **ours, not the client's** | `DETAILED-PLAN.md` §4.1 specifies only Indigo/Clay/Cream. A palette needs an interactive state and a tint to be presentable, so Dev A derived them. Flagged in the comp; needs explicit confirmation if Board B wins. |
+| 2026-07-25 | **Next 16 + Sanity 6 + Tailwind 4**, raising CLAUDE.md's Next 15 / Sanity v3 pins | Forced, not preference: `next-sanity@13` declares `next: ^16.0.0-0`. Next 15 caps us at `next-sanity@11` + Sanity v4/v5, and Sanity v3 is unreachable from any current `next-sanity`. Auth.js v5 supports `^14 \|\| ^15 \|\| ^16` so it didn't constrain the choice. Raised at zero app code — the cheapest moment. Signed off by lead. |
+| 2026-07-25 | Tailwind v4 → **no `tailwind.config.ts`** | v4 is CSS-first; tokens live in the `@theme` block in `app/globals.css`. This matches what codebase.md already said ("globals.css ← CSS variables from design tokens"). Doc references to `tailwind.config.ts` were corrected. |
+| 2026-07-25 | `noUncheckedIndexedAccess` on in tsconfig | Beyond plain `strict`. `lib/unlock.ts` indexes chapters and modules by order; an unchecked undefined there is a *gating* bug, not a crash. Costs Dev B and C a few non-null narrowings; buys compile-time safety on the correctness core. |
+| 2026-07-25 | `typedRoutes: true` in next.config.ts | The route namespacing table is a contract between three devs. This turns a mistyped `href` into a compile error instead of a 404 found in QA. |
+| 2026-07-25 | `npm audit` high-severity findings **accepted, not fixed** | 12 highs, all transitive through `next` itself (postcss, sharp) and the eslint chain (brace-expansion→minimatch). `npm audit fix --force` resolves them by installing **next@9.3.3**. Nothing is exploitable in our usage — build-time tooling, not request path. Revisit when Next ships bumped deps; do not run `--force`. |

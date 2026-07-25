@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   P1-01 scaffold baseline.
+
+   TYPOGRAPHY IS LOCKED and lives here now — Fraunces (headings) and Inter
+   (body) are identical across both P0-03 colour boards, so they are safe to
+   commit ahead of the client's pick.
+
+   COLOUR IS NOT LOCKED. P1-02 fills the rest of this @theme block with the
+   design tokens once the client picks Board A (Deep Teal) or Board B (Indigo).
+   Nothing here may guess a brand colour before then — every page built after
+   P1-02 inherits the palette, which is exactly why P1-02 is blocked.
+   Measured ratios and the four findings: design/colour-boards/CONTRAST-REPORT.md
+--------------------------------------------------------------------------- */
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}

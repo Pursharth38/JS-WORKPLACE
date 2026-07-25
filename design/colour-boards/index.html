@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Colour Boards — JS Workplace Wellness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body, h1, h2, h3, h4, p, ul, ol, figure, blockquote { margin: 0; }
+  ul, ol { padding: 0; list-style: none; }
+  img { max-width: 100%; display: block; }
+
+  :root {
+    --ink: #101828;
+    --slate: #475467;
+    --border: #E4E7EC;
+    --page: #F4F5F7;
+    --serif: 'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--page);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Document chrome (deliberately neutral — not part of either board) ---------- */
+  .doc-head { padding: 56px 0 40px; border-bottom: 1px solid var(--border); }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--slate);
+  }
+  .doc-head h1 {
+    font-family: var(--serif); font-weight: 600; font-size: 39px; line-height: 1.15;
+    letter-spacing: -.02em; margin: 12px 0 16px;
+  }
+  .lede { font-size: 17px; line-height: 1.7; color: var(--slate); max-width: 68ch; }
+  .lede + .lede { margin-top: 14px; }
+
+  .howto {
+    margin-top: 32px; background: #fff; border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px 24px;
+  }
+  .howto h2 { font-size: 14px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--slate); }
+  .howto ol { margin-top: 12px; counter-reset: step; }
+  .howto li {
+    counter-increment: step; position: relative; padding-left: 30px; margin-bottom: 8px;
+    font-size: 15px; color: var(--ink);
+  }
+  .howto li::before {
+    content: counter(step); position: absolute; left: 0; top: 1px;
+    width: 20px; height: 20px; border-radius: 999px; background: var(--ink); color: #fff;
+    font-size: 11px; font-weight: 600; display: grid; place-items: center;
+  }
+
+  /* ---------- Board container ---------- */
+  .board { padding: 64px 0 8px; }
+  .board-title {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px;
+  }
+  .board-title h2 {
+    font-family: var(--serif); font-weight: 600; font-size: 31px; letter-spacing: -.02em;
+  }
+  .pill {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); background: #fff;
+    color: var(--slate);
+  }
+  .pill.rec { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .board-sub { color: var(--slate); font-size: 15px; max-width: 68ch; margin-bottom: 28px; }
+
+  .panel {
+    background: #fff; border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(16,24,40,.05);
+  }
+  .panel + .panel { margin-top: 20px; }
+  .panel-head {
+    padding: 14px 22px; border-bottom: 1px solid var(--border); background: #FCFCFD;
+    font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--slate);
+  }
+  .panel-body { padding: 26px 22px; }
+
+  /* ---------- Swatches ---------- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 14px; }
+  .sw { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .sw-chip { height: 76px; display: flex; align-items: flex-end; padding: 8px 10px; }
+  .sw-chip span { font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+  .sw-meta { padding: 10px; border-top: 1px solid var(--border); }
+  .sw-name { font-size: 13px; font-weight: 600; }
+  .sw-hex { font-size: 12px; color: var(--slate); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+  .sw-role { font-size: 12px; color: var(--slate); margin-top: 4px; line-height: 1.45; }
+  .sw-ratio {
+    margin-top: 7px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 999px; display: inline-block; }
+  .ok   { color: #067647; } .ok .dot   { background: #067647; }
+  .warn { color: #B54708; } .warn .dot { background: #B54708; }
+
+  /* ---------- Vignette: identical markup in both boards, only colour differs ---------- */
+  .vig { --bg: #fff; --brand: #000; --brand-i: #000; --tint: #eee; --accent: #ccc; --accent-on: #000; }
+  .vig { background: var(--bg); font-family: var(--sans); color: var(--ink); }
+
+  .vig-nav {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 16px 26px; border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .vig-logo { font-family: var(--serif); font-weight: 600; font-size: 19px; color: var(--brand); letter-spacing: -.01em; }
+  .vig-links { display: flex; gap: 22px; font-size: 14px; font-weight: 500; color: var(--slate); flex-wrap: wrap; }
+  .vig-links .active { color: var(--brand-i); font-weight: 600; }
+
+  .btn {
+    display: inline-block; border: 0; border-radius: 10px; font-family: var(--sans);
+    font-weight: 600; cursor: default; text-decoration: none; line-height: 1.2;
+  }
+  .btn-lg { font-size: 18px; padding: 14px 26px; }
+  .btn-sm { font-size: 14px; padding: 9px 18px; }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-accent  { background: var(--accent); color: var(--accent-on); }
+  .btn-ghost   { background: transparent; color: var(--brand); box-shadow: inset 0 0 0 1.5px var(--brand); }
+
+  .vig-hero { padding: 52px 26px 46px; }
+  .vig-hero .kicker {
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--brand-i);
+  }
+  .vig-hero h3 {
+    font-family: var(--serif); font-weight: 600; font-size: 39px; line-height: 1.14;
+    letter-spacing: -.022em; color: var(--brand); margin: 14px 0 0; max-width: 20ch;
+  }
+  .vig-hero p { font-size: 17px; line-height: 1.7; color: var(--slate); max-width: 62ch; margin: 16px 0 0; }
+  .vig-cta { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+
+  .vig-band { background: var(--tint); padding: 26px; display: flex; gap: 40px; flex-wrap: wrap; }
+  .stat .n {
+    font-family: var(--serif); font-weight: 600; font-size: 31px; color: var(--brand);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l { font-size: 13px; color: var(--slate); margin-top: 2px; }
+
+  .vig-cols { padding: 34px 26px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 30px; }
+  @media (max-width: 800px) { .vig-cols { grid-template-columns: 1fr; } }
+
+  .prose h4 {
+    font-family: var(--serif); font-weight: 600; font-size: 25px; letter-spacing: -.015em;
+    color: var(--brand); margin-bottom: 10px;
+  }
+  .prose p { font-size: 17px; line-height: 1.7; color: var(--ink); max-width: 68ch; }
+  .prose p + p { margin-top: 13px; }
+  .prose a { color: var(--brand-i); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+
+  .callout {
+    margin-top: 20px; border-left: 3px solid var(--accent); background: var(--tint);
+    padding: 15px 18px; border-radius: 0 10px 10px 0;
+  }
+  .callout strong { display: block; font-size: 13px; letter-spacing: .05em; text-transform: uppercase; color: var(--brand); }
+  .callout p { font-size: 15px; line-height: 1.65; color: var(--slate); margin-top: 5px; }
+
+  .card { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; background: #fff; }
+  .card-top { background: var(--brand); padding: 22px; }
+  .card-top .badge {
+    display: inline-block; background: var(--accent); color: var(--accent-on);
+    font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    padding: 4px 9px; border-radius: 6px;
+  }
+  .card-top h5 {
+    font-family: var(--serif); font-weight: 600; font-size: 22px; color: #fff;
+    line-height: 1.25; margin-top: 12px;
+  }
+  .card-body { padding: 18px 22px 22px; }
+  .card-body ul li {
+    font-size: 14px; color: var(--slate); padding-left: 20px; position: relative; margin-bottom: 7px;
+  }
+  .card-body ul li::before {
+    content: ""; position: absolute; left: 0; top: 7px; width: 9px; height: 9px;
+    border-radius: 999px; background: var(--brand-i);
+  }
+  .price {
+    font-family: var(--serif); font-weight: 600; font-size: 31px; color: var(--brand);
+    margin: 14px 0 14px; font-variant-numeric: tabular-nums;
+  }
+  .price small { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--slate); }
+
+  .vig-foot { background: var(--brand); padding: 30px 26px; }
+  .vig-foot h4 { font-family: var(--serif); font-weight: 600; font-size: 25px; color: #fff; letter-spacing: -.015em; }
+  .vig-foot p { color: rgba(255,255,255,.82); font-size: 15px; margin-top: 7px; max-width: 56ch; }
+  .vig-foot .btn { margin-top: 18px; }
+
+  /* ---------- Type specimen ---------- */
+  .spec-row { display: flex; align-items: baseline; gap: 20px; padding: 11px 0; border-bottom: 1px dashed var(--border); flex-wrap: wrap; }
+  .spec-row:last-child { border-bottom: 0; }
+  .spec-label {
+    flex: 0 0 168px; font-size: 11px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--slate); font-variant-numeric: tabular-nums;
+  }
+  .spec-sample { min-width: 0; }
+
+  /* ---------- Tables ---------- */
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--slate); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+    background: #F2F4F7; padding: 1px 5px; border-radius: 4px;
+  }
+
+  .note {
+    margin-top: 18px; font-size: 14px; line-height: 1.65; color: var(--slate);
+    background: #FFFAEB; border: 1px solid #FEDF89; border-radius: 10px; padding: 14px 16px;
+  }
+  .note strong { color: #B54708; }
+
+  .decision {
+    margin: 56px 0 80px; background: var(--ink); color: #fff; border-radius: 16px; padding: 34px;
+  }
+  .decision h2 { font-family: var(--serif); font-weight: 600; font-size: 25px; }
+  .decision p { color: rgba(255,255,255,.8); font-size: 16px; line-height: 1.7; margin-top: 12px; max-width: 72ch; }
+  .decision ul { margin-top: 18px; }
+  .decision li {
+    padding: 11px 0 11px 26px; position: relative; border-top: 1px solid rgba(255,255,255,.14);
+    font-size: 15px; color: rgba(255,255,255,.9);
+  }
+  .decision li::before { content: "☐"; position: absolute; left: 0; top: 10px; font-size: 15px; }
+
+  @media print {
+    body { background: #fff; }
+    .board, .panel { break-inside: avoid; }
+    a[href]::after { content: ""; }
+  }
+</style>
+</head>
+<body>
+
+<header class="doc-head">
+  <div class="wrap">
+    <p class="eyebrow">JS Workplace Wellness &middot; Phase 0 &middot; P0-03</p>
+    <h1>Colour direction — two boards to choose from</h1>
+    <p class="lede">
+      Both boards use the <strong>same layout, same typefaces, same words</strong>. The only thing that
+      changes between them is colour. That is deliberate: it keeps this decision about colour and nothing else.
+      Layout, imagery, and copy all come later.
+    </p>
+    <p class="lede">
+      The brief was <em>authoritative, warm, institutional</em> — not corporate-cold, and specifically not the
+      pink/lavender palette most POSH websites default to. That styling reads as soft and quietly undermines the
+      legal expertise you are actually selling.
+    </p>
+
+    <div class="howto">
+      <h2>What we need from you</h2>
+      <ol>
+        <li>Open this file in a browser and scroll through both boards.</li>
+        <li>Pick <strong>Board A</strong> or <strong>Board B</strong>. Please pick one rather than asking to mix them — the accent and background are tuned to the primary in each.</li>
+        <li>Tell us anything that feels wrong, in plain words. "Too dark", "too corporate", "the orange is doing too much" are all useful.</li>
+        <li>Reply by <strong>end of this week</strong>. Every page we build afterwards inherits this decision, so changing it later means redoing work.</li>
+      </ol>
+    </div>
+
+    <div class="note">
+      <strong>About the placeholder text.</strong> Every number and quote below is shown as
+      <code>[bracketed placeholder]</code> on purpose. We do not invent statistics, testimonials, or client
+      counts — those will be real figures you supply, or they will not appear on the site at all.
+    </div>
+  </div>
+</header>
+
+<!-- ============================ BOARD A ============================ -->
+<section class="board">
+  <div class="wrap">
+    <div class="board-title">
+      <h2>Board A — Deep Teal</h2>
+      <span class="pill rec">Our recommendation</span>
+    </div>
+    <p class="board-sub">
+      Teal carries trust and legal gravity without being the generic corporate blue every compliance vendor uses.
+      The amber accent adds warmth so the site does not feel cold — warmth without going anywhere near pink.
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">Palette</div>
+      <div class="panel-body">
+        <div class="swatches">
+          <div class="sw">
+            <div class="sw-chip" style="background:#0F5257"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Deep Teal</div>
+              <div class="sw-hex">#0F5257</div>
+              <div class="sw-role">Primary brand. Headings, header, footer.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>8.44:1 on Sand</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#14746F"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Teal 600</div>
+              <div class="sw-hex">#14746F</div>
+              <div class="sw-role">Links, hover and interactive states.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>5.31:1 on Sand</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#EAF4F3"><span style="color:#0F5257">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Teal 50</div>
+              <div class="sw-hex">#EAF4F3</div>
+              <div class="sw-role">Section tints, callout backgrounds.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>15.83:1 with Ink</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#C77D26"><span style="color:#101828">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Amber 500</div>
+              <div class="sw-hex">#C77D26</div>
+              <div class="sw-role">Accent. Large CTAs and callout rules only.</div>
+              <div class="sw-ratio warn"><i class="dot"></i>3.13:1 on Sand — large text only</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#FBF9F5;box-shadow:inset 0 0 0 1px #E4E7EC"><span style="color:#101828">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Sand</div>
+              <div class="sw-hex">#FBF9F5</div>
+              <div class="sw-role">Page background. Warmer than pure white.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>base</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#101828"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Ink</div>
+              <div class="sw-hex">#101828</div>
+              <div class="sw-role">Body text.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>16.88:1 on Sand</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#475467"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Slate</div>
+              <div class="sw-hex">#475467</div>
+              <div class="sw-role">Secondary and supporting text.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>7.31:1 on Sand</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:linear-gradient(90deg,#067647 0 33.3%,#B42318 33.3% 66.6%,#B54708 66.6%)"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Semantic</div>
+              <div class="sw-hex">#067647 · #B42318 · #B54708</div>
+              <div class="sw-role">Success, error, warning. Same in both boards.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>5.16:1 min on Sand</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">In context — this is roughly how a page would feel</div>
+      <div class="vig vig-a" style="--bg:#FBF9F5;--brand:#0F5257;--brand-i:#14746F;--tint:#EAF4F3;--accent:#C77D26;--accent-on:#101828">
+        <nav class="vig-nav">
+          <div class="vig-logo">Jyoti Solaria</div>
+          <ul class="vig-links">
+            <li class="active">The POSH Act</li><li>Services</li><li>Courses</li><li>Blog</li><li>About</li>
+          </ul>
+          <a class="btn btn-sm btn-primary">Book a demo</a>
+        </nav>
+
+        <div class="vig-hero">
+          <p class="kicker">POSH Act, 2013 — plainly explained</p>
+          <h3>Workplace training that holds up when it matters</h3>
+          <p>
+            Prevention of Sexual Harassment training, Internal Committee formation, policy drafting and
+            compliance audits — delivered by a practitioner who does this work every week.
+          </p>
+          <div class="vig-cta">
+            <a class="btn btn-lg btn-accent">Book a training session</a>
+            <a class="btn btn-lg btn-ghost">Read the POSH guide</a>
+          </div>
+        </div>
+
+        <div class="vig-band">
+          <div class="stat"><div class="n">[00]</div><div class="l">Sessions delivered</div></div>
+          <div class="stat"><div class="n">[00]</div><div class="l">Organisations advised</div></div>
+          <div class="stat"><div class="n">[00]</div><div class="l">Years of practice</div></div>
+        </div>
+
+        <div class="vig-cols">
+          <div class="prose">
+            <h4>Is a home office a "workplace" under the Act?</h4>
+            <p>
+              Yes. The definition of workplace in the Act is deliberately broad, and it extends to any place
+              visited by an employee arising out of or during the course of employment — which includes work
+              carried out from home under a remote arrangement.
+            </p>
+            <p>
+              This matters for the Internal Committee, because a complaint arising from a remote working
+              arrangement follows exactly the same process and the same statutory timelines as one arising
+              on the employer's premises. See <a>the section on Internal Committee constitution</a>.
+            </p>
+            <div class="callout">
+              <strong>Practical note</strong>
+              <p>
+                [Placeholder — real guidance supplied by the client. This band demonstrates the accent colour
+                used as a rule and tint, never as body text.]
+              </p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-top">
+              <span class="badge">Self-paced</span>
+              <h5>POSH Awareness Training for Employees</h5>
+            </div>
+            <div class="card-body">
+              <ul>
+                <li>[00] modules across [0] chapters</li>
+                <li>Chapter assessments and a final test</li>
+                <li>Certificate of Completion on passing</li>
+                <li>Watch at your own pace, on any device</li>
+              </ul>
+              <div class="price">₹[0,000] <small>incl. GST</small></div>
+              <a class="btn btn-sm btn-accent">Enrol now</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="vig-foot">
+          <h4>Not sure where your organisation stands?</h4>
+          <p>Take the free compliance self-check and get a short report on what the Act requires of you.</p>
+          <a class="btn btn-lg btn-accent">Start the self-check</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ BOARD B ============================ -->
+<section class="board">
+  <div class="wrap">
+    <div class="board-title">
+      <h2>Board B — Deep Indigo</h2>
+      <span class="pill">Alternative</span>
+    </div>
+    <p class="board-sub">
+      Indigo is the more traditional institutional choice — closer to what legal and government sites use.
+      Safer and more formal, but less distinctive, and the terracotta accent runs warmer and more editorial
+      than amber.
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">Palette</div>
+      <div class="panel-body">
+        <div class="swatches">
+          <div class="sw">
+            <div class="sw-chip" style="background:#1E2A5A"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Indigo</div>
+              <div class="sw-hex">#1E2A5A</div>
+              <div class="sw-role">Primary brand. Headings, header, footer.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>13.14:1 on Cream</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#33417A"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Indigo 600</div>
+              <div class="sw-hex">#33417A</div>
+              <div class="sw-role">Links and interactive states.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>9.25:1 on Cream — derived, see note</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#ECEEF6"><span style="color:#1E2A5A">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Indigo 50</div>
+              <div class="sw-hex">#ECEEF6</div>
+              <div class="sw-role">Section tints, callout backgrounds.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>15.32:1 with Ink — derived, see note</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#B85C38"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Clay</div>
+              <div class="sw-hex">#B85C38</div>
+              <div class="sw-role">Accent. Large CTAs and callout rules.</div>
+              <div class="sw-ratio warn"><i class="dot"></i>4.36:1 on Cream — just under 4.5</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#FCFAF7;box-shadow:inset 0 0 0 1px #E4E7EC"><span style="color:#101828">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Cream</div>
+              <div class="sw-hex">#FCFAF7</div>
+              <div class="sw-role">Page background.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>base</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#101828"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Ink</div>
+              <div class="sw-hex">#101828</div>
+              <div class="sw-role">Body text.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>17.03:1 on Cream</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:#475467"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Slate</div>
+              <div class="sw-hex">#475467</div>
+              <div class="sw-role">Secondary and supporting text.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>7.38:1 on Cream</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="sw-chip" style="background:linear-gradient(90deg,#067647 0 33.3%,#B42318 33.3% 66.6%,#B54708 66.6%)"><span style="color:#fff">Aa</span></div>
+            <div class="sw-meta">
+              <div class="sw-name">Semantic</div>
+              <div class="sw-hex">#067647 · #B42318 · #B54708</div>
+              <div class="sw-role">Success, error, warning. Same in both boards.</div>
+              <div class="sw-ratio ok"><i class="dot"></i>unchanged</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>Two of these are ours, not yours to blame.</strong> The original brief specified only Indigo,
+          Clay and Cream for Board B. Indigo&nbsp;600 and Indigo&nbsp;50 were derived by us so the board could be
+          shown as a complete, working system — a palette needs an interactive state and a tint band to be usable.
+          If you choose Board B we will confirm those two with you before building.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">In context — identical layout and copy, colour only changed</div>
+      <div class="vig vig-b" style="--bg:#FCFAF7;--brand:#1E2A5A;--brand-i:#33417A;--tint:#ECEEF6;--accent:#B85C38;--accent-on:#FFFFFF">
+        <nav class="vig-nav">
+          <div class="vig-logo">Jyoti Solaria</div>
+          <ul class="vig-links">
+            <li class="active">The POSH Act</li><li>Services</li><li>Courses</li><li>Blog</li><li>About</li>
+          </ul>
+          <a class="btn btn-sm btn-primary">Book a demo</a>
+        </nav>
+
+        <div class="vig-hero">
+          <p class="kicker">POSH Act, 2013 — plainly explained</p>
+          <h3>Workplace training that holds up when it matters</h3>
+          <p>
+            Prevention of Sexual Harassment training, Internal Committee formation, policy drafting and
+            compliance audits — delivered by a practitioner who does this work every week.
+          </p>
+          <div class="vig-cta">
+            <a class="btn btn-lg btn-accent">Book a training session</a>
+            <a class="btn btn-lg btn-ghost">Read the POSH guide</a>
+          </div>
+        </div>
+
+        <div class="vig-band">
+          <div class="stat"><div class="n">[00]</div><div class="l">Sessions delivered</div></div>
+          <div class="stat"><div class="n">[00]</div><div class="l">Organisations advised</div></div>
+          <div class="stat"><div class="n">[00]</div><div class="l">Years of practice</div></div>
+        </div>
+
+        <div class="vig-cols">
+          <div class="prose">
+            <h4>Is a home office a "workplace" under the Act?</h4>
+            <p>
+              Yes. The definition of workplace in the Act is deliberately broad, and it extends to any place
+              visited by an employee arising out of or during the course of employment — which includes work
+              carried out from home under a remote arrangement.
+            </p>
+            <p>
+              This matters for the Internal Committee, because a complaint arising from a remote working
+              arrangement follows exactly the same process and the same statutory timelines as one arising
+              on the employer's premises. See <a>the section on Internal Committee constitution</a>.
+            </p>
+            <div class="callout">
+              <strong>Practical note</strong>
+              <p>
+                [Placeholder — real guidance supplied by the client. This band demonstrates the accent colour
+                used as a rule and tint, never as body text.]
+              </p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-top">
+              <span class="badge">Self-paced</span>
+              <h5>POSH Awareness Training for Employees</h5>
+            </div>
+            <div class="card-body">
+              <ul>
+                <li>[00] modules across [0] chapters</li>
+                <li>Chapter assessments and a final test</li>
+                <li>Certificate of Completion on passing</li>
+                <li>Watch at your own pace, on any device</li>
+              </ul>
+              <div class="price">₹[0,000] <small>incl. GST</small></div>
+              <a class="btn btn-sm btn-accent">Enrol now</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="vig-foot">
+          <h4>Not sure where your organisation stands?</h4>
+          <p>Take the free compliance self-check and get a short report on what the Act requires of you.</p>
+          <a class="btn btn-lg btn-accent">Start the self-check</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TYPE ============================ -->
+<section class="board">
+  <div class="wrap">
+    <div class="board-title"><h2>Typography — identical in both boards</h2></div>
+    <p class="board-sub">
+      Serif headings over a sans body reads as editorial and considered rather than as another software product.
+      This is a deliberate move away from the all-one-typeface look of the design you rejected. Not part of this
+      decision — shown so you can see the whole picture.
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">Fraunces (headings) &middot; Inter (body)</div>
+      <div class="panel-body">
+        <div class="spec-row">
+          <div class="spec-label">Display · 49px</div>
+          <div class="spec-sample" style="font-family:var(--serif);font-weight:600;font-size:49px;line-height:1.1;letter-spacing:-.025em">Understanding the POSH Act</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-label">H1 · 39px</div>
+          <div class="spec-sample" style="font-family:var(--serif);font-weight:600;font-size:39px;line-height:1.15;letter-spacing:-.022em">Internal Committee constitution</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-label">H2 · 31px</div>
+          <div class="spec-sample" style="font-family:var(--serif);font-weight:600;font-size:31px;line-height:1.2;letter-spacing:-.018em">Who can file a complaint</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-label">H3 · 25px</div>
+          <div class="spec-sample" style="font-family:var(--serif);font-weight:600;font-size:25px;line-height:1.3;letter-spacing:-.015em">Timelines and interim relief</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-label">Body · 17px / 1.7</div>
+          <div class="spec-sample" style="font-size:17px;line-height:1.7;max-width:68ch">
+            The Act places the duty of prevention squarely on the employer, and that duty is not discharged by
+            having a policy on file. It requires a constituted Internal Committee, a stated redressal process,
+            and awareness activity that employees can actually recall.
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-label">Small · 14px</div>
+          <div class="spec-sample" style="font-size:14px;line-height:1.6;color:var(--slate)">
+            Supporting text, captions, form hints and table cells.
+          </div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-label">Scale (ratio 1.25)</div>
+          <div class="spec-sample" style="font-variant-numeric:tabular-nums;font-size:14px;color:var(--slate)">
+            12 · 14 · 16 · 20 · 25 · 31 · 39 · 49 · 61
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONTRAST ============================ -->
+<section class="board">
+  <div class="wrap">
+    <div class="board-title"><h2>Readability check</h2></div>
+    <p class="board-sub">
+      Every pairing below was measured against WCAG 2.1 AA, the accessibility standard we are building to.
+      Normal text needs 4.5:1; text at 18px and above needs 3:1. This is not box-ticking — it is what makes the
+      site readable on a phone in poor light, which is where a lot of your traffic will be.
+    </p>
+
+    <div class="panel">
+      <div class="panel-head">Measured contrast ratios</div>
+      <div class="panel-body">
+        <table>
+          <thead>
+            <tr><th>Pairing</th><th>Board</th><th>Ratio</th><th>Verdict</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ink on Sand — body text</td><td>A</td><td class="num">16.88:1</td><td>Passes everywhere</td></tr>
+            <tr><td>Deep Teal on Sand — headings</td><td>A</td><td class="num">8.44:1</td><td>Passes everywhere</td></tr>
+            <tr><td>Teal 600 on Sand — links</td><td>A</td><td class="num">5.31:1</td><td>Passes</td></tr>
+            <tr><td>White on Deep Teal — primary button</td><td>A</td><td class="num">8.88:1</td><td>Passes</td></tr>
+            <tr><td><strong>Amber on Sand — accent text</strong></td><td>A</td><td class="num">3.13:1</td><td><strong>Large text only (≥18px)</strong></td></tr>
+            <tr><td><strong>White on Amber — CTA button</strong></td><td>A</td><td class="num">3.29:1</td><td><strong>Fails — use Ink instead</strong></td></tr>
+            <tr><td>Ink on Amber — CTA button, corrected</td><td>A</td><td class="num">5.40:1</td><td>Passes everywhere</td></tr>
+            <tr><td>Ink on Cream — body text</td><td>B</td><td class="num">17.03:1</td><td>Passes everywhere</td></tr>
+            <tr><td>Indigo on Cream — headings</td><td>B</td><td class="num">13.14:1</td><td>Passes everywhere</td></tr>
+            <tr><td>White on Indigo — primary button</td><td>B</td><td class="num">13.69:1</td><td>Passes</td></tr>
+            <tr><td><strong>Clay on Cream — accent text</strong></td><td>B</td><td class="num">4.36:1</td><td><strong>Just under — large text only</strong></td></tr>
+            <tr><td>White on Clay — CTA button</td><td>B</td><td class="num">4.54:1</td><td>Passes, with no margin</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <strong>One change we recommend either way.</strong> In Board A, a CTA button with white text on amber
+          measures 3.29:1 and fails the standard. Using <em>Ink</em> text on amber instead measures 5.40:1 and
+          passes at any size — so the amber stays exactly as you see it, and only the label colour changes.
+          Every amber button in Board A above already uses the corrected version. If you pick Board B, we would
+          nudge Clay one step darker to <code>#A94F2E</code> for the same reason.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DECISION ============================ -->
+<div class="wrap">
+  <div class="decision">
+    <h2>What we need back from you</h2>
+    <p>
+      Reply with your pick and any reactions. If you would rather talk it through than write it down, that is
+      completely fine — a ten-minute call works just as well.
+    </p>
+    <ul>
+      <li>Board A (Deep Teal) — our recommendation</li>
+      <li>Board B (Deep Indigo)</li>
+      <li>Neither feels right — here is what is off: ______________________</li>
+    </ul>
+    <p>
+      Once you pick, this becomes the design foundation for every page, so we would rather spend an extra day
+      here than rebuild pages later.
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

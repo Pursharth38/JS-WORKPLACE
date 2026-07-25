@@ -113,10 +113,10 @@ domain and integrates at defined contract points. Full detail: `team-division.md
 ## TECH STACK (do not substitute)
 
 ```
-Framework:   Next.js 15 (App Router) + TypeScript (strict) + Tailwind CSS
+Framework:   Next.js 16 (App Router) + React 19 + TypeScript (strict) + Tailwind v4
 Auth:        Auth.js v5 — credentials + Google OAuth, JWT sessions, httpOnly cookies
 Database:    PostgreSQL (Neon serverless) + Prisma ORM
-CMS:         Sanity v3, Studio embedded at /studio
+CMS:         Sanity v6 + next-sanity 13, Studio embedded at /studio
 Video:       Cloudflare Stream, signed playback tokens (≤5 min TTL)
 Payments:    Razorpay Orders API + HMAC-verified webhooks
 Email:       Resend + React Email
@@ -132,6 +132,17 @@ Hosting:     Vercel
 **Rejected, do not reintroduce:** separate Express/Nest backend · Supabase · Mux · direct S3 MP4
 playback · unlisted YouTube for paid content · Redux/Zustand · Three.js for the home animations ·
 Instagram Basic Display API. Reasons are in ARCHITECTURE.md §1.1.
+
+> **Version pins were raised at P1-01 (2026-07-25), with sign-off.** This file previously said Next 15
+> and Sanity v3. Both were stale: `next-sanity@13` declares `next: ^16.0.0-0`, so staying on Next 15
+> would have capped us at `next-sanity@11` and Sanity v4/v5 — and Sanity v3 as literally written is
+> unreachable from *any* current `next-sanity`. Raised while zero app code existed, which was the
+> cheapest possible moment. "Do not substitute" still applies to *swapping* a technology (no Supabase
+> for Neon, no Mux for Stream); it is not a freeze on version numbers.
+>
+> **Tailwind v4 changes where tokens live.** There is no `tailwind.config.ts`. The design tokens go in
+> the `@theme` block in `app/globals.css`, and config is CSS-first. Any doc still pointing at
+> `tailwind.config.ts` means `app/globals.css`.
 
 ---
 

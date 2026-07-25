@@ -160,6 +160,32 @@ tests/
 
 ---
 
+## NON-APP DELIVERABLES  (added 2026-07-25, Phase 0)
+
+Not shipped, not built, not imported by the app. Client-facing artefacts and the design evidence behind
+them. Kept out of `app/` deliberately so nothing here can leak into a route or the built output.
+
+```
+design/
+└── colour-boards/      ← [A] P0-03
+    ├── index.html          Static two-board comp. Identical layout/copy in both boards so
+    │                       feedback is about COLOUR only. Open in a browser; no build step.
+    └── CONTRAST-REPORT.md  Measured WCAG 2.1 ratios for both boards + 4 findings.
+                            Feeds P1-02 tokens and is the input to P1-R /plan-design-review.
+
+client/                 ← [A] P0-04 — documents sent TO the client, in her language not ours
+├── P0-04-content-inventory-request.md   Knowledge Hub content request. 35 sections split into
+│                                        3 waves; Wave 1 = 14 and unblocks the Phase 4 build.
+└── knowledge-hub-section-template.md    Per-section fill-in template + worked example.
+```
+
+**Rules for these two directories.** They are still subject to the forbidden-claim grep — CI must scan
+them alongside `app/`. They must never invent a statistic, testimonial or client count; the comp uses
+visible `[bracketed placeholders]` for every number for exactly this reason. Nothing here is imported by
+Next.js and nothing here ships.
+
+---
+
 ## FILE CREATION ORDER (follows tasks.md phases)
 
 ```
@@ -185,8 +211,43 @@ tests/
 
 ## CURRENT FILE STATUS
 
-Nothing built. Repository not yet initialised.
+**P1-01 ✅ — the repo is a Next.js app.** Next 16.2.11 · React 19.2.4 · TypeScript strict · Tailwind v4.
+`npm run build`, `npm run typecheck` and `npm run lint` are all clean; forbidden-claims grep clean across
+`app/ public/ design/ client/ .next/`.
 
-### Dev A files — 0 / 34
-### Dev B files — 0 / 21
-### Dev C files — 0 / 18
+Root config (all [A]):
+```
+package.json          npm. Scripts: dev · build · start · lint · typecheck
+tsconfig.json         strict + noUncheckedIndexedAccess + noImplicitOverride
+                      + noFallthroughCasesInSwitch. allowJs false. Alias @/* → repo root.
+next.config.ts        typedRoutes: true · poweredByHeader: false
+eslint.config.mjs     next core-web-vitals + typescript; no-explicit-any and
+                      ban-ts-comment escalated to error; design/ and client/ ignored
+postcss.config.mjs    @tailwindcss/postcss
+.gitignore            + next-env.d.ts, .vercel, build/, *.pem
+public/.gitkeep       Next's default next.svg/vercel.svg and favicon were NOT kept —
+                      framework branding has no place on a client site
+```
+
+App files that exist:
+```
+app/layout.tsx        Fraunces + Inter via next/font (self-hosted woff2, no Google
+                      request, no third-party cookie surface). metadataBase from
+                      NEXT_PUBLIC_SITE_URL. Plausible + Toaster still to come.
+app/globals.css       @import "tailwindcss" + @theme with --font-sans / --font-serif ONLY.
+                      ★ NO BRAND COLOUR IS COMMITTED — P1-02 fills this in after the
+                      P0-03 board pick. Do not guess a palette before then.
+app/page.tsx          P1-01 placeholder. Replaced by P3-01.
+```
+
+> **Correction to this document:** Tailwind v4 is CSS-first. There is **no `tailwind.config.ts`** — the
+> line in FILE CREATION ORDER below that says `tailwind.config` means the `@theme` block in
+> `app/globals.css`, which is what the `app/` tree at the top of this file already described.
+
+Phase 0 deliverables complete (non-app, see NON-APP DELIVERABLES above):
+- `design/colour-boards/index.html` + `CONTRAST-REPORT.md`  — P0-03 ✅ awaiting client pick
+- `client/P0-04-content-inventory-request.md` + `knowledge-hub-section-template.md` — P0-04 ✅ awaiting send
+
+### Dev A app files — 3 / 34   (layout, globals.css, page — all placeholders)
+### Dev B app files — 0 / 21
+### Dev C app files — 0 / 18

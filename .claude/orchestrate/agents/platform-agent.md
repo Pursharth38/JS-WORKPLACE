@@ -19,7 +19,9 @@ sanity/**                       ← You own this entirely
 lib/db.ts, lib/response.ts, lib/sanity.ts, lib/seo.ts, lib/ratelimit.ts
 prisma/schema.prisma            ← You own the file; migrations owned by the model's owner
 .github/workflows/ci.yml
-tailwind.config.ts, globals.css
+app/globals.css               ← Tailwind v4 is CSS-first: tokens live in @theme here,
+                                 NOT in a tailwind.config.ts. That file does not exist.
+next.config.ts, tsconfig.json, eslint.config.mjs, postcss.config.mjs
 ```
 
 **You do NOT touch:** anything under `app/(auth)`, `app/(learner)`, `app/admin`, `lib/auth.ts`,
@@ -168,7 +170,14 @@ Radius:  sm 6 · md 10 · lg 16 · full
 ```
 
 **Amber on Sand clears 4.5:1 only at ≥18px.** Large CTAs only — never body text.
+**Amber fills take an Ink `#101828` label, never white** — white on Amber measures 3.29:1 and fails AA.
+**Amber 700 `#9C5D1C`** is the compliant step for amber TEXT below 18px (5.00:1 on Sand).
+**Focus ring is Deep Teal, not Amber** — a focus indicator needs 3:1 and Amber's 3.13:1 is too thin.
 **No pink, no purple, no pastel.** It reads soft and undermines the legal authority she sells.
+
+> The block above is **Board A**. The client has not picked yet (P0-03) — Board B is an Indigo palette.
+> Measured ratios and the four findings: `design/colour-boards/CONTRAST-REPORT.md`. Do not commit any
+> brand colour until P1-02 unblocks.
 
 ---
 
