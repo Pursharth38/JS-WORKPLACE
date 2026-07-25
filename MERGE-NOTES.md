@@ -22,7 +22,7 @@ apply the reconciliation note.
 | `app/globals.css` | P1-02 | Take Dev A's wholesale. **Contract:** Dev B's pages reference brand colour only via the CSS custom properties `--brand-teal`, `--brand-teal-hover`, `--brand-teal-tint`, `--brand-amber`, `--brand-amber-hover`, `--brand-sand`, `--brand-ink`, `--brand-muted`, `--brand-line`, `--brand-danger`, `--brand-success`. If Dev A's token file renames any of these, Dev B's pages lose their colour — grep `var(--brand-` before landing. |
 | `lib/db.ts` | P1-06 | Take Dev A's. Standard Prisma singleton; signature is `export const db`. |
 | `lib/response.ts` | P1-06 | Take Dev A's **only if** it exports `apiResponse(status, message, data?)` with the `{success, message, data}` envelope. Dev B also added `paginated()`, `apiError()`, and `invalidInput()` — port these across if Dev A's version lacks them; every Dev B route uses them. |
-| `lib/ratelimit.ts` | P1-06 | Take Dev A's, then add the limiters Dev B needs: `loginIp`, `loginEmail`, `signupIp`, `resetEmail`, `checkoutUser`, `certIssueUser`, `verifyIp`, plus the `clientIp(headers)` helper. |
+| `lib/ratelimit.ts` | P1-06 | **Team decision (2026-07-25): default backend is an in-memory sliding window, NOT Upstash** — the Upstash free tier (10k commands/day) burns too fast for a hardening-only layer. Upstash activates automatically if `UPSTASH_REDIS_REST_URL/TOKEN` are set; interface is unchanged. On merge keep Dev B's version and add any limiter Dev A's routes need (`/api/leads` 5/h/IP). Exports: `rateLimit.{loginIp,loginEmail,signupIp,resetEmail,checkoutUser,certIssueUser,verifyIp}` + `clientIp(headers)`. |
 | `prisma/schema.prisma` | P1-05 | Take Dev A's, then apply the **four Dev B additions** in §3 below. |
 
 ---
