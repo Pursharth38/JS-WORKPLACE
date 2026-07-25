@@ -10,11 +10,16 @@
 ## CURRENT SESSION GOAL
 **Team:** three developers, split by vertical slice. A = Platform & Content · B = Identity & Commerce ·
 C = Learning Engine & Motion. Full detail: `team-division.md` at repo root.
-**State:** PRE-PHASE-0. Nothing built. Three client sign-offs outstanding (see BLOCKED TASKS).
-**Next action:** get the Phase 0 sign-offs, then Dev A ships the foundation by Day 3 — B and C are
-genuinely blocked until it lands.
-**Blocking dependency:** client must supply original Knowledge Hub content. This is the single highest
-risk in the project; the SEO strategy has no fallback if it does not arrive.
+**State:** Dev B's lane (Phases 6, 7, 10) is CODE-COMPLETE on branch `dev-b-commerce`, built offline
+against the spec while Dev A works on a separate branch. 53 unit/integration tests green, `tsc` clean,
+`next build` succeeds, all security self-check greps pass. See `MERGE-NOTES.md` at repo root — it lists
+every file Dev B borrowed from Dev A's lane (marked with FILE OWNER headers) and the merge rules.
+**Next action:** (1) get the Phase 0 sign-offs — P0-01 still gates SHIPPING certificates, P0-05 gates
+GSTIN on invoices; (2) merge Dev A's foundation branch per MERGE-NOTES.md; (3) Dev C builds against the
+published H3 (`lib/session.ts`) and H4 (`lib/enrollment.ts`) contracts, and replaces the `lib/progress.ts`
+stub; (4) run `/cso` on the payment path (P7-R).
+**Blocking dependency:** client must supply original Knowledge Hub content (Dev A lane). For Dev B:
+P3-05 legal pages still block Razorpay account activation (P7-06).
 
 ---
 
@@ -102,24 +107,24 @@ risk in the project; the SEO strategy has no fallback if it does not arrive.
 ## PHASE 6 — AUTH  [Dev B]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P6-01 | Auth.js v5: credentials + Google, Prisma adapter models | **B** | ⬜ | |
-| P6-02 | Email verification + password reset (Resend + React Email) | **B** | ⬜ | |
-| P6-03 | /login /signup /verify-email /forgot-password /reset-password | **B** | ⬜ | |
-| P6-04 | Edge middleware for /dashboard /learn /admin | **B** | ⬜ | Session only — NO Prisma in middleware |
-| P6-05 | Rate limits: 10/15min per IP, 5/15min per email | **B** | ⬜ | |
-| P6-06 | name capture + nameLocked flag | **B** | ⬜ | → **H3: C unblocked** |
+| P6-01 | Auth.js v5: credentials + Google, Prisma adapter models | **B** | ✅ | Split config: `lib/auth.config.ts` edge-safe, `lib/auth.ts` node-only. Constant-time password compare so login cannot enumerate accounts. |
+| P6-02 | Email verification + password reset (Resend + React Email) | **B** | ✅ | Tokens stored as sha256, single-use, atomic claim. Separate `PasswordResetToken` model — reusing `VerificationToken` would be an account-takeover path. |
+| P6-03 | /login /signup /verify-email /forgot-password /reset-password | **B** | ✅ | Email confirm is POST-on-click, not GET-on-render — Outlook Safe Links would otherwise burn every token before the learner clicks. |
+| P6-04 | Edge middleware for /dashboard /learn /admin | **B** | ✅ | Session + redirect only. `/studio` excluded. Self-check grep for Prisma in middleware: clean. |
+| P6-05 | Rate limits: 10/15min per IP, 5/15min per email | **B** | ✅ | Both checked on login; also signup/IP and reset/email. Fails open when Upstash is unset (dev/CI) — it fronts routes that each enforce their own auth. |
+| P6-06 | name capture + nameLocked flag | **B** | ✅ | → **H3 PUBLISHED: `lib/session.ts` exports `getSession`/`requireSession`/`requireAdmin`. Dev C can build against it now.** |
 
 ## PHASE 7 — COMMERCE  [Dev B]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P7-01 | /api/checkout/create-order — **price from DB** | **B** | ⬜ | |
-| P7-02 | Razorpay Checkout on /courses/[slug] | **B** | ⬜ | |
-| P7-03 | /api/webhooks/razorpay — timingSafeEqual HMAC, idempotent, replay-safe | **B** | ⬜ | → **H4: C unblocked on gating** |
-| P7-04 | Payment lifecycle CREATED→PAID/FAILED/REFUNDED | **B** | ⬜ | |
-| P7-05 | Invoice PDF → R2, GSTIN if registered | **B** | ⬜ | E8 |
-| P7-06 | Razorpay account activation | **B** | ❌ | blocked on P3-05 |
-| P7-07 | /dashboard + /dashboard/invoices | **B** | ⬜ | Progress read shape agreed with C |
-| P7-R | /cso on payment path — **non-negotiable** | **B** | ⬜ | |
+| P7-01 | /api/checkout/create-order — **price from DB** | **B** | ✅ | Body carries `courseId` only — `createOrderSchema` has no amount field to tamper with. Reuses an unpaid order <15min old so abandoned modals don't litter the payments table. |
+| P7-02 | Razorpay Checkout on /courses/[slug] | **B** | ✅ | `components/commerce/checkout-button.tsx` — **Dev A must drop this into the course page.** Its success handler only navigates; it never enrols. Script is loaded on click to protect the marketing Lighthouse budget. |
+| P7-03 | /api/webhooks/razorpay — timingSafeEqual HMAC, idempotent, replay-safe | **B** | ✅ | → **H4 PUBLISHED: `lib/enrollment.ts` exports `isEnrolled`.** 12 adversarial tests green incl. triple-replay, forged signature, unset secret (fails closed), underpayment. |
+| P7-04 | Payment lifecycle CREATED→PAID/FAILED/REFUNDED | **B** | ✅ | `payment.failed` is guarded on `status: CREATED` so a late out-of-order event cannot downgrade a PAID row. **Refund does NOT auto-revoke enrolment — needs a client decision, see OPEN QUESTIONS.** |
+| P7-05 | Invoice PDF → R2, GSTIN if registered | **B** | ✅ | Lazy generation on first download, not in the webhook. Invoice numbers atomic per Indian FY via `InvoiceCounter`. GSTIN omitted entirely until P0-05 answers. |
+| P7-06 | Razorpay account activation | **B** | ❌ | blocked on P3-05 — **Dev A: this is the long pole.** Razorpay will not leave test mode without live /privacy, /terms, /refund-policy URLs. |
+| P7-07 | /dashboard + /dashboard/invoices | **B** | ✅ | Progress read via Dev C's `getCourseProgress()` — not recomputed. `PaymentPendingBanner` polls for the webhook so a paying learner never sees an empty dashboard. |
+| P7-R | /cso on payment path — **non-negotiable** | **B** | ⬜ | Ready to run. All 4 commerce self-check greps clean. |
 
 ## PHASE 8 — LEARNING ENGINE  [Dev C — critical path]
 | ID | Task | Owner | Status | Notes |
@@ -145,12 +150,12 @@ risk in the project; the SEO strategy has no fallback if it does not arrive.
 ## PHASE 10 — CERTIFICATES  [Dev B]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P10-01 | /api/certificate/issue — **idempotent**, partial unique index | **B** | ❌ | blocked on P0-01 sign-off |
-| P10-02 | Certificate PDF (name, course, date, certId, QR, signature) | **B** | ⬜ | runtime='nodejs' |
-| P10-03 | certId generator JSWW-2026-XXXXXX | **B** | ⬜ | Non-sequential, non-guessable |
-| P10-04 | /verify/[certId] public page + API | **B** | ⬜ | E1 — makes the cert worth anything |
-| P10-05 | /dashboard/certificates | **B** | ⬜ | |
-| P10-06 | /admin — enrolments, payments, progress, revocation, lead CSV | **B** | ⬜ | |
+| P10-01 | /api/certificate/issue — **idempotent**, partial unique index | **B** | 🔄 | **Code complete, tested (double-submit + concurrent race both return one certId). Still ❌-gated on P0-01 sign-off before it may SHIP — wording renders exactly as CLAUDE.md §1 locks it.** |
+| P10-02 | Certificate PDF (name, course, date, certId, QR, signature) | **B** | ✅ | runtime='nodejs'. QR links /verify/[certId]. Includes an explicit "not a statutory or government-issued qualification" line. Regenerates deterministically on R2 miss. |
+| P10-03 | certId generator JSWW-2026-XXXXXX | **B** | ✅ | Crockford base32 via crypto.randomInt (unbiased). 15 tests incl. uniformity-per-position. `normalizeCertId` decodes O→0, I/L→1 for hand-typed ids. |
+| P10-04 | /verify/[certId] public page + API | **B** | ✅ | Unknown id → `valid:false` with HTTP **200**, never 404 (anti-enumeration), + 30/h/IP rate limit. Revoked ≠ unknown in the copy. |
+| P10-05 | /dashboard/certificates | **B** | ✅ | Download via authenticated `/api/certificate/[certId]/pdf` — R2 objects are private, never direct-linked. |
+| P10-06 | /admin — enrolments, payments, progress, revocation, lead CSV | **B** | ✅ | All guarded by `requireAdmin()` (DB re-read, not the 30-day JWT). CSV export is formula-injection-escaped. Revocation is a guarded status transition, never a delete. |
 
 ## PHASE 11 — MOTION & EMBEDS  [Dev C]
 | ID | Task | Owner | Status | Notes |

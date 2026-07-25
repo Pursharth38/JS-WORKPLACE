@@ -1,0 +1,75 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   ⚠️  FILE OWNER: DEV A (task P1-02 — design tokens → Tailwind theme).
+       PROVISIONAL placeholder created by DEV B so the auth/dashboard/admin
+       pages render with the correct brand colours offline.
+
+       Values come from CLAUDE.md "Frontend" rules:
+         Deep Teal #0F5257 · Amber #C77D26 · Sand #FBF9F5
+         Headings Fraunces 600 · body Inter 17px / 1.7
+       NO pink, NO purple, NO pastel.
+
+       Dev B's pages reference these ONLY through the CSS custom properties
+       below (e.g. `bg-[var(--brand-teal)]`), never through hardcoded hexes, so
+       Dev A's real token file can replace this whole file and the pages keep
+       working as long as the variable names survive.
+   ─────────────────────────────────────────────────────────────────────────── */
+@import 'tailwindcss';
+
+:root {
+  --brand-teal: #0f5257;
+  --brand-teal-hover: #0c4145;
+  --brand-teal-tint: #e7f0f0;
+  --brand-amber: #c77d26;
+  --brand-amber-hover: #a96617;
+  --brand-sand: #fbf9f5;
+  --brand-ink: #1c1a17;
+  --brand-muted: #5f5a52;
+  --brand-line: #e4ded4;
+  --brand-danger: #9b2c1f;
+  --brand-success: #1f6b4a;
+
+  --font-heading: 'Fraunces', ui-serif, Georgia, serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-teal: var(--brand-teal);
+  --color-amber: var(--brand-amber);
+  --color-sand: var(--brand-sand);
+  --color-ink: var(--brand-ink);
+  --color-muted: var(--brand-muted);
+  --color-line: var(--brand-line);
+}
+
+html {
+  background: var(--brand-sand);
+  color: var(--brand-ink);
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* Amber only clears 4.5:1 on Sand at ≥18px — large CTAs only, never body text. */
+.cta-amber {
+  background: var(--brand-amber);
+  color: #fff;
+  font-size: 18px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-teal);
+  outline-offset: 2px;
+}

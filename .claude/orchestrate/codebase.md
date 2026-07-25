@@ -185,8 +185,41 @@ tests/
 
 ## CURRENT FILE STATUS
 
-Nothing built. Repository not yet initialised.
+Branch `dev-b-commerce` (see `MERGE-NOTES.md` at repo root for merge rules).
 
-### Dev A files — 0 / 34
-### Dev B files — 0 / 21
+### Dev A files — 0 / 34 built by Dev A
+> Dev B has PROVISIONAL transcriptions of 10 of them to work offline (package.json,
+> tsconfig, next.config, postcss, app/layout, app/globals.css, prisma/schema.prisma,
+> lib/db.ts, lib/response.ts, lib/ratelimit.ts) — each carries a `FILE OWNER: DEV A`
+> header. Take Dev A's versions on merge per MERGE-NOTES.md §1.
+
+### Dev B files — 21 / 21 code-complete ✅
+```
+lib/          auth.config.ts · auth.ts · session.ts (H3) · password.ts · tokens.ts
+              email.ts · enrollment.ts (H4) · razorpay.ts · invoice.ts · r2.ts
+              cert-id.ts · certificate.ts · admin-query.ts
+              schemas/auth.ts · schemas/checkout.ts · schemas/certificate.ts
+middleware.ts (edge-safe: imports auth.config only, never Prisma)
+app/(auth)/   layout · actions · login · signup · verify-email · forgot-password · reset-password
+app/(learner)/ layout · actions · dashboard · dashboard/certificates · dashboard/invoices
+app/admin/    page · actions
+app/(marketing)/verify/[certId]/page.tsx
+app/api/      auth/[...nextauth] · checkout/create-order · webhooks/razorpay
+              certificate/{issue, [certId]/verify, [certId]/pdf} · invoice/[paymentId]
+              dashboard/summary · admin/{enrollments, payments, learners/[id],
+              certificate/[certId]/revoke, leads.csv}
+components/   auth/* · commerce/{checkout-button, payment-pending-banner}
+              learn/certificate-card · marketing/verify-result · admin/revoke-form
+              pdf/{invoice-document, certificate-document}
+emails/       components/email-layout · verify-email · reset-password · welcome · receipt
+tests/        unit/{razorpay-signature, certId, invoice-numbering}
+              integration/{webhook-idempotency, cert-idempotency}   — 53 tests green
+prisma/migrations/20260725000001_certificate_active_unique/  ★ partial unique index
+```
+Extra routes beyond CONTRACTS.md (documented in MERGE-NOTES.md): `/api/invoice/[paymentId]`
+and `/api/certificate/[certId]/pdf` — authenticated downloads, because R2 objects are
+private and are never direct-linked.
+
 ### Dev C files — 0 / 18
+> `lib/progress.ts` on this branch is a fail-closed STUB so Dev B's dashboard
+> typechecks. Dev C's real implementation replaces it — DELETE on merge.
