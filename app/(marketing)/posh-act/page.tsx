@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { BlurFade } from "@/components/motion/blur-fade";
 import { BackToTop } from "@/components/marketing/back-to-top";
+import { ComplaintJourney } from "@/components/marketing/complaint-journey";
 import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { LeadMagnetForm } from "@/components/marketing/lead-magnet-form";
@@ -91,6 +93,29 @@ export default async function PoshActPage() {
             it, not for lawyers.
           </p>
         </header>
+
+        {/*
+          Explainer, placed before the wall of text.
+          DETAILED-PLAN §4.4 animation B — the complaint journey, flagged there
+          as the highest-value of the three because the timeline is the thing
+          people search for. It is DOM + motion rather than Lottie, so the text
+          is indexable and the "static accessible equivalent" requirement is met
+          by construction rather than duplicated underneath.
+        */}
+        <BlurFade>
+          <section className="mt-10 rounded-[var(--radius-lg)] border border-[var(--brand-line)] bg-[var(--brand-elevated)] p-7 md:p-9">
+            <h2 className="font-serif text-[25px] font-semibold">
+              What happens after a complaint is made
+            </h2>
+            <p className="mt-2 max-w-[62ch] text-[17px] leading-[1.65] text-[var(--brand-muted)]">
+              The Act sets deadlines at every stage. This is the sequence, and
+              the clock that runs alongside it.
+            </p>
+            <div className="mt-8 max-w-[62ch]">
+              <ComplaintJourney />
+            </div>
+          </section>
+        </BlurFade>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[260px_1fr] lg:gap-14">
           <aside className="lg:order-1">

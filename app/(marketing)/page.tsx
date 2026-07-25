@@ -1,22 +1,26 @@
 import Link from "next/link";
 
+import { BlurFade } from "@/components/motion/blur-fade";
+import { Reveal } from "@/components/motion/reveal";
+import { ComplaintJourney } from "@/components/marketing/complaint-journey";
 import { Container } from "@/components/marketing/container";
 import { CourseCard } from "@/components/marketing/course-card";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { Hero } from "@/components/marketing/hero";
 import { PostCard } from "@/components/marketing/post-card";
 import { ServiceCard } from "@/components/marketing/service-card";
-import { TestimonialSlider } from "@/components/marketing/testimonial-slider";
+import { StatBand } from "@/components/marketing/stat-band";
+import { TestimonialSection } from "@/components/marketing/testimonial-section";
+import { DEMO_STATS } from "@/lib/demo-content";
 import {
   getCourses,
   getPosts,
   getServices,
   getSiteSettings,
   getTestimonials,
+  usingDemoContent,
 } from "@/lib/sanity";
 
-// ISR. The homepage is content-driven but changes rarely; the Sanity webhook
-// revalidates on publish, so this is a backstop rather than the mechanism.
 export const revalidate = 3600;
 
 export default async function HomePage() {
@@ -27,6 +31,15 @@ export default async function HomePage() {
     getCourses(),
     getTestimonials(),
   ]);
+
+  /*
+    Statistics.
+    ⚠️ CLAUDE.md forbids inventing trained-employee counts. Real figures come
+    from the client (P0-04). Until then the band shows visible `[00]`
+    placeholders — and ONLY in demo mode, so a configured production site with
+    no stats simply has no band rather than a row of brackets.
+  */
+  const stats = usingDemoContent ? DEMO_STATS : [];
 
   return (
     <>
@@ -45,109 +58,191 @@ export default async function HomePage() {
           href: settings.heroPrimaryCtaHref || "/book-demo",
         }}
         secondaryCta={{ label: "Read the POSH Act guide", href: "/posh-act" }}
+        aside={
+          <div className="rounded-[var(--radius-lg)] border border-[var(--brand-line)] bg-[var(--brand-elevated)] p-7 shadow-[var(--shadow-lg)]">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-muted)]">
+              How a complaint actually moves
+            </p>
+            <p className="mt-2 text-[15px] leading-[1.6] text-[var(--brand-muted)]">
+              The part most organisations discover too late.
+            </p>
+            <ComplaintJourney className="mt-6" />
+          </div>
+        }
       />
 
-      {/*
-        NOTE: no StatBand here. CLAUDE.md forbids inventing trained-employee
-        counts or client logos, and the client has not supplied real figures yet
-        (P0-04). The component exists and takes props — wire it up the day she
-        provides numbers, not before.
-      */}
+      <StatBand stats={stats} heading="In practice" />
 
-      {/* ── Knowledge Hub teaser — the SEO asset, promoted above the fold-ish */}
-      <Container className="py-16">
-        <div className="rounded-[var(--radius-lg)] border border-[var(--brand-line)] bg-[var(--brand-elevated)] p-8 md:p-10">
-          <p className="text-[14px] font-semibold uppercase tracking-wide text-[var(--brand-primary)]">
-            Free resource
-          </p>
-          <h2 className="mt-3 max-w-[24ch] font-serif text-[31px] font-semibold">
-            A plain-English guide to the POSH Act
-          </h2>
-          <p className="mt-4 max-w-[62ch] text-[17px] leading-[1.7] text-[var(--brand-muted)]">
-            What the law requires of an employer, how an Internal Committee is
-            constituted, who can complain, and what the timelines actually are —
-            written to be read by people who are not lawyers.
-          </p>
-          <Link
-            href="/posh-act"
-            className="mt-6 inline-flex items-center gap-1.5 text-[17px] font-semibold text-[var(--brand-primary)]"
-          >
-            Read the guide
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M6 3l5 5-5 5"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-        </div>
+      {/* ── Knowledge Hub teaser ─────────────────────────────────────────── */}
+      <Container className="py-20">
+        <BlurFade>
+          <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--brand-line)] bg-[var(--brand-elevated)] p-8 md:p-12">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[var(--brand-accent)] opacity-[0.06] blur-2xl"
+            />
+            <Reveal className="relative">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[var(--brand-primary)]">
+                Free resource
+              </p>
+              <h2 className="mt-3 max-w-[22ch] font-serif text-[31px] font-semibold md:text-[39px]">
+                A plain-English guide to the POSH Act
+              </h2>
+              <p className="mt-4 max-w-[62ch] text-[17px] leading-[1.7] text-[var(--brand-muted)]">
+                What the law requires of an employer, how an Internal Committee
+                is constituted, who can complain, and what the timelines
+                actually are — written to be read by people who are not lawyers.
+              </p>
+              <Link
+                href="/posh-act"
+                className="group mt-7 inline-flex items-center gap-2 text-[17px] font-semibold text-[var(--brand-primary)]"
+              >
+                Read the guide
+                <span className="transition-transform duration-200 group-hover:translate-x-1">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path
+                      d="M6 3l5 5-5 5"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </Link>
+            </Reveal>
+          </div>
+        </BlurFade>
       </Container>
 
       {services.length > 0 && (
-        <Container className="pb-16">
-          <div className="flex items-end justify-between gap-6">
-            <h2 className="font-serif text-[31px] font-semibold">
-              How we can help
-            </h2>
-            <Link
-              href="/services"
-              className="shrink-0 text-[16px] font-semibold text-[var(--brand-primary)]"
-            >
-              All services
-            </Link>
-          </div>
+        <Container className="pb-20">
+          <Reveal>
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <h2 className="font-serif text-[31px] font-semibold md:text-[39px]">
+                How we can help
+              </h2>
+              <Link
+                href="/services"
+                className="shrink-0 text-[16px] font-semibold text-[var(--brand-primary)]"
+              >
+                All services →
+              </Link>
+            </div>
+          </Reveal>
 
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {services.slice(0, 6).map((s) => (
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {services.slice(0, 6).map((s, i) => (
               <li key={s._id}>
-                <ServiceCard service={s} />
+                <BlurFade delay={i * 0.07}>
+                  <ServiceCard service={s} />
+                </BlurFade>
               </li>
             ))}
           </ul>
         </Container>
       )}
+
+      {/* ── Self-check — explained, not just named ──────────────────────── */}
+      <section className="bg-[var(--brand-primary)] py-20">
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+            <div>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                Free · 2 minutes · no email required
+              </p>
+              <h2 className="mt-3 max-w-[20ch] font-serif text-[31px] font-semibold text-white md:text-[39px]">
+                Is your organisation POSH compliant?
+              </h2>
+              <p className="mt-4 max-w-[56ch] text-[18px] leading-[1.65] text-white/85">
+                Eight yes-or-no questions about the things the Act actually
+                requires — a written policy, a properly constituted Internal
+                Committee, training, and the annual report. You get your result
+                on screen straight away, with the specific gaps listed.
+              </p>
+              <div className="mt-8">
+                <Link
+                  href="/posh-compliance-check"
+                  className="inline-flex h-13 items-center rounded-[var(--radius-md)] bg-[var(--brand-accent)] px-7 text-[18px] font-semibold text-[var(--brand-accent-on)] transition-colors hover:bg-[var(--brand-accent-hover)] hover:text-white"
+                >
+                  Check where you stand
+                </Link>
+              </div>
+            </div>
+
+            <BlurFade direction="left" delay={0.15}>
+              <ul className="space-y-3">
+                {[
+                  "Do you have a written policy on sexual harassment at work?",
+                  "Have you formally constituted an Internal Committee?",
+                  "Does that committee include an external member?",
+                  "Did you file the annual report this year?",
+                ].map((q) => (
+                  <li
+                    key={q}
+                    className="flex items-start gap-3 rounded-[var(--radius-md)] bg-white/10 px-5 py-3.5 text-[16px] leading-[1.5] text-white"
+                  >
+                    <span aria-hidden="true" className="mt-0.5 text-white/60">
+                      ?
+                    </span>
+                    {q}
+                  </li>
+                ))}
+                <li className="pl-5 pt-1 text-[15px] text-white/60">
+                  …and four more.
+                </li>
+              </ul>
+            </BlurFade>
+          </div>
+        </Container>
+      </section>
 
       {courses.length > 0 && (
-        <Container className="pb-16">
-          <h2 className="font-serif text-[31px] font-semibold">
-            Self-paced training
-          </h2>
-          <p className="mt-3 max-w-[62ch] text-[17px] leading-[1.7] text-[var(--brand-muted)]">
-            Work through the material at your own pace and finish with a
-            Certificate of Completion.
-          </p>
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((c) => (
+        <Container className="py-20">
+          <Reveal>
+            <h2 className="font-serif text-[31px] font-semibold md:text-[39px]">
+              Self-paced training
+            </h2>
+            <p className="mt-3 max-w-[62ch] text-[17px] leading-[1.7] text-[var(--brand-muted)]">
+              Work through the material at your own pace and finish with a
+              Certificate of Completion.
+            </p>
+          </Reveal>
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {courses.map((c, i) => (
               <li key={c._id}>
-                <CourseCard course={c} />
+                <BlurFade delay={i * 0.07}>
+                  <CourseCard course={c} />
+                </BlurFade>
               </li>
             ))}
           </ul>
         </Container>
       )}
 
-      <TestimonialSlider testimonials={testimonials} />
+      <TestimonialSection testimonials={testimonials} />
 
       {posts.length > 0 && (
-        <Container className="py-16">
-          <div className="flex items-end justify-between gap-6">
-            <h2 className="font-serif text-[31px] font-semibold">
-              From the blog
-            </h2>
-            <Link
-              href="/blog"
-              className="shrink-0 text-[16px] font-semibold text-[var(--brand-primary)]"
-            >
-              All posts
-            </Link>
-          </div>
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((p) => (
+        <Container className="py-20">
+          <Reveal>
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <h2 className="font-serif text-[31px] font-semibold md:text-[39px]">
+                From the blog
+              </h2>
+              <Link
+                href="/blog"
+                className="shrink-0 text-[16px] font-semibold text-[var(--brand-primary)]"
+              >
+                All posts →
+              </Link>
+            </div>
+          </Reveal>
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((p, i) => (
               <li key={p._id}>
-                <PostCard post={p} />
+                <BlurFade delay={i * 0.07}>
+                  <PostCard post={p} />
+                </BlurFade>
               </li>
             ))}
           </ul>
@@ -156,10 +251,10 @@ export default async function HomePage() {
 
       <Container>
         <CtaBand
-          heading="Not sure where your organisation stands?"
-          body="Answer eight questions and get a plain-English summary of the gaps worth looking at first."
-          buttonLabel="Take the self-check"
-          buttonHref="/posh-compliance-check"
+          heading="Talk to us about your organisation"
+          body="A short conversation is usually enough to work out what you actually need — even if that turns out to be nothing."
+          buttonLabel="Book a consultation"
+          buttonHref="/book-demo"
         />
       </Container>
     </>

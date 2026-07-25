@@ -5,8 +5,25 @@ import { createClient, type QueryParams } from "next-sanity";
 import type { PortableTextBlock } from "@portabletext/react";
 
 import { apiVersion, dataset, isSanityConfigured, projectId } from "@/sanity/env";
+import {
+  DEMO_COURSES,
+  DEMO_FAQS,
+  DEMO_POSH_SECTIONS,
+  DEMO_POSTS,
+  DEMO_QUICK_REFERENCE,
+  DEMO_SERVICES,
+  DEMO_SITE_SETTINGS,
+  DEMO_TESTIMONIALS,
+} from "@/lib/demo-content";
 
 /* ───────────────────────────── CLIENT ───────────────────────────────────── */
+
+/**
+ * True when no Sanity project is configured. Drives the demo-content fallbacks
+ * below and the sitewide DemoBanner, so an unconfigured deploy is obvious
+ * rather than silently empty.
+ */
+export const usingDemoContent = !isSanityConfigured;
 
 export const sanityClient = createClient({
   projectId,
@@ -243,7 +260,7 @@ export function getSiteSettings(): Promise<SiteSettings> {
   return sanityFetch<SiteSettings>({
     query: SITE_SETTINGS_QUERY,
     tags: [TAGS.siteSettings],
-    fallback: SITE_SETTINGS_FALLBACK,
+    fallback: usingDemoContent ? DEMO_SITE_SETTINGS : SITE_SETTINGS_FALLBACK,
   });
 }
 
@@ -253,7 +270,7 @@ export function getPoshSections(): Promise<PoshSection[]> {
       _id, title, "anchor": anchor.current, group, order, summary, isFaq, body
     }`,
     tags: [TAGS.poshSection],
-    fallback: [],
+    fallback: usingDemoContent ? DEMO_POSH_SECTIONS : [],
   });
 }
 
@@ -263,7 +280,7 @@ export function getQuickReferences(): Promise<QuickReference[]> {
       _id, title, "anchor": anchor.current, order, intro, body
     }`,
     tags: [TAGS.poshSection],
-    fallback: [],
+    fallback: usingDemoContent ? DEMO_QUICK_REFERENCE : [],
   });
 }
 
@@ -287,7 +304,7 @@ export function getPosts(limit?: number): Promise<PostSummary[]> {
   return sanityFetch<PostSummary[]>({
     query: `*[_type == "post" && defined(slug.current)] | order(publishedAt desc)${slice}{${POST_SUMMARY_PROJECTION}}`,
     tags: [TAGS.post],
-    fallback: [],
+    fallback: usingDemoContent ? DEMO_POSTS.slice(0, limit ?? DEMO_POSTS.length) : [],
   });
 }
 
@@ -341,7 +358,7 @@ export function getServices(): Promise<ServiceSummary[]> {
       _id, title, "slug": slug.current, summary, order, icon
     }`,
     tags: [TAGS.service],
-    fallback: [],
+    fallback: usingDemoContent ? DEMO_SERVICES : [],
   });
 }
 
@@ -363,7 +380,7 @@ export function getFaqs(): Promise<Faq[]> {
       _id, question, answer, category, order
     }`,
     tags: [TAGS.faq],
-    fallback: [],
+    fallback: usingDemoContent ? DEMO_FAQS : [],
   });
 }
 
@@ -377,7 +394,7 @@ export function getTestimonials(): Promise<Testimonial[]> {
       _id, quote, authorName, authorRole, organization
     }`,
     tags: [TAGS.testimonial],
-    fallback: [],
+    fallback: usingDemoContent ? DEMO_TESTIMONIALS : [],
   });
 }
 
@@ -413,6 +430,6 @@ export function getCourses(): Promise<CourseSummary[]> {
       _id, title, "slug": slug.current, summary, priceInPaise, durationMinutes, coverImage
     }`,
     tags: [TAGS.course],
-    fallback: [],
+    fallback: usingDemoContent ? DEMO_COURSES : [],
   });
 }

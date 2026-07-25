@@ -18,8 +18,14 @@ import { PRIMARY_NAV } from "./nav-links";
  */
 export function Header({
   announcement,
+  isSignedIn = false,
 }: {
   announcement?: { enabled?: boolean; text?: string; href?: string } | undefined;
+  /**
+   * Resolved on the SERVER in the marketing layout and passed down, so the
+   * header stays free of session fetching and the first paint is correct.
+   */
+  isSignedIn?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -96,6 +102,19 @@ export function Header({
           </nav>
 
           <div className="flex items-center gap-2">
+            {/*
+              The learner entry point. This was missing entirely until now —
+              /login and /dashboard existed and worked, but nothing on the public
+              site linked to them, so anyone who had bought a course had no way
+              back in except by typing the URL.
+            */}
+            <Link
+              href={isSignedIn ? "/dashboard" : "/login"}
+              className="hidden rounded-[var(--radius-md)] px-3 py-2.5 text-[15px] font-medium text-[var(--brand-muted)] transition-colors hover:text-[var(--brand-ink)] sm:inline-flex"
+            >
+              {isSignedIn ? "My dashboard" : "Sign in"}
+            </Link>
+
             <Link
               href="/book-demo"
               className="hidden rounded-[var(--radius-md)] bg-[var(--brand-primary)] px-5 py-2.5 text-[15px] font-semibold text-white transition-colors hover:bg-[var(--brand-primary-hover)] sm:inline-flex"
@@ -166,12 +185,20 @@ export function Header({
               ))}
             </ul>
 
-            <Link
-              href="/book-demo"
-              className="mt-5 flex h-12 items-center justify-center rounded-[var(--radius-md)] bg-[var(--brand-primary)] text-[16px] font-semibold text-white"
-            >
-              Book a consultation
-            </Link>
+            <div className="mt-5 space-y-2">
+              <Link
+                href="/book-demo"
+                className="flex h-12 items-center justify-center rounded-[var(--radius-md)] bg-[var(--brand-primary)] text-[16px] font-semibold text-white"
+              >
+                Book a consultation
+              </Link>
+              <Link
+                href={isSignedIn ? "/dashboard" : "/login"}
+                className="flex h-12 items-center justify-center rounded-[var(--radius-md)] border border-[var(--brand-line)] text-[16px] font-semibold text-[var(--brand-ink)]"
+              >
+                {isSignedIn ? "My dashboard" : "Sign in"}
+              </Link>
+            </div>
           </nav>
         </div>
       )}

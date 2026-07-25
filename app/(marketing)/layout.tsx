@@ -1,24 +1,29 @@
 import type { ReactNode } from "react";
 
+import { DemoBanner } from "@/components/marketing/demo-banner";
 import { Footer } from "@/components/marketing/footer";
 import { Header } from "@/components/marketing/header";
 import { WhatsAppFAB } from "@/components/marketing/whatsapp-fab";
-import { getSiteSettings } from "@/lib/sanity";
+import { getSiteSettings, usingDemoContent } from "@/lib/sanity";
+import { getSession } from "@/lib/session";
 
 /**
  * Shell for every public page.
  *
- * Settings are fetched HERE, on the server, once per render — not in the
- * Header/Footer/FAB components. Those take props. That keeps the client bundle
- * free of Sanity and satisfies the "no client-side fetching on first paint"
- * rule in platform-agent.md.
+ * Settings and session are resolved HERE, on the server, once per render — not
+ * inside Header/Footer/FAB. Those take props. That keeps Sanity and Auth.js out
+ * of the client bundle and satisfies the "no client-side fetching on first
+ * paint" rule in platform-agent.md.
  */
 export default async function MarketingLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const settings = await getSiteSettings();
+  const [settings, session] = await Promise.all([
+    getSiteSettings(),
+    getSession(),
+  ]);
 
   return (
     <>
@@ -26,7 +31,12 @@ export default async function MarketingLayout({
         Skip to content
       </a>
 
-      <Header announcement={settings.announcement} />
+      {usingDemoContent && <DemoBanner />}
+
+      <Header
+        announcement={settings.announcement}
+        isSignedIn={Boolean(session)}
+      />
 
       <main id="main">{children}</main>
 
