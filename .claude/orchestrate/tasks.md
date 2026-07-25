@@ -193,7 +193,7 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 ## PHASE 13 — LAUNCH
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P13-01 | Content load into Sanity with client | **A** | ⬜ | |
+| P13-01 | Content load into Sanity with client | **A** | 🔄 | **Sanity project `7h7vbi97` is LIVE and connected.** Seeded 26 starter documents via `npm run seed:sanity` (idempotent). Site now reads real CMS content, demo fallback retired. ⚠️ `siteSettings` contact email/phone/WhatsApp seeded EMPTY on purpose — Studio flags them red until the client fills them, because a fake address on a live-looking site is worse than none. Testimonials deliberately NOT seeded. Remaining: Jyoti replaces the 8 sample POSH sections (that is P0-04). |
 | P13-02 | Client UAT on staging | all | ⬜ | |
 | P13-03 | /ship | Lead | ⬜ | |
 
