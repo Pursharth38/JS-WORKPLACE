@@ -1,5 +1,3 @@
-import type { PortableTextBlock } from "@portabletext/react";
-
 import { isTiptapDoc, richTextToPlainText, type RichBody } from "@/lib/richtext";
 
 /** Average adult reading speed for non-fiction prose. */

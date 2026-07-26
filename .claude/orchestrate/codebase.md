@@ -46,8 +46,15 @@ app/
 │       ├── chapter/[n]/assessment/page.tsx
 │       └── final-test/page.tsx
 │
-├── admin/page.tsx                    ← [B] role=ADMIN
-├── studio/[[...tool]]/page.tsx       ← [A] Sanity Studio — EXCLUDED from auth middleware
+├── admin/                             ← [B, expanded by CMS migration 2026-07-26 — see below]
+│   ├── page.tsx  layout.tsx  actions.ts       role=ADMIN, nav shell owns requireAdmin() per render
+│   ├── blog/{page,[id]/page,actions}.tsx      posts + inline category manager
+│   ├── courses/{page,[courseId]/page,actions}.tsx
+│   │   └── [courseId]/[chapterId]/{page, module/[moduleId]/page, question/[questionId]/page}.tsx
+│   ├── services/  posh-hub/  ic-reference/  faq/  testimonials/  instagram/  cta-bands/
+│   │   each: {page,[id]/page,actions}.tsx — same list+edit+reorder pattern
+│   └── settings/{page,actions}.tsx            SiteSettingsRow singleton upsert
+├── studio/[[...tool]]/page.tsx       ← [A] Sanity Studio — EXCLUDED from auth middleware, STILL LIVE
 │
 ├── sitemap.ts  robots.ts             ← [A] generated from Sanity
 ├── opengraph-image.tsx               ← [A] per-route OG images
@@ -57,7 +64,7 @@ app/
     ├── checkout/create-order/route.ts← [B] PRICE FROM DB
     ├── webhooks/
     │   ├── razorpay/route.ts         ← [B] HMAC verified, idempotent, replay-safe
-    │   └── sanity/route.ts           ← [A] secret verified, structure upsert, revalidate
+    │   └── sanity/route.ts           ← [A] secret verified, structure upsert, revalidate — STILL LIVE, unaffected by the CMS migration until cutover
     ├── video/token/[moduleId]/route.ts   ← [C] signed ≤5min, re-checks enrol + unlock
     ├── progress/heartbeat/route.ts   ← [C] server-clamped delta
     ├── assessment/
@@ -67,7 +74,11 @@ app/
     │   ├── issue/route.ts            ← [B] idempotent; runtime='nodejs'
     │   └── [certId]/verify/route.ts  ← [B] public
     ├── leads/route.ts                ← [A] rate-limited, honeypot, Turnstile
-    └── youtube/latest/route.ts       ← [C] public, no auth. Caching lives in lib/youtube.ts
+    ├── youtube/latest/route.ts       ← [C] public, no auth. Caching lives in lib/youtube.ts
+    ├── admin/upload/route.ts         ← [CMS migration] ADMIN only, magic-byte sniffed, R2 content/ prefix
+    └── images/[...key]/route.ts      ← [CMS migration] PUBLIC, but serves ONLY the content/ prefix —
+                                          certificates/invoices in the same private R2 bucket stay
+                                          unreachable by construction
 ```
 
 ---
@@ -85,19 +96,34 @@ components/
 │   hero · stat-band · service-card · course-card · post-card
 │   testimonial-slider · cta-band · lead-form · newsletter-form
 │   toc-sidebar (scroll-spy) · reading-progress · back-to-top
-│   prose-block · callout-box
+│   prose-block · callout-box · rich-text ← [CMS migration] format-detecting: prose-block renders
+│                            EITHER Portable Text OR a Tiptap doc (RichBody union) so no page
+│                            changed when its content type migrated; rich-text is the Tiptap-only
+│                            renderer prose-block delegates to
 │   complaint-journey        ← [C]'s Animation B, built DOM+`motion` (not Lottie)
 │   harassment-spectrum      ← [C]'s Animation A, built DOM+`motion` (not Lottie)
 │   workplace-protection     ← [C]'s Animation C, built DOM+`motion` (not Lottie)
 │   youtube-lite       ← [C] click-to-load façade, no iframe until clicked
-│   insta-grid         ← [C] renders Sanity `instagramPost` docs, no live API
+│   insta-grid         ← [C] renders content-layer `instagramPost` docs (Sanity or Postgres,
+│                            transparent via the flip rule), no live API
 │   (no lottie-loop — no Lottie JSON exists in this project; see DECISIONS LOG 2026-07-26)
 │
-└── learn/                            ← [C] unless noted
-    video-player · curriculum-tree (lock states) · progress-ring
-    quiz-runner · result-panel
-    certificate-card   ← [B]
-    verify-result      ← [B]
+├── learn/                            ← [C] unless noted
+│   video-player · curriculum-tree (lock states) · progress-ring
+│   quiz-runner · result-panel
+│   certificate-card   ← [B]
+│   verify-result      ← [B]
+│
+└── admin/                             ← [CMS migration, 2026-07-26]
+    ├── crud/           shared kit: fields.tsx · image-field.tsx · save-bar.tsx (2-step delete,
+    │                   no browser confirm()) · reorder-buttons.tsx · list-page.tsx · types.ts
+    ├── editor/         Tiptap custom nodes: callout-node.tsx · data-table-node.tsx
+    ├── rich-text-editor.tsx   the Tiptap instance every content form embeds
+    ├── upload-image.ts         client → POST /api/admin/upload helper
+    ├── nav.tsx                 admin section tabs (used by app/admin/layout.tsx)
+    └── {blog,course,chapter,module,question,service,posh-section,quick-reference,
+        cta-band,testimonial,instagram,settings}-form.tsx  one form per content type,
+        each a thin composition of the crud/ kit + rich-text-editor
 ```
 
 ---
@@ -117,8 +143,29 @@ lib/
 │
 ├── db.ts               ← [A] Prisma singleton
 ├── response.ts         ← [A] apiResponse() — ALL routes use this
-├── sanity.ts           ← [A] client + typed GROQ helpers
+├── sanity.ts           ← [A] client + typed GROQ helpers. STILL the source of truth for any
+│                            content type with zero Postgres rows (the flip rule) — not dead code
 ├── seo.ts              ← [A] JSON-LD builders
+│
+├── content.ts          ← [CMS migration] THE façade — every page imports content from here,
+│                            never from lib/sanity.ts or lib/content/* directly. Re-exports
+│                            Sanity getters for unmigrated types, Postgres getters for migrated
+│                            ones. Its header comment is the live migration-state checklist.
+├── content/             ← [CMS migration] Postgres-backed getters, one file per type family
+│   simple.ts    faq · testimonial · service · instagramPost · siteSettings
+│   blog.ts      post/category — published = isPublished AND publishedAt ≤ now
+│   hub.ts       poshSection · quickReference · ctaBand
+│   courses.ts   course/chapter/module — PUBLIC path; videoUid never selected, at any depth
+├── richtext.ts          ← [CMS migration] Tiptap JSON: the Zod write-gate (security boundary —
+│                            unknown nodes/attrs/hrefs rejected), RichBody coexistence type,
+│                            plain-text + reading-time derivations
+├── portable-text-to-tiptap.ts  ← [CMS migration] PT → Tiptap converter for the migration script;
+│                            output re-validated by the same gate as the live editor
+├── images.ts             ← [CMS migration] content/ key convention, magic-byte sniffing
+├── admin-content.ts       ← [CMS migration] FormData parsing helpers + the reorder-swap algorithm
+│                            shared by every admin CRUD action
+├── posh-groups.ts         ← [A, pre-existing] the 11 Knowledge Hub groups; both sanity/schemas/
+│                            and app/admin/posh-hub import this so the group list has one owner
 │
 ├── unlock.ts           ← [C] ★ THE CORRECTNESS CORE — two reviewers required
 ├── stream.ts           ← [C] Cloudflare Stream signed-token minting
@@ -130,6 +177,10 @@ lib/
 
 **`lib/unlock.ts` is the single authority for gating.** Every route that reveals content calls
 `computeUnlockState(userId, courseId)`. No route re-implements a gate inline.
+
+**`lib/content.ts` is the single authority for content source.** Every page reads through it; no
+page imports `lib/sanity.ts` or `lib/content/*` directly (the sole exception is
+`app/api/webhooks/sanity/route.ts`, which is Sanity-sync plumbing, not a content read).
 
 ---
 
@@ -144,6 +195,11 @@ sanity/
 ├── desk-structure.ts   ← [A] custom Studio nav so the client is not lost
 └── env.ts
 ```
+
+**STILL FULLY LIVE.** The CMS migration (2026-07-26, branch `cms-migration`) does not touch this
+directory — Studio, its schemas, and `/api/webhooks/sanity` remain the source of truth for any
+content type that has zero rows in its Postgres equivalent (see `lib/content.ts`'s flip rule).
+Deletion is a separate, explicitly-approved future cutover step — not part of M1–M6-prep.
 
 ---
 
@@ -254,6 +310,32 @@ app/page.tsx          P1-01 placeholder. Replaced by P3-01.
 > **Correction to this document:** Tailwind v4 is CSS-first. There is **no `tailwind.config.ts`** — the
 > line in FILE CREATION ORDER below that says `tailwind.config` means the `@theme` block in
 > `app/globals.css`, which is what the `app/` tree at the top of this file already described.
+
+---
+
+## CMS MIGRATION FILE COUNT (branch `cms-migration`, 2026-07-26)
+
+Not folded into the counts above — this is a separate, unmerged branch. Full narrative:
+`orchestrate/tasks.md` "2026-07-26 session, part 4"; plan doc: `documentation/CMS-MIGRATION-PLAN.md`.
+
+```
+New lib/ files:        content.ts, content/{simple,blog,hub,courses}.ts, richtext.ts,
+                       portable-text-to-tiptap.ts, images.ts, admin-content.ts        (9)
+New app/admin/ routes: blog, courses(+chapter+module+question nesting), services,
+                       posh-hub, ic-reference, faq, testimonials, instagram,
+                       cta-bands, settings — each with actions.ts + page.tsx(+[id])   (~30 files)
+New app/api/ routes:   admin/upload, images/[...key]                                  (2)
+New components/admin/: crud/* (6), editor/* (2), rich-text-editor.tsx, upload-image.ts,
+                       nav.tsx, 11 per-type -form.tsx files                            (~21)
+New components/marketing/: rich-text.tsx                                              (1)
+New scripts/:           migrate-sanity-to-postgres.mts                                (1)
+New tests/unit/:        richtext.test.ts, images.test.ts                              (+21 tests)
+Prisma migration:       20260726063709_cms_content_models
+```
+
+Verified: `tsc --noEmit` clean · ESLint 0 errors/0 warnings · 78/78 tests · production `next build`
+succeeds on every route · both mandatory security greps clean · migration dry run against the live
+Sanity project (`7h7vbi97`) reports 26/26 ready, 0 skipped, 0 warnings.
 
 Phase 0 deliverables complete (non-app, see NON-APP DELIVERABLES above):
 - `design/colour-boards/index.html` + `CONTRAST-REPORT.md`  — P0-03 ✅ awaiting client pick

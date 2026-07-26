@@ -62,19 +62,77 @@ restart), P4-05 + P12-01..04 (SEO, deferred by direction), P13-01 (needs client 
 run, not run this session), P7-06 Razorpay activation (external KYC on Razorpay's dashboard —
 not something a coding session can do), ModuleProgress/AssessmentAttempt and Enrollment halves
 of P1-05a (owner: Dev C / undecided — do not touch, see prisma/schema.prisma header).
-**Next action:** (1) send P0-03 + P0-04 to the client — everything else Dev A owns is done and
-five sign-offs are now the critical path; (2) **restart Claude Code**, then run `/qa` (P5-R) —
-that is the SHIP STAGE 1 gate and the marketing site is ready to go live behind it;
-(3) Dev C starts Phase 8 against Dev B's H3/H4 contracts and must overwrite the
-`lib/progress.ts` stub; (4) run `/cso` on the payment path (P7-R).
 **Unblocked by Dev A this session:** P7-06 Razorpay activation (legal pages are live) and
 H2 for Dev C (Sanity question schema).
-**Blocking dependency:** client must supply original Knowledge Hub content. Unchanged and still
-the single highest risk — the Hub renders 11 groups but currently has zero sections to render.
+**Blocking dependency:** client must supply original Knowledge Hub content. Largely superseded —
+see the 2026-07-26 CMS migration entry below: 8 real POSH Hub sections now exist and are ready
+to migrate off Sanity, so this is no longer a zero-content blocker, though more sections are
+still welcome.
 **Merge note:** `MERGE-NOTES.md` at repo root is Dev B's handover; its `## MERGE RESOLUTION`
 section records what Dev A actually did, including three deliberate deviations.
 **Environment note:** gstack was missing and is now installed globally (`~/.claude/skills/gstack`, team
 mode). It needs `bun`, which was also installed. Skills require a Claude Code restart to register.
+
+**2026-07-26 session, part 4 (CMS migration, branch `cms-migration`):** executed
+CMS-MIGRATION-PLAN.md phases M0–M5 plus M6-prep, per the user's approval and the two amendments
+recorded above in the DECISIONS LOG (Tiptap JSON storage, not sanitized HTML; stop before
+cutover). Summary — full detail is in the plan document's own status header and in the M0–M6
+commit history on this branch:
+- **M0:** `lib/content.ts` façade created; all 30 non-webhook Sanity import sites rewritten to
+  `@/lib/content`. Nothing behind the façade changed yet — purely a seam so every later phase is
+  a one-getter swap with zero page churn.
+- **M1 (a–e):** Prisma content models for every migrated type (`BlogPost`, `BlogCategory`,
+  `Service`, `PoshSection`, `QuickReference`, `Faq`, `Testimonial`, `InstagramPost`,
+  `SiteSettingsRow`, `Question`, plus content fields on `Course`/`Chapter`/`Module`) — migration
+  `20260726063709_cms_content_models`, applied to Neon. `lib/richtext.ts`: a strict Zod schema is
+  the write-side security gate for Tiptap JSON (rejects unknown node types, `javascript:`/`data:`
+  hrefs — no sanitizer needed because storage is structured data, not HTML).
+  `components/marketing/rich-text.tsx` is the React renderer, reusing `CalloutBox`/`DataTable` so
+  those stay real components, not injected markup. `lib/portable-text-to-tiptap.ts` converts with
+  warnings instead of silent data loss. Tiptap editor with custom callout/table nodes
+  (`components/admin/rich-text-editor.tsx` + `editor/*`). Image pipeline:
+  `POST /api/admin/upload` (ADMIN-only, magic-byte sniffed, SVG rejected) +
+  `GET /api/images/[...key]` (public, but ONLY serves the `content/` prefix — certificates and
+  invoices in the same private R2 bucket stay unreachable by construction). Admin shell:
+  `app/admin/layout.tsx` with nav tabs, shared CRUD kit (`components/admin/crud/*`) — fields,
+  `SaveBar` with two-step delete (no browser `confirm()`), `ReorderButtons`.
+- **M2–M5:** all nine content types migrated with the same **flip rule** everywhere: a type
+  serves from Postgres once it has rows there (courses: once *content* exists, since structural
+  rows always lived in Postgres from Phase 2), and falls through to the existing Sanity getter
+  until then — so the site never had a moment of missing content, and both systems can coexist
+  indefinitely. `ProseBlock` now format-detects (Portable Text array vs. Tiptap doc) so pages
+  didn't need to change at all. `urlForImage()` now has **zero call sites in components** — every
+  image getter resolves to a plain URL before the page ever sees it. Full admin CRUD for all nine
+  types plus the course/chapter/module/question tree (`/admin/courses/[id]/[chapterId]/...`).
+  Two extra security disciplines worth flagging: (1) POSH Hub/Quick-Reference **anchors are
+  permanent public deep links** — the `SlugField` locks them behind an explicit unlock, and the
+  server action independently refuses an anchor change on a published row without that unlock's
+  confirm flag; (2) the **question editor is the only surface that ever renders `isCorrect`**
+  (server-rendered, `requireAdmin`-gated) — list views show counts only, and `videoUid` /
+  `correctOptionId` were re-grepped clean outside `lib/unlock`, `api/video`, `api/assessment`,
+  and the now-admin-only edit surfaces.
+- **M6-prep:** `scripts/migrate-sanity-to-postgres.mts` — reads the live Sanity project over its
+  HTTP query API, converts bodies through the *same* `parseRichText` gate the admin editor uses,
+  plans/uploads image assets to R2, upserts everything by `sanityId` (idempotent re-runs). Dry
+  run is the default and writes nothing; `--execute` refuses to start without R2 configured.
+  **Dry run against the live project (`7h7vbi97`) results: 26/26 documents ready, 0 skipped, 0
+  warnings** — 1 siteSettings, 3 FAQs, 6 services, 3 posts + 3 categories, 8 POSH sections, 2
+  quick-reference cards. 0 testimonials/instagram/courses exist yet in Sanity, so nothing to skip
+  there either.
+- **Full verification:** `tsc --noEmit` clean, ESLint clean (0 errors, 0 warnings after removing
+  3 now-dead imports), 78/78 tests green (were 57 pre-migration; +21 new: richtext write-gate,
+  PT→Tiptap converter, image sniffing/prefix-boundary), production `next build` succeeds on every
+  route including the new `/admin/*` tree and `/api/images/[...key]`, both mandatory security
+  greps (forbidden-claims, gated-content leak) clean.
+- **What did NOT happen, deliberately:** the real `--execute` migration run, Sanity Studio
+  deletion, the `/api/webhooks/sanity` deletion, and the `sanity`/`@sanity/*` dependency removal.
+  Per the approved stop-before-cutover scope, Sanity remains fully live and authoritative for any
+  type with zero Postgres rows. Cutover is a separate, explicitly-approved future step.
+**Next action (CMS migration):** (1) user reviews the branch and clicks around `/admin`;
+(2) when satisfied, run `npx tsx --env-file=.env scripts/migrate-sanity-to-postgres.mts --execute`
+to perform the real migration (idempotent — safe to re-run); (3) spot-check the migrated content
+on the live site; (4) only then, as an explicit separate decision, decommission Sanity Studio and
+the sync webhook and merge `cms-migration` into `main`/`integration-a-b`.
 
 ---
 

@@ -1,21 +1,29 @@
 # CMS Migration Plan — Sanity → Custom Admin over Postgres
 
-> Status: **APPROVED 2026-07-26 — IN PROGRESS on branch `cms-migration`.** Approved by the user
-> with two amendments to §4/§7 (recorded in tasks.md DECISIONS LOG):
+> Status: **M1–M5 + M6-prep COMPLETE on branch `cms-migration` (2026-07-26). Awaiting user
+> review before M6-execute (real migration) and cutover.** Approved by the user with two
+> amendments to §4/§7 (recorded in tasks.md DECISIONS LOG):
 >
 > 1. **Rich text is stored as Tiptap JSON, not sanitized HTML.** The §4 rows that say "HTML" and
 >    the §5.2 sanitizer requirement are superseded: `body` columns hold Tiptap's structured JSON
->    document, validated by a Zod schema on every save, and rendered by a server-side React
->    renderer that maps node types to the existing `CalloutBox`/`DataTable` components. No
->    `dangerouslySetInnerHTML`, no DOMPurify — structured data in, React out, so the XSS surface
->    §5.2 worried about never exists.
-> 2. **Scope stops before cutover.** M1–M5 plus the M6 migration script WITH dry-run are built;
->    the actual cutover (real data migration, Studio deletion, webhook deletion, Sanity
->    decommission) waits for explicit user go-ahead after they have used the new admin. Until
->    then Sanity remains live and `lib/content.ts` swaps per-type getters as each phase lands.
+>    document, validated by a Zod schema (`lib/richtext.ts`) on every save, and rendered by a
+>    server-side React renderer (`components/marketing/rich-text.tsx`) that maps node types to
+>    the existing `CalloutBox`/`DataTable` components. No `dangerouslySetInnerHTML`, no DOMPurify
+>    — structured data in, React out, so the XSS surface §5.2 worried about never exists.
+> 2. **Scope stops before cutover.** M1–M5 are built, and M6 exists as a dry-run-by-default
+>    script (`scripts/migrate-sanity-to-postgres.mts`) whose dry run against the live project
+>    (`7h7vbi97`) reports **26/26 documents ready, 0 skipped, 0 warnings**. The actual
+>    `--execute` run, Sanity Studio deletion, webhook deletion, and dependency removal all wait
+>    for explicit user go-ahead. Until then Sanity remains fully live and `lib/content.ts` swaps
+>    per-type getters via the **flip rule**: a type serves from Postgres once it has rows there,
+>    and falls through to Sanity otherwise — so both systems coexist safely for as long as
+>    needed, and nothing about this plan required a moment of missing content.
 >
 > Referenced from `.claude/CLAUDE.md`'s SOURCE-OF-TRUTH SPLIT section — that rule now reads
-> "transitioning per the amendments above" for the duration of the migration.
+> "transitioning per the amendments above, per-type, via the flip rule in `lib/content/*`" for
+> the duration of the migration. Full session narrative: `orchestrate/tasks.md`'s "2026-07-26
+> session, part 4" entry. Verification: `tsc`/ESLint clean, 78/78 tests (+21 from this work),
+> production build succeeds, both mandatory security greps clean.
 
 ---
 

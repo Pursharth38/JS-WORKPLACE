@@ -6,7 +6,6 @@
 // just in middleware (JWT read, up to 30 days stale).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { RevokeForm } from '@/components/admin/revoke-form'

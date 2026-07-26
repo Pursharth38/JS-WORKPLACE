@@ -2,7 +2,6 @@ import "server-only";
 
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { createClient, type QueryParams } from "next-sanity";
-import type { PortableTextBlock } from "@portabletext/react";
 import type { RichBody } from "@/lib/richtext";
 
 import { apiVersion, dataset, isSanityConfigured, projectId } from "@/sanity/env";
