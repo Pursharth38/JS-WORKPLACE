@@ -140,50 +140,267 @@ model PasswordResetToken {
   @@index([userId])
 }
 
-// ── COURSE STRUCTURE (mirror of Sanity — structure only, never body copy) ────
+// ── COURSE STRUCTURE + CONTENT ──────────────────────────────────────────────
+// CMS MIGRATION (M1a, 2026-07-26): these models were a structure-only mirror of
+// Sanity ("never body copy"). Per the approved CMS-MIGRATION-PLAN.md they now
+// ALSO own the content fields Sanity used to hold. `sanityId` became optional:
+// rows created in the new admin have no Sanity counterpart (multiple NULLs are
+// fine under a unique index), while webhook-synced rows keep upserting by it
+// until cutover. All `Json` body columns hold Tiptap documents validated by
+// lib/richtext.ts on every save — never raw HTML.
 
 model Course {
   id            String  @id @default(cuid())
-  sanityId      String  @unique
+  sanityId      String? @unique // null ⇒ created in /admin, not synced from Sanity
   slug          String  @unique
   title         String
   priceInPaise  Int // ★ the only price authority — checkout reads this
   isPublished   Boolean @default(false)
   passThreshold Int     @default(85) // final test %
 
+  // content (M1a additions — nullable so existing rows are untouched)
+  summary          String?
+  description      Json? // Tiptap doc
+  learningOutcomes String[] @default([])
+  courseFaqs       Json? // {question, answer}[] — plain strings, matches CourseDetail.faqs
+  durationMinutes  Int?
+  coverImageKey    String? // R2 object key
+  seoTitle         String?
+  seoDescription   String?
+
   enrollments Enrollment[]
   chapters    Chapter[]
 }
 
 model Chapter {
-  id            String @id @default(cuid())
-  sanityId      String @unique
+  id            String  @id @default(cuid())
+  sanityId      String? @unique
   courseId      String
   order         Int
   title         String
-  passThreshold Int    @default(80) // chapter assessment %
+  passThreshold Int     @default(80) // chapter assessment %
+  summary       String? // M1a
 
-  course   Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  modules  Module[]
-  attempts AssessmentAttempt[]
+  course    Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  modules   Module[]
+  attempts  AssessmentAttempt[]
+  questions Question[]
 
   @@unique([courseId, order])
 }
 
 model Module {
   id              String  @id @default(cuid())
-  sanityId        String  @unique
+  sanityId        String? @unique
   chapterId       String
   order           Int
   title           String
   videoUid        String // Cloudflare Stream UID — NEVER emitted for a locked module
   durationSeconds Int
   isFreePreview   Boolean @default(false)
+  notes           Json? // M1a — Tiptap doc, learner-facing module notes
 
   chapter  Chapter          @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   progress ModuleProgress[]
 
   @@unique([chapterId, order])
+}
+
+// Assessment question pool (M5). Content lives here once migrated off Sanity.
+// ★ `options` is `{id, text, isCorrect}[]`. isCorrect NEVER reaches any client
+//   payload — not the learner's /api/assessment/start, and not the admin list
+//   endpoints either (the admin edit form is server-rendered).
+model Question {
+  id          String   @id @default(cuid())
+  sanityId    String?  @unique
+  chapterId   String
+  text        String
+  options     Json // {id, text, isCorrect}[]
+  topic       String // drives the weak-topics feedback in /assessment/submit
+  explanation String?
+  isActive    Boolean  @default(true) // retired questions stop being drawn without deleting attempts' history
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([chapterId, isActive])
+}
+
+// ── SITE CONTENT (CMS migration M1a) ────────────────────────────────────────
+// Postgres-owned replacements for the Sanity document types. Each keeps a
+// nullable unique `sanityId` so the one-time migration script can upsert
+// idempotently and a re-run cannot duplicate rows.
+
+model BlogCategory {
+  id          String   @id @default(cuid())
+  sanityId    String?  @unique
+  title       String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  posts BlogPost[]
+}
+
+model BlogPost {
+  id                String    @id @default(cuid())
+  sanityId          String?   @unique
+  title             String
+  slug              String    @unique
+  excerpt           String
+  body              Json // Tiptap doc
+  coverImageKey     String? // R2 object key
+  coverImageAlt     String?
+  categoryId        String?
+  tags              String[]  @default([])
+  relatedHubAnchors String[]  @default([]) // anchors into /posh-act
+  seoTitle          String?
+  seoDescription    String?
+  isPublished       Boolean   @default(false)
+  publishedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  category BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([isPublished, publishedAt])
+}
+
+model Service {
+  id             String   @id @default(cuid())
+  sanityId       String?  @unique
+  title          String
+  slug           String   @unique
+  summary        String
+  order          Int      @default(0)
+  icon           String?
+  whoItIsFor     String[] @default([])
+  whatIsCovered  String[] @default([])
+  format         String?
+  body           Json? // Tiptap doc
+  seoTitle       String?
+  seoDescription String?
+  isPublished    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isPublished, order])
+}
+
+model PoshSection {
+  id          String   @id @default(cuid())
+  sanityId    String?  @unique
+  title       String
+  // ⚠️ Anchors are PERMANENT public deep links (/posh-act#<anchor>) shared in
+  // trainings and emails. The admin UI warns loudly before letting one change.
+  anchor      String   @unique
+  group       String
+  order       Int      @default(0)
+  summary     String?
+  isFaq       Boolean  @default(false)
+  body        Json // Tiptap doc
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([group, order])
+}
+
+model QuickReference {
+  id          String   @id @default(cuid())
+  sanityId    String?  @unique
+  title       String
+  anchor      String   @unique
+  order       Int      @default(0)
+  intro       String?
+  body        Json // Tiptap doc
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Faq {
+  id          String   @id @default(cuid())
+  sanityId    String?  @unique
+  question    String
+  answer      Json // Tiptap doc
+  category    String
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category, order])
+}
+
+model Testimonial {
+  id            String   @id @default(cuid())
+  sanityId      String?  @unique
+  quote         String
+  authorName    String
+  authorRole    String?
+  organization  String?
+  // No default on purpose: whoever inserts a row must state explicitly whether
+  // written permission is on file. Public getters filter on it; the admin form
+  // makes it a hard-required checkbox. Same rule as the Sanity schema had.
+  consentOnFile Boolean
+  order         Int      @default(0)
+  isPublished   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model InstagramPost {
+  id          String   @id @default(cuid())
+  sanityId    String?  @unique
+  imageKey    String // R2 object key
+  imageAlt    String?
+  permalink   String
+  caption     String
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CtaBand {
+  id          String   @id @default(cuid())
+  sanityId    String?  @unique
+  heading     String
+  body        String?
+  buttonLabel String
+  buttonHref  String
+  afterGroup  String? // which /posh-act group this band renders after
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Singleton: id is always "singleton" — the upsert in the admin action pins it,
+// mirroring Sanity Studio's singleton-pin trick at the database level.
+model SiteSettingsRow {
+  id                     String   @id @default("singleton")
+  businessName           String   @default("JS Workplace Wellness")
+  email                  String   @default("")
+  phone                  String?
+  whatsappNumber         String?
+  whatsappDefaultMessage String?
+  addressLines           String[] @default([])
+  linkedinUrl            String?
+  instagramUrl           String?
+  youtubeUrl             String?
+  announcementEnabled    Boolean  @default(false)
+  announcementText       String?
+  announcementHref       String?
+  heroHeading            String?
+  heroSubheading         String?
+  heroPrimaryCtaLabel    String?
+  heroPrimaryCtaHref     String?
+  legalEntityName        String?
+  gstin                  String?
+  supportEmail           String?
+  updatedAt              DateTime @updatedAt
 }
 
 // ── STATE ───────────────────────────────────────────────────────────────────
