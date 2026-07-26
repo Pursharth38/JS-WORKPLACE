@@ -1,38 +1,43 @@
 // CMS migration M2 — /admin/services list.
-import type { Metadata } from 'next'
-import Link from 'next/link'
+import type { Metadata } from "next";
+import Link from "next/link";
 
-import {
-  AdminEmpty,
-  AdminPageHeader,
-  PublishBadge,
-} from '@/components/admin/crud/list-page'
-import { ReorderButtons } from '@/components/admin/crud/reorder-buttons'
-import { db } from '@/lib/db'
-import { moveService } from './actions'
+import { AdminEmpty, AdminPageHeader } from "@/components/admin/crud/list-page";
+import { PublishToggle } from "@/components/admin/crud/publish-toggle";
+import { ReorderButtons } from "@/components/admin/crud/reorder-buttons";
+import { db } from "@/lib/db";
+import { moveService, togglePublish } from "./actions";
 
-export const metadata: Metadata = { title: 'Services' }
-export const dynamic = 'force-dynamic'
+export const metadata: Metadata = { title: "Services" };
+export const dynamic = "force-dynamic";
 
 export default async function AdminServicesPage() {
   const rows = await db.service.findMany({
-    orderBy: { order: 'asc' },
-    select: { id: true, title: true, slug: true, summary: true, isPublished: true },
-  })
+    orderBy: { order: "asc" },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      summary: true,
+      isPublished: true,
+    },
+  });
 
   return (
     <div>
       <AdminPageHeader
         title="Services"
         description="The training practice's offerings, in the order they appear on /services."
+        helpText="These are the services you offer — awareness sessions, Internal Committee training, policy drafting, and so on. Each one gets its own page on the public site describing what it covers and who it's for, like a menu. The order you arrange them here (use the ↑/↓ buttons) is the exact order visitors see them in on /services."
         newHref="/admin/services/new"
         newLabel="New service"
       />
 
       {rows.length === 0 ? (
         <AdminEmpty>
-          No services in the database yet — the site is still serving the Sanity content.
-          The first service you create (or migrate) flips /services to this list.
+          No services in the database yet — the site is still serving the Sanity
+          content. The first service you create (or migrate) flips /services to
+          this list.
         </AdminEmpty>
       ) : (
         <ul className="overflow-hidden rounded-[var(--radius-md)] border border-[var(--brand-line)] bg-[var(--brand-elevated)]">
@@ -51,16 +56,22 @@ export default async function AdminServicesPage() {
                 href={`/admin/services/${s.id}`}
                 className="min-w-0 flex-1 hover:text-[var(--brand-primary)]"
               >
-                <span className="block truncate text-[15px] font-medium">{s.title}</span>
+                <span className="block truncate text-[15px] font-medium">
+                  {s.title}
+                </span>
                 <span className="block truncate text-[13px] text-[var(--brand-muted)]">
                   /services/{s.slug} — {s.summary}
                 </span>
               </Link>
-              <PublishBadge published={s.isPublished} />
+              <PublishToggle
+                id={s.id}
+                published={s.isPublished}
+                action={togglePublish}
+              />
             </li>
           ))}
         </ul>
       )}
     </div>
-  )
+  );
 }
