@@ -3,6 +3,7 @@ import "server-only";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { createClient, type QueryParams } from "next-sanity";
 import type { PortableTextBlock } from "@portabletext/react";
+import type { RichBody } from "@/lib/richtext";
 
 import { apiVersion, dataset, isSanityConfigured, projectId } from "@/sanity/env";
 import {
@@ -136,7 +137,7 @@ export type PoshSection = {
   order: number;
   summary?: string;
   isFaq?: boolean;
-  body: PortableTextBlock[];
+  body: RichBody;
 };
 
 export type CtaBand = {
@@ -159,7 +160,7 @@ export type PostSummary = {
 };
 
 export type Post = PostSummary & {
-  body: PortableTextBlock[];
+  body: RichBody;
   tags?: string[];
   seoTitle?: string;
   seoDescription?: string;
@@ -174,7 +175,7 @@ export type QuickReference = {
   anchor: string;
   order: number;
   intro?: string;
-  body: PortableTextBlock[];
+  body: RichBody;
 };
 
 export type ServiceSummary = {
@@ -190,7 +191,7 @@ export type Service = ServiceSummary & {
   whoItIsFor?: string[];
   whatIsCovered?: string[];
   format?: string;
-  body?: PortableTextBlock[];
+  body?: RichBody;
   seoTitle?: string;
   seoDescription?: string;
 };
@@ -198,7 +199,7 @@ export type Service = ServiceSummary & {
 export type Faq = {
   _id: string;
   question: string;
-  answer: PortableTextBlock[];
+  answer: RichBody;
   category: string;
   order: number;
 };
@@ -213,7 +214,8 @@ export type Testimonial = {
 
 export type InstagramPost = {
   _id: string;
-  image: SanityImage;
+  /** Fully resolved image URL — Sanity CDN or /api/images/<key> (M2). */
+  imageUrl: string;
   permalink: string;
   caption: string;
   order: number;
@@ -230,7 +232,7 @@ export type CourseSummary = {
 };
 
 export type CourseDetail = CourseSummary & {
-  description?: PortableTextBlock[];
+  description?: RichBody;
   learningOutcomes?: string[];
   faqs?: { question: string; answer: string }[];
   seoTitle?: string;
@@ -415,14 +417,29 @@ export function getTestimonials(): Promise<Testimonial[]> {
  * null on an empty list), the same degrade-to-nothing pattern StatBand uses
  * for uninvented statistics.
  */
-export function getInstagramPosts(): Promise<InstagramPost[]> {
-  return sanityFetch<InstagramPost[]>({
+export async function getInstagramPosts(): Promise<InstagramPost[]> {
+  // Fetches the raw Sanity image object, then resolves it to a URL here so
+  // consumers only ever see `imageUrl` — the same shape the Postgres-backed
+  // getter produces (M2), which is what lets the two swap invisibly.
+  const raw = await sanityFetch<
+    { _id: string; image: SanityImage; permalink: string; caption: string; order: number }[]
+  >({
     query: `*[_type == "instagramPost"] | order(order asc){
       _id, image, permalink, caption, order
     }`,
     tags: [TAGS.instagramPost],
     fallback: [],
   });
+
+  return raw
+    .filter((p) => p.image?.asset?._ref)
+    .map((p) => ({
+      _id: p._id,
+      imageUrl: urlForImage(p.image).width(640).height(640).url(),
+      permalink: p.permalink,
+      caption: p.caption,
+      order: p.order,
+    }));
 }
 
 /**

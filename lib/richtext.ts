@@ -20,6 +20,7 @@
 // bold/italic/link. Adding a node type is a schema change HERE first, then the
 // renderer, then the editor — in that order.
 // ─────────────────────────────────────────────────────────────────────────────
+import type { PortableTextBlock } from "@portabletext/react";
 import { z } from "zod";
 
 /* ── Link safety ──────────────────────────────────────────────────────────── */
@@ -220,6 +221,25 @@ export type RichTextInline = z.infer<typeof inlineNode>;
 export type RichTextMark = z.infer<typeof mark>;
 
 export const EMPTY_DOC: RichTextDoc = { type: "doc", content: [] };
+
+/**
+ * COEXISTENCE TYPE (M2). During the Sanity → Postgres migration a body field
+ * is either legacy Portable Text (an array) or a Tiptap doc (object with
+ * type:"doc"). ProseBlock branches on `Array.isArray` and renders the right
+ * engine, so pages don't care which system a row came from. Collapses to
+ * plain RichTextDoc at cutover.
+ */
+export type RichBody = PortableTextBlock[] | RichTextDoc;
+
+/** Discriminates a RichBody at render/convert boundaries. */
+export function isTiptapDoc(value: unknown): value is RichTextDoc {
+  return (
+    !!value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    (value as { type?: string }).type === "doc"
+  );
+}
 
 /**
  * The write gate. Throws ZodError on anything outside the vocabulary — admin

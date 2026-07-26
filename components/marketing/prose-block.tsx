@@ -3,8 +3,10 @@ import type { PortableTextBlock } from "@portabletext/react";
 import Link from "next/link";
 
 import { cn } from "@/lib/cn";
+import { isTiptapDoc, type RichBody } from "@/lib/richtext";
 import { CalloutBox } from "./callout-box";
 import { DataTable } from "./data-table";
+import { RichText } from "./rich-text";
 
 /**
  * Renders Sanity Portable Text.
@@ -117,14 +119,29 @@ const components: PortableTextComponents = {
   },
 };
 
+/**
+ * The single rich-body entry point for every page.
+ *
+ * COEXISTENCE (CMS migration M2): accepts BOTH body formats — legacy Portable
+ * Text arrays from Sanity and Tiptap docs from Postgres — and dispatches to
+ * the matching renderer. Pages pass whatever the content getter returned and
+ * never know which system a row came from. At cutover this collapses to a
+ * thin wrapper over RichText.
+ */
 export function ProseBlock({
   value,
   className,
 }: {
-  value: PortableTextBlock[] | undefined;
+  value: RichBody | undefined | null;
   className?: string;
 }) {
-  if (!value || value.length === 0) return null;
+  if (!value) return null;
+
+  if (isTiptapDoc(value)) {
+    return <RichText value={value} className={className} />;
+  }
+
+  if (value.length === 0) return null;
 
   return (
     <div className={cn("[&>*:first-child]:mt-0", className)}>

@@ -10,9 +10,11 @@
 // change.
 //
 // MIGRATION STATE (update this table as phases land):
-//   ⬜ siteSettings   ⬜ faq          ⬜ testimonial   ⬜ service
-//   ⬜ instagramPost  ⬜ post/category ⬜ poshSection  ⬜ quickReference
+//   ✅ siteSettings   ✅ faq          ✅ testimonial   ✅ service
+//   ✅ instagramPost  ⬜ post/category ⬜ poshSection  ⬜ quickReference
 //   ⬜ ctaBand        ⬜ course       ⬜ question
+// ✅ = served by lib/content/* (Postgres once the type has rows; Sanity until
+// then — the flip rule in lib/content/simple.ts).
 //
 // When the LAST row flips and cutover is approved, lib/sanity.ts and this
 // re-export layer collapse into plain Prisma modules.
@@ -45,9 +47,8 @@ export {
   type CourseSummary,
   type CourseDetail,
 
-  // getters — swapped to Prisma-backed implementations phase by phase
+  // getters still Sanity-backed (M3–M5 swap these)
   SITE_SETTINGS_FALLBACK,
-  getSiteSettings,
   getPoshSections,
   getQuickReferences,
   getCtaBands,
@@ -56,11 +57,16 @@ export {
   getPostsByCategory,
   getRelatedPosts,
   getCategories,
-  getServices,
-  getServiceBySlug,
-  getFaqs,
-  getTestimonials,
-  getInstagramPosts,
   getCourseBySlug,
   getCourses,
 } from "@/lib/sanity";
+
+// M2 — Postgres-backed (with per-type Sanity fallback until rows exist)
+export {
+  getFaqs,
+  getTestimonials,
+  getServices,
+  getServiceBySlug,
+  getInstagramPosts,
+  getSiteSettings,
+} from "@/lib/content/simple";

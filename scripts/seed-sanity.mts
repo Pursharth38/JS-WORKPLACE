@@ -93,7 +93,12 @@ function block(text: string): PortableTextBlock {
 }
 
 /** Re-key fixture Portable Text, which was built for rendering, not storage. */
-function reblock(blocks: PortableTextBlock[]): PortableTextBlock[] {
+// RichBody (M2): demo content is always the Portable Text half of the union —
+// this seed script writes INTO Sanity, so a Tiptap doc here would be a bug.
+function reblock(blocks: import("@/lib/richtext").RichBody): PortableTextBlock[] {
+  if (!Array.isArray(blocks)) {
+    throw new Error("seed-sanity: demo body must be Portable Text, got a Tiptap doc");
+  }
   return blocks.map((b) => {
     const children = (b as unknown as { children?: { text?: string }[] })
       .children;
