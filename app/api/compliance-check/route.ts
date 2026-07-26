@@ -42,12 +42,18 @@ export async function POST(req: NextRequest) {
     }
 
     if (!data.consentGiven) {
-      return apiResponse(400, "Please tick the consent box so we can email you.");
+      return apiResponse(
+        400,
+        "Please tick the consent box so we can email you.",
+      );
     }
 
     const human = await verifyTurnstile(data.turnstileToken, ip);
     if (!human) {
-      return apiResponse(400, "Could not verify that you are human. Please try again.");
+      return apiResponse(
+        400,
+        "Could not verify that you are human. Please try again.",
+      );
     }
 
     const result = scoreAnswers(data.answers);
@@ -68,17 +74,24 @@ export async function POST(req: NextRequest) {
       select: { id: true },
     });
 
-    // Report to the visitor, notification to the client. Neither blocks the
-    // response — the Lead row is already committed.
-    void (async () => {
-      await sendComplianceReportEmail({
-        to: data.email,
-        name: data.name,
-        scorePercent: result.scorePercent,
-        bandLabel: result.bandLabel,
-        gaps: result.gaps,
-      });
+    // The visitor's own email IS the response — awaited and checked, so the
+    // message we return reflects what actually happened rather than what we
+    // hoped would happen. (Previously this was fire-and-forget: the route
+    // replied "Sent" unconditionally, even when Resend rejected the send —
+    // which it always does outside the account owner's own inbox until a
+    // domain is verified. That looked like a working feature and wasn't one.)
+    const emailSent = await sendComplianceReportEmail({
+      to: data.email,
+      name: data.name,
+      scorePercent: result.scorePercent,
+      bandLabel: result.bandLabel,
+      gaps: result.gaps,
+    });
 
+    // The internal notification to the client stays fire-and-forget — it's
+    // not part of the promise made to the visitor, and the Lead row (which is
+    // what actually matters for follow-up) is already committed either way.
+    void (async () => {
       const settings = await getSiteSettings();
       if (settings.email) {
         await sendLeadNotification({
@@ -91,8 +104,17 @@ export async function POST(req: NextRequest) {
         });
       }
     })().catch((err) =>
-      console.error("[api/compliance-check] email failed", err),
+      console.error("[api/compliance-check] lead notification failed", err),
     );
+
+    if (!emailSent) {
+      // Not a failure the visitor needs to retry over — their result is still
+      // on screen above this form, so nothing they came for is lost.
+      return apiResponse(
+        502,
+        "We saved your result, but the email couldn't be sent just now. Your score above is unaffected — please try again in a moment.",
+      );
+    }
 
     return apiResponse(200, "Sent — check your inbox for the written report.");
   } catch (err) {
