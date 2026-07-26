@@ -1,5 +1,5 @@
 // DEV B — a single certificate on /dashboard/certificates. Server component.
-import Link from 'next/link'
+import Link from "next/link";
 
 export function CertificateCard({
   certId,
@@ -8,16 +8,18 @@ export function CertificateCard({
   issuedAt,
   revoked,
 }: {
-  certId: string
-  courseTitle: string
-  learnerName: string
-  issuedAt: Date
-  revoked: boolean
+  certId: string;
+  courseTitle: string;
+  learnerName: string;
+  issuedAt: Date;
+  revoked: boolean;
 }) {
   return (
     <div
-      className="rounded-lg border bg-white p-6"
-      style={{ borderColor: revoked ? 'var(--brand-danger)' : 'var(--brand-line)' }}
+      className="rounded-lg border bg-[var(--brand-elevated)] p-6"
+      style={{
+        borderColor: revoked ? "var(--brand-danger)" : "var(--brand-line)",
+      }}
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
@@ -26,14 +28,18 @@ export function CertificateCard({
           </p>
           <h2 className="mt-1 text-[20px]">{courseTitle}</h2>
           <p className="mt-1 text-[15px] text-[var(--brand-muted)]">
-            Issued to <strong className="text-[var(--brand-ink)]">{learnerName}</strong> on{' '}
-            {issuedAt.toLocaleDateString('en-IN', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
+            Issued to{" "}
+            <strong className="text-[var(--brand-ink)]">{learnerName}</strong>{" "}
+            on{" "}
+            {issuedAt.toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
             })}
           </p>
-          <p className="mt-2 font-mono text-[14px] text-[var(--brand-muted)]">{certId}</p>
+          <p className="mt-2 font-mono text-[14px] text-[var(--brand-muted)]">
+            {certId}
+          </p>
         </div>
 
         {revoked ? (
@@ -60,14 +66,17 @@ export function CertificateCard({
 
       {revoked && (
         <p className="mt-4 border-t border-[var(--brand-line)] pt-3 text-[14px] leading-relaxed text-[var(--brand-muted)]">
-          This certificate has been withdrawn and can no longer be downloaded or verified.
-          If you believe this is a mistake,{' '}
-          <Link href="/contact" className="text-[var(--brand-primary)] underline">
+          This certificate has been withdrawn and can no longer be downloaded or
+          verified. If you believe this is a mistake,{" "}
+          <Link
+            href="/contact"
+            className="text-[var(--brand-primary)] underline"
+          >
             contact us
           </Link>
           .
         </p>
       )}
     </div>
-  )
+  );
 }

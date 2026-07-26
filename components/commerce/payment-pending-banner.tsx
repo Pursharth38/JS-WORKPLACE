@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEV B — bridges the gap between Razorpay's browser callback and our webhook.
@@ -11,73 +11,77 @@
 // It polls a read-only summary endpoint. It cannot and does not grant access;
 // it only asks the server whether the enrolment has appeared yet.
 // ─────────────────────────────────────────────────────────────────────────────
-import { useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-const POLL_MS = 2500
-const GIVE_UP_MS = 45_000
+const POLL_MS = 2500;
+const GIVE_UP_MS = 45_000;
 
 export function PaymentPendingBanner({ courseSlug }: { courseSlug: string }) {
-  const router = useRouter()
-  const [state, setState] = useState<'waiting' | 'slow'>('waiting')
+  const router = useRouter();
+  const [state, setState] = useState<"waiting" | "slow">("waiting");
   // Seeded in the effect, not during render: `Date.now()` in a render body is
   // impure and trips react-hooks/purity under React 19. The ref is only ever
   // read inside the effect below, so seeding it there is equivalent.
-  const startedAt = useRef(0)
+  const startedAt = useRef(0);
 
   useEffect(() => {
-    let cancelled = false
-    startedAt.current = Date.now()
+    let cancelled = false;
+    startedAt.current = Date.now();
 
     const tick = async () => {
-      if (cancelled) return
+      if (cancelled) return;
 
       try {
-        const res = await fetch('/api/dashboard/summary', { cache: 'no-store' })
+        const res = await fetch("/api/dashboard/summary", {
+          cache: "no-store",
+        });
         const payload: {
-          data: { enrollments: { slug: string }[] } | null
-        } = await res.json()
+          data: { enrollments: { slug: string }[] } | null;
+        } = await res.json();
 
-        const found = payload.data?.enrollments.some((e) => e.slug === courseSlug)
+        const found = payload.data?.enrollments.some(
+          (e) => e.slug === courseSlug,
+        );
         if (found) {
           // The enrolment exists. Re-render the server component tree so the
           // course appears, and drop the ?payment=processing query.
-          router.replace('/dashboard')
-          router.refresh()
-          return
+          router.replace("/dashboard");
+          router.refresh();
+          return;
         }
       } catch {
         // Network blip — just try again on the next tick.
       }
 
       if (Date.now() - startedAt.current > GIVE_UP_MS) {
-        setState('slow')
-        return
+        setState("slow");
+        return;
       }
-      timer = setTimeout(tick, POLL_MS)
-    }
+      timer = setTimeout(tick, POLL_MS);
+    };
 
-    let timer = setTimeout(tick, POLL_MS)
+    let timer = setTimeout(tick, POLL_MS);
     return () => {
-      cancelled = true
-      clearTimeout(timer)
-    }
-  }, [courseSlug, router])
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [courseSlug, router]);
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className="mb-8 rounded-lg border border-[var(--brand-line)] bg-white p-5"
+      className="mb-8 rounded-lg border border-[var(--brand-line)] bg-[var(--brand-elevated)] p-5"
     >
-      {state === 'waiting' ? (
+      {state === "waiting" ? (
         <>
           <p className="text-[17px] font-semibold text-[var(--brand-primary)]">
             Confirming your payment…
           </p>
           <p className="mt-1 text-[15px] leading-relaxed text-[var(--brand-muted)]">
-            This usually takes a few seconds. Your course will appear below automatically —
-            you do not need to refresh or pay again.
+            This usually takes a few seconds. Your course will appear below
+            automatically — you do not need to refresh or pay again.
           </p>
         </>
       ) : (
@@ -86,9 +90,10 @@ export function PaymentPendingBanner({ courseSlug }: { courseSlug: string }) {
             Your payment is taking longer than usual to confirm
           </p>
           <p className="mt-1 text-[15px] leading-relaxed text-[var(--brand-muted)]">
-            If money has left your account, it has been received and your enrolment will
-            appear shortly — <strong>please do not pay again</strong>. If it has not
-            appeared within an hour, contact us with your payment reference and we will
+            If money has left your account, it has been received and your
+            enrolment will appear shortly —{" "}
+            <strong>please do not pay again</strong>. If it has not appeared
+            within an hour, contact us with your payment reference and we will
             sort it out.
           </p>
           <a
@@ -100,5 +105,5 @@ export function PaymentPendingBanner({ courseSlug }: { courseSlug: string }) {
         </>
       )}
     </div>
-  )
+  );
 }

@@ -1,20 +1,28 @@
 // DEV B — Google OAuth entry point. Server component wrapping a form so it
 // works without JavaScript; the action performs the redirect server-side.
-import { googleSignInAction } from '@/app/(auth)/actions'
+import { googleSignInAction } from "@/app/(auth)/actions";
 
 export function GoogleButton({
   redirectTo,
-  label = 'Continue with Google',
+  label = "Continue with Google",
 }: {
-  redirectTo?: string
-  label?: string
+  redirectTo?: string;
+  label?: string;
 }) {
   return (
     <form action={googleSignInAction}>
-      {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
+      {redirectTo && (
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+      )}
+      {/* Google's brand guidelines fix this button's colours regardless of host-site
+          theme, the same way an Apple Pay or PayPal button would — so every colour
+          here is a literal, not a --brand-* token. Using text-[var(--brand-ink)] on
+          bg-white broke exactly this way: --brand-ink flips to near-white in dark
+          mode, so the label went invisible on the still-white button (same bug as
+          the Field inputs in form-fields.tsx, fixed alongside this). */}
       <button
         type="submit"
-        className="flex w-full items-center justify-center gap-2.5 rounded-md border border-[var(--brand-line)] bg-white px-4 py-3 text-[16px] font-medium text-[var(--brand-ink)] transition-colors hover:bg-[var(--brand-surface)]"
+        className="flex w-full items-center justify-center gap-2.5 rounded-md border border-[#dadce0] bg-white px-4 py-3 text-[16px] font-medium text-[#3c4043] transition-colors hover:bg-[#f8f9fa]"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
           <path
@@ -37,5 +45,5 @@ export function GoogleButton({
         {label}
       </button>
     </form>
-  )
+  );
 }

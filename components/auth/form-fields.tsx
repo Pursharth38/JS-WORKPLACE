@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEV B — form primitives for the auth pages ONLY.
@@ -13,13 +13,13 @@
 // token file can replace app/globals.css without touching these components.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useId } from 'react'
-import { useFormStatus } from 'react-dom'
+import { useId } from "react";
+import { useFormStatus } from "react-dom";
 
 export function Field({
   label,
   name,
-  type = 'text',
+  type = "text",
   required = false,
   autoComplete,
   defaultValue,
@@ -27,24 +27,28 @@ export function Field({
   placeholder,
   inputMode,
 }: {
-  label: string
-  name: string
-  type?: string
-  required?: boolean
-  autoComplete?: string
-  defaultValue?: string
-  hint?: string
-  placeholder?: string
-  inputMode?: 'text' | 'email' | 'tel' | 'numeric'
+  label: string;
+  name: string;
+  type?: string;
+  required?: boolean;
+  autoComplete?: string;
+  defaultValue?: string;
+  hint?: string;
+  placeholder?: string;
+  inputMode?: "text" | "email" | "tel" | "numeric";
 }) {
-  const id = useId()
-  const hintId = hint ? `${id}-hint` : undefined
+  const id = useId();
+  const hintId = hint ? `${id}-hint` : undefined;
 
   return (
     <div className="mb-4">
       <label htmlFor={id} className="mb-1.5 block text-[15px] font-medium">
         {label}
-        {!required && <span className="ml-1.5 text-[13px] text-[var(--brand-muted)]">optional</span>}
+        {!required && (
+          <span className="ml-1.5 text-[13px] text-[var(--brand-muted)]">
+            optional
+          </span>
+        )}
       </label>
       <input
         id={id}
@@ -56,25 +60,28 @@ export function Field({
         placeholder={placeholder}
         inputMode={inputMode}
         aria-describedby={hintId}
-        className="w-full rounded-md border border-[var(--brand-line)] bg-white px-3 py-2.5 text-[16px] text-[var(--brand-ink)] outline-none transition-colors focus:border-[var(--brand-primary)]"
+        className="w-full rounded-md border border-[var(--brand-line)] bg-[var(--brand-elevated)] px-3 py-2.5 text-[16px] text-[var(--brand-ink)] outline-none transition-colors focus:border-[var(--brand-primary)]"
       />
       {hint && (
-        <p id={hintId} className="mt-1.5 text-[13px] leading-relaxed text-[var(--brand-muted)]">
+        <p
+          id={hintId}
+          className="mt-1.5 text-[13px] leading-relaxed text-[var(--brand-muted)]"
+        >
           {hint}
         </p>
       )}
     </div>
-  )
+  );
 }
 
 export function ConsentCheckbox({
   name,
   children,
 }: {
-  name: string
-  children: React.ReactNode
+  name: string;
+  children: React.ReactNode;
 }) {
-  const id = useId()
+  const id = useId();
   return (
     <div className="mb-5 flex items-start gap-2.5">
       {/*
@@ -88,43 +95,59 @@ export function ConsentCheckbox({
         required
         className="mt-1 h-4 w-4 shrink-0 accent-[var(--brand-primary)]"
       />
-      <label htmlFor={id} className="text-[14px] leading-relaxed text-[var(--brand-muted)]">
+      <label
+        htmlFor={id}
+        className="text-[14px] leading-relaxed text-[var(--brand-muted)]"
+      >
         {children}
       </label>
     </div>
-  )
+  );
 }
 
 /** Invisible to humans, irresistible to bots. Paired with the `website` field in signupSchema. */
 export function Honeypot() {
   return (
-    <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="absolute left-[-9999px] h-0 w-0 overflow-hidden"
+    >
       <label htmlFor="website">Leave this field empty</label>
-      <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+      <input
+        id="website"
+        name="website"
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+      />
     </div>
-  )
+  );
 }
 
 export function SubmitButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useFormStatus()
+  const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
       className="w-full rounded-md bg-[var(--brand-primary)] px-4 py-3 text-[17px] font-semibold text-white transition-colors hover:bg-[var(--brand-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {pending ? 'Please wait…' : children}
+      {pending ? "Please wait…" : children}
     </button>
-  )
+  );
 }
 
 /**
  * `role="status"` + `aria-live="polite"` so a screen reader announces the
  * result of a Server Action, which produces no navigation to announce.
  */
-export function FormAlert({ state }: { state: { status: string; message?: string } }) {
-  if (state.status === 'idle' || !state.message) return null
-  const isError = state.status === 'error'
+export function FormAlert({
+  state,
+}: {
+  state: { status: string; message?: string };
+}) {
+  if (state.status === "idle" || !state.message) return null;
+  const isError = state.status === "error";
 
   return (
     <div
@@ -132,12 +155,14 @@ export function FormAlert({ state }: { state: { status: string; message?: string
       aria-live="polite"
       className="mb-4 rounded-md border px-3.5 py-3 text-[15px] leading-relaxed"
       style={{
-        borderColor: isError ? 'var(--brand-danger)' : 'var(--brand-success)',
-        color: isError ? 'var(--brand-danger)' : 'var(--brand-success)',
-        background: isError ? 'var(--brand-danger-soft)' : 'var(--brand-success-soft)',
+        borderColor: isError ? "var(--brand-danger)" : "var(--brand-success)",
+        color: isError ? "var(--brand-danger)" : "var(--brand-success)",
+        background: isError
+          ? "var(--brand-danger-soft)"
+          : "var(--brand-success-soft)",
       }}
     >
       {state.message}
     </div>
-  )
+  );
 }

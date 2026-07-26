@@ -339,3 +339,34 @@ table,
     transform: translateY(100%);
   }
 }
+
+@keyframes gradient-text-shift {
+  to {
+    background-position: 300% center;
+  }
+}
+
+/* Continuously shifting gradient, clipped to text — the "name effect" on the
+   admin user card. First pass cycled only --brand-primary/--brand-accent,
+   which are both bronze-family and too close in hue to read as "changing"
+   at text size — fixed hex stops here instead, sweeping bronze → copper →
+   gold → amber so the movement is actually visible, while staying off
+   CLAUDE.md's forbidden pink/purple AND off the semantic --brand-danger /
+   --brand-success tokens (reusing those purely for decoration would make a
+   flickering name look like a status indicator). Frozen by the global
+   prefers-reduced-motion rule above like every other animation here. */
+.gradient-text {
+  background: linear-gradient(
+    90deg,
+    #7a5d2e,
+    #c1440e,
+    #e8a33d,
+    #9c3d1f,
+    #7a5d2e
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-text-shift 6s linear infinite;
+}

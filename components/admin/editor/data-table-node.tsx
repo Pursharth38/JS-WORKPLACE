@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 // CMS migration M1c — editor-side twin of the `dataTable` rich-text node.
 //
@@ -12,35 +12,42 @@ import {
   NodeViewWrapper,
   ReactNodeViewRenderer,
   type NodeViewProps,
-} from '@tiptap/react'
+} from "@tiptap/react";
 
 function TableView({ node, updateAttributes, deleteNode }: NodeViewProps) {
-  const caption = (node.attrs.caption as string | null) ?? ''
-  const headers = (node.attrs.headers as string[]) ?? []
-  const rows = (node.attrs.rows as string[][]) ?? []
+  const caption = (node.attrs.caption as string | null) ?? "";
+  const headers = (node.attrs.headers as string[]) ?? [];
+  const rows = (node.attrs.rows as string[][]) ?? [];
 
   const setHeader = (i: number, v: string) =>
-    updateAttributes({ headers: headers.map((h, idx) => (idx === i ? v : h)) })
+    updateAttributes({ headers: headers.map((h, idx) => (idx === i ? v : h)) });
   const setCell = (r: number, c: number, v: string) =>
     updateAttributes({
-      rows: rows.map((row, ri) => (ri === r ? row.map((cell, ci) => (ci === c ? v : cell)) : row)),
-    })
-  const addRow = () => updateAttributes({ rows: [...rows, headers.map(() => '')] })
-  const removeRow = (r: number) => updateAttributes({ rows: rows.filter((_, i) => i !== r) })
+      rows: rows.map((row, ri) =>
+        ri === r ? row.map((cell, ci) => (ci === c ? v : cell)) : row,
+      ),
+    });
+  const addRow = () =>
+    updateAttributes({ rows: [...rows, headers.map(() => "")] });
+  const removeRow = (r: number) =>
+    updateAttributes({ rows: rows.filter((_, i) => i !== r) });
   const addColumn = () =>
-    updateAttributes({ headers: [...headers, ''], rows: rows.map((row) => [...row, '']) })
+    updateAttributes({
+      headers: [...headers, ""],
+      rows: rows.map((row) => [...row, ""]),
+    });
   const removeColumn = (c: number) => {
-    if (headers.length <= 1) return
+    if (headers.length <= 1) return;
     updateAttributes({
       headers: headers.filter((_, i) => i !== c),
       rows: rows.map((row) => row.filter((_, i) => i !== c)),
-    })
-  }
+    });
+  };
 
   const cellCls =
-    'w-full min-w-[90px] rounded border border-[var(--brand-line)] bg-white px-2 py-1 text-[13px]'
+    "w-full min-w-[90px] rounded border border-[var(--brand-line)] bg-[var(--brand-elevated)] px-2 py-1 text-[13px]";
   const btnCls =
-    'rounded border border-[var(--brand-line)] px-2 py-0.5 text-[12px] text-[var(--brand-muted)] hover:bg-[var(--brand-line)]'
+    "rounded border border-[var(--brand-line)] px-2 py-0.5 text-[12px] text-[var(--brand-muted)] hover:bg-[var(--brand-line)]";
 
   return (
     <NodeViewWrapper
@@ -52,7 +59,7 @@ function TableView({ node, updateAttributes, deleteNode }: NodeViewProps) {
         onChange={(e) => updateAttributes({ caption: e.target.value || null })}
         placeholder="Table caption (optional)"
         aria-label="Table caption"
-        className="mb-2 w-full rounded border border-[var(--brand-line)] bg-white px-2 py-1 text-[13px]"
+        className="mb-2 w-full rounded border border-[var(--brand-line)] bg-[var(--brand-elevated)] px-2 py-1 text-[13px]"
       />
 
       <div className="overflow-x-auto">
@@ -68,7 +75,11 @@ function TableView({ node, updateAttributes, deleteNode }: NodeViewProps) {
                     aria-label={`Column ${i + 1} heading`}
                     className={`${cellCls} font-semibold`}
                   />
-                  <button type="button" onClick={() => removeColumn(i)} className={`${btnCls} mt-1`}>
+                  <button
+                    type="button"
+                    onClick={() => removeColumn(i)}
+                    className={`${btnCls} mt-1`}
+                  >
                     − col
                   </button>
                 </th>
@@ -89,7 +100,11 @@ function TableView({ node, updateAttributes, deleteNode }: NodeViewProps) {
                   </td>
                 ))}
                 <td className="p-1">
-                  <button type="button" onClick={() => removeRow(r)} className={btnCls}>
+                  <button
+                    type="button"
+                    onClick={() => removeRow(r)}
+                    className={btnCls}
+                  >
                     − row
                   </button>
                 </td>
@@ -106,36 +121,40 @@ function TableView({ node, updateAttributes, deleteNode }: NodeViewProps) {
         <button type="button" onClick={addColumn} className={btnCls}>
           + column
         </button>
-        <button type="button" onClick={deleteNode} className={`${btnCls} ml-auto text-[var(--brand-danger)]`}>
+        <button
+          type="button"
+          onClick={deleteNode}
+          className={`${btnCls} ml-auto text-[var(--brand-danger)]`}
+        >
           Delete table
         </button>
       </div>
     </NodeViewWrapper>
-  )
+  );
 }
 
 export const DataTableNode = Node.create({
-  name: 'dataTable',
-  group: 'block',
+  name: "dataTable",
+  group: "block",
   atom: true,
 
   addAttributes() {
     return {
       caption: { default: null },
-      headers: { default: ['Column 1', 'Column 2'] },
-      rows: { default: [['', '']] },
-    }
+      headers: { default: ["Column 1", "Column 2"] },
+      rows: { default: [["", ""]] },
+    };
   },
 
   parseHTML() {
-    return [{ tag: 'div[data-datatable]' }]
+    return [{ tag: "div[data-datatable]" }];
   },
 
   renderHTML() {
-    return ['div', { 'data-datatable': '' }]
+    return ["div", { "data-datatable": "" }];
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(TableView)
+    return ReactNodeViewRenderer(TableView);
   },
-})
+});
