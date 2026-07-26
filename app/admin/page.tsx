@@ -76,20 +76,9 @@ export default async function AdminPage() {
     }),
   ])
 
+  // Header + nav live in app/admin/layout.tsx since M1e.
   return (
-    <div className="min-h-screen bg-[var(--brand-surface)]">
-      <header className="border-b border-[var(--brand-line)] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4">
-          <span className="font-[family-name:var(--font-heading)] text-[18px] font-semibold text-[var(--brand-primary)]">
-            Admin — JS Workplace Wellness
-          </span>
-          <Link href="/dashboard" className="ml-auto text-[15px] text-[var(--brand-muted)] hover:underline">
-            Back to dashboard
-          </Link>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
+    <div>
         {/* ── Stats ─────────────────────────────────────────────────────── */}
         <section aria-labelledby="stats-h">
           <h1 id="stats-h" className="sr-only">Overview</h1>
@@ -170,7 +159,6 @@ export default async function AdminPage() {
             Download leads.csv
           </a>
         </AdminSection>
-      </main>
     </div>
   )
 }
