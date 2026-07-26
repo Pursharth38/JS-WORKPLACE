@@ -47,11 +47,12 @@ export {
   type CourseSummary,
   type CourseDetail,
 
-  // getters still Sanity-backed (M5 swaps these)
   SITE_SETTINGS_FALLBACK,
-  getCourseBySlug,
-  getCourses,
 } from "@/lib/sanity";
+
+// M5 — Postgres-backed courses (flips on course CONTENT existing, since the
+// structural rows have always been in Postgres)
+export { getCourses, getCourseBySlug } from "@/lib/content/courses";
 
 // M4 — Postgres-backed Knowledge Hub (per-type Sanity fallback until rows exist)
 export { getPoshSections, getQuickReferences, getCtaBands } from "@/lib/content/hub";
