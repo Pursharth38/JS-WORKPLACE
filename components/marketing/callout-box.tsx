@@ -24,12 +24,21 @@ export function CalloutBox({
   tone = "info",
   title,
   body,
+  children,
 }: {
   tone?: Tone;
   title?: string;
-  body: PortableTextBlock[];
+  /** Portable Text body — the Sanity-era call sites (ProseBlock). */
+  body?: PortableTextBlock[];
+  /**
+   * Pre-rendered content — the Tiptap-era call sites (RichText, CMS
+   * migration M1b). When both are given, children wins; when neither, the
+   * box renders nothing rather than an empty shell.
+   */
+  children?: React.ReactNode;
 }) {
   const style = TONES[tone] ?? TONES.info;
+  if (!children && (!body || body.length === 0)) return null;
 
   return (
     <aside
@@ -42,7 +51,7 @@ export function CalloutBox({
         {title || style.label}
       </p>
       <div className="mt-2 text-[16px] leading-[1.65] [&>p]:mt-2 [&>p:first-child]:mt-0">
-        <PortableText value={body} />
+        {children ?? <PortableText value={body!} />}
       </div>
     </aside>
   );
