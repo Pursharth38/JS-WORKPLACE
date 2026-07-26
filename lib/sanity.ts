@@ -63,6 +63,7 @@ export const TAGS = {
   faq: "faq",
   testimonial: "testimonial",
   course: "course",
+  instagramPost: "instagramPost",
 } as const;
 
 export type ContentTag = (typeof TAGS)[keyof typeof TAGS];
@@ -208,6 +209,14 @@ export type Testimonial = {
   authorName: string;
   authorRole?: string;
   organization?: string;
+};
+
+export type InstagramPost = {
+  _id: string;
+  image: SanityImage;
+  permalink: string;
+  caption: string;
+  order: number;
 };
 
 export type CourseSummary = {
@@ -395,6 +404,24 @@ export function getTestimonials(): Promise<Testimonial[]> {
     }`,
     tags: [TAGS.testimonial],
     fallback: usingDemoContent ? DEMO_TESTIMONIALS : [],
+  });
+}
+
+/**
+ * No demo-content fallback, unlike most other getters here — CLAUDE.md's
+ * "never invent testimonials, client logos" rule extends to this: a grid of
+ * fabricated Instagram posts is fake social proof, not a harmless layout
+ * placeholder. An unconfigured/empty grid renders nothing (InstaGrid returns
+ * null on an empty list), the same degrade-to-nothing pattern StatBand uses
+ * for uninvented statistics.
+ */
+export function getInstagramPosts(): Promise<InstagramPost[]> {
+  return sanityFetch<InstagramPost[]>({
+    query: `*[_type == "instagramPost"] | order(order asc){
+      _id, image, permalink, caption, order
+    }`,
+    tags: [TAGS.instagramPost],
+    fallback: [],
   });
 }
 

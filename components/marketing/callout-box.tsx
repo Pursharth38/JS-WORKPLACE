@@ -11,11 +11,11 @@ const TONES: Record<Tone, { wrap: string; label: string }> = {
     label: "Good to know",
   },
   warning: {
-    wrap: "border-[var(--brand-warning)] bg-[#FDF3E7]",
+    wrap: "border-[var(--brand-warning)] bg-[var(--brand-warning-soft)]",
     label: "Important",
   },
   legal: {
-    wrap: "border-[var(--brand-muted)] bg-[#F3F4F6]",
+    wrap: "border-[var(--brand-muted)] bg-[var(--brand-line)]",
     label: "Legal note",
   },
 };

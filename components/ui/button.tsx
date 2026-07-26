@@ -6,17 +6,28 @@ type Variant = "primary" | "accent" | "outline" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<Variant, string> = {
+  // Filled variants (primary/accent/danger) glow via `box-shadow` — a soft
+  // blur of the fill's own colour, no spread, so it reads as ambient light
+  // rather than a hard outline. Outline/ghost have no fill to glow, so their
+  // hover is a `text-shadow` on the label instead — "the words glow."
   primary:
-    "bg-[var(--brand-primary)] text-white hover:bg-[var(--brand-primary-hover)]",
-  // Amber fills carry an INK label, never white — white-on-amber is 3.29:1 and
-  // fails AA. See design/colour-boards/CONTRAST-REPORT.md Finding 2.
+    "bg-[var(--brand-primary)] text-white hover:bg-[var(--brand-primary-hover)] hover:shadow-[0_0_18px_var(--brand-primary)]",
+  // Accent fills carry an accent-on label, NEVER a hardcoded white — accent is
+  // theme-aware (brighter gold in dark mode) and white-on-gold fails AA at any
+  // brightness. This includes the HOVER state: the old palette's darker amber
+  // hover made `hover:text-white` safe, but --brand-accent-hover is also
+  // theme-aware now, so the label must stay accent-on on hover too.
   accent:
-    "bg-[var(--brand-accent)] text-[var(--brand-accent-on)] hover:bg-[var(--brand-accent-hover)] hover:text-white",
+    "bg-[var(--brand-accent)] text-[var(--brand-accent-on)] hover:bg-[var(--brand-accent-hover)] hover:shadow-[0_0_20px_var(--brand-accent)]",
   outline:
-    "border border-[var(--brand-primary)] text-[var(--brand-primary)] bg-transparent hover:bg-[var(--brand-primary-tint)]",
+    "border border-[var(--brand-primary)] text-[var(--brand-primary)] bg-transparent hover:bg-[var(--brand-primary-tint)] hover:[text-shadow:0_0_12px_var(--brand-primary)]",
   ghost:
-    "text-[var(--brand-primary)] bg-transparent hover:bg-[var(--brand-primary-tint)]",
-  danger: "bg-[var(--brand-danger)] text-white hover:brightness-110",
+    "text-[var(--brand-primary)] bg-transparent hover:bg-[var(--brand-primary-tint)] hover:[text-shadow:0_0_12px_var(--brand-primary)]",
+  // --brand-danger is also theme-aware (brighter red in dark mode, for text-
+  // on-navy readability), so its button-fill label needs the same accent-on
+  // treatment rather than a hardcoded white.
+  danger:
+    "bg-[var(--brand-danger)] text-[var(--brand-danger-on)] hover:brightness-110 hover:shadow-[0_0_18px_var(--brand-danger)]",
 };
 
 const SIZES: Record<Size, string> = {
@@ -27,7 +38,8 @@ const SIZES: Record<Size, string> = {
 
 const BASE =
   "inline-flex items-center justify-center gap-2 rounded-[var(--radius-md)] font-semibold " +
-  "transition-colors duration-150 disabled:opacity-55 disabled:pointer-events-none " +
+  "transition-[color,background-color,border-color,box-shadow,text-shadow] duration-150 " +
+  "disabled:opacity-55 disabled:pointer-events-none disabled:shadow-none " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-focus)]";
 
 /**
@@ -80,8 +92,7 @@ export function ButtonLink({
   children,
   href,
   ...props
-}: CommonProps &
-  Omit<ComponentProps<typeof Link>, "className" | "children">) {
+}: CommonProps & Omit<ComponentProps<typeof Link>, "className" | "children">) {
   return (
     <Link
       href={href}

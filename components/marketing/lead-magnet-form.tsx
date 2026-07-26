@@ -59,10 +59,10 @@ export function LeadMagnetForm({ compact = false }: { compact?: boolean }) {
       <div
         role="status"
         aria-live="polite"
-        className="rounded-[var(--radius-md)] border border-[var(--brand-success)] bg-[#E7F5EE] p-5"
+        className="rounded-[var(--radius-md)] border border-[var(--brand-success)] bg-[var(--brand-success-soft)] p-5"
       >
-        <p className="text-[17px] font-semibold text-[#054F35]">{message}</p>
-        <p className="mt-1 text-[15px] text-[#054F35]">
+        <p className="text-[17px] font-semibold text-[var(--brand-success)]">{message}</p>
+        <p className="mt-1 text-[15px] text-[var(--brand-success)]">
           If it does not arrive in a few minutes, check your spam folder.
         </p>
       </div>

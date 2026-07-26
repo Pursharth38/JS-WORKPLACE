@@ -12,5 +12,6 @@
  */
 export { BlurFade, BlurFadeStagger } from "./blur-fade";
 export { CountUp } from "./count-up";
+export { LoopVideo } from "./loop-video";
 export { SplitText } from "./split-text";
 export { Reveal } from "./reveal";

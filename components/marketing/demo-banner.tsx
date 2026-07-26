@@ -10,7 +10,7 @@
  */
 export function DemoBanner() {
   return (
-    <div className="bg-[var(--brand-warning)] px-4 py-2 text-center text-[14px] font-medium text-white">
+    <div className="bg-[var(--brand-warning)] px-4 py-2 text-center text-[14px] font-medium text-[var(--brand-warning-on)]">
       <span aria-hidden="true" className="mr-1.5">
         ⚠
       </span>

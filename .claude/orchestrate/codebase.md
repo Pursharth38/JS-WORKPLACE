@@ -13,7 +13,7 @@ app/
 │
 ├── (marketing)/                      ← [A] SSG/ISR. No client fetching on first paint.
 │   ├── layout.tsx                    ← Header + Footer + WhatsAppFAB
-│   ├── page.tsx                      ← Home (Lottie slots — [C] fills Phase 11)
+│   ├── page.tsx                      ← Home (Phase 11 animations wired in — DOM+motion, not Lottie)
 │   ├── about/page.tsx
 │   ├── services/page.tsx
 │   ├── services/[slug]/page.tsx
@@ -67,7 +67,7 @@ app/
     │   ├── issue/route.ts            ← [B] idempotent; runtime='nodejs'
     │   └── [certId]/verify/route.ts  ← [B] public
     ├── leads/route.ts                ← [A] rate-limited, honeypot, Turnstile
-    └── youtube/latest/route.ts       ← [C] cached 6h, stale fallback
+    └── youtube/latest/route.ts       ← [C] public, no auth. Caching lives in lib/youtube.ts
 ```
 
 ---
@@ -86,9 +86,12 @@ components/
 │   testimonial-slider · cta-band · lead-form · newsletter-form
 │   toc-sidebar (scroll-spy) · reading-progress · back-to-top
 │   prose-block · callout-box
-│   lottie-loop        ← [C]
-│   youtube-lite       ← [C]
-│   insta-grid         ← [C]
+│   complaint-journey        ← [C]'s Animation B, built DOM+`motion` (not Lottie)
+│   harassment-spectrum      ← [C]'s Animation A, built DOM+`motion` (not Lottie)
+│   workplace-protection     ← [C]'s Animation C, built DOM+`motion` (not Lottie)
+│   youtube-lite       ← [C] click-to-load façade, no iframe until clicked
+│   insta-grid         ← [C] renders Sanity `instagramPost` docs, no live API
+│   (no lottie-loop — no Lottie JSON exists in this project; see DECISIONS LOG 2026-07-26)
 │
 └── learn/                            ← [C] unless noted
     video-player · curriculum-tree (lock states) · progress-ring
@@ -137,7 +140,7 @@ sanity/
 ├── schemas/            ← [A]
 │   course.ts · chapter.ts · module.ts · question.ts
 │   post.ts · service.ts · poshSection.ts · faq.ts
-│   testimonial.ts · siteSettings.ts · index.ts
+│   testimonial.ts · instagramPost.ts · siteSettings.ts · index.ts
 ├── desk-structure.ts   ← [A] custom Studio nav so the client is not lost
 └── env.ts
 ```
@@ -150,7 +153,9 @@ sanity/
 prisma/schema.prisma    ← [A] owns file; migrations owned by the model's owner
 emails/                 ← [B] React Email templates (verify, reset, welcome, receipt)
                              [A] owns lead-magnet + compliance-report templates
-public/lottie/          ← [C] a-harassment.json · b-complaint-journey.json · c-who-protected.json
+(no public/lottie/ — the three Phase 11 animations are DOM+`motion`, not Lottie JSON; see
+                             DECISIONS LOG 2026-07-26 and components/marketing/complaint-journey.tsx)
+lib/youtube.ts          ← [C] YouTube Data API v3, 6h fetch-cache with stale-on-error fallback
 tests/
 ├── unit/               ← unlock.test.ts [C] · grading.test.ts [C] · certId.test.ts [B]
 ├── integration/        ← webhook-idempotency [B] · cert-idempotency [B] · sanity-sync [A]
@@ -197,13 +202,15 @@ Next.js and nothing here ships.
 6.  app/(marketing)/* + legal pages                           P3  [A]  → unblocks P7-06
 7.  app/(marketing)/posh-act                                  P4  [A]
 8.  blog, faq, lead magnet, compliance check                  P5  [A]  → SHIP STAGE 1
-9.  lib/auth.ts, lib/session.ts, app/(auth)/*, middleware.ts  P6  [B]  → H3
+9.  lib/auth.ts, lib/session.ts, app/(auth)/*, proxy.ts  P6  [B]  → H3
 10. lib/razorpay.ts, api/checkout, api/webhooks/razorpay      P7  [B]  → H4
 11. lib/stream.ts, lib/unlock.ts (+tests FIRST), api/video    P8  [C]
 12. lib/progress.ts, api/progress, components/learn/*         P8  [C]
 13. lib/grading.ts, api/assessment/*                          P9  [C]  → H5
 14. lib/certificate.ts, api/certificate/*, /verify            P10 [B]
-15. public/lottie/*, components/marketing/lottie-loop         P11 [C]
+15. components/marketing/{harassment-spectrum,workplace-       P11 [C]  (done 2026-07-26,
+    protection,youtube-lite,insta-grid}, lib/youtube.ts,                 by B — no Lottie,
+    api/youtube/latest, sanity/schemas/instagramPost.ts                 see DECISIONS LOG)
 16. sitemap, robots, opengraph, JSON-LD                       P12 [A]
 ```
 
@@ -266,7 +273,7 @@ lib/          auth.config.ts · auth.ts · session.ts (H3) · password.ts · tok
               email.ts · enrollment.ts (H4) · razorpay.ts · invoice.ts · r2.ts
               cert-id.ts · certificate.ts · admin-query.ts
               schemas/auth.ts · schemas/checkout.ts · schemas/certificate.ts
-middleware.ts (edge-safe: imports auth.config only, never Prisma)
+proxy.ts (edge-safe: imports auth.config only, never Prisma)
 app/(auth)/   layout · actions · login · signup · verify-email · forgot-password · reset-password
 app/(learner)/ layout · actions · dashboard · dashboard/certificates · dashboard/invoices
 app/admin/    page · actions
@@ -287,7 +294,14 @@ Extra routes beyond CONTRACTS.md (documented in MERGE-NOTES.md): `/api/invoice/[
 and `/api/certificate/[certId]/pdf` — authenticated downloads, because R2 objects are
 private and are never direct-linked.
 
-### Dev C app files — 0 / 18  (+ 1 stub carried over)
+### Dev C app files — Phase 11 (motion & embeds) done 2026-07-26, Phase 8/9 (the correctness
+### core — unlock engine, video gating, assessments) still 0 / 18 + 1 stub carried over
+> **Phase 11 done, built by Dev B in Dev C's absence** (see tasks.md Phase 11 table + DECISIONS
+> LOG 2026-07-26): `components/marketing/{harassment-spectrum,workplace-protection,youtube-lite,
+> insta-grid}.tsx`, `lib/youtube.ts`, `app/api/youtube/latest/route.ts`,
+> `sanity/schemas/instagramPost.ts`. None of it touches `lib/unlock.ts`, video tokens, progress,
+> or grading — Phase 8/9 remain entirely unstarted and are the actual correctness-core risk.
+>
 > `lib/progress.ts` is a fail-closed STUB Dev B wrote so the dashboard typechecked.
 > MERGE-NOTES.md §2 said delete it on merge; **Dev A deliberately kept it** — three merged
 > Dev B call sites import `getCourseProgress`, so deleting it breaks `next build` for the

@@ -14,7 +14,7 @@ export type VerifyOutcome =
 export function VerifyResult({ outcome, certId }: { outcome: VerifyOutcome; certId: string }) {
   if (outcome.kind === 'not_found') {
     return (
-      <div className="rounded-lg border border-[var(--brand-danger)] bg-white p-7">
+      <div className="rounded-lg border border-[var(--brand-danger)] bg-[var(--brand-elevated)] p-7">
         <p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--brand-danger)]">
           Not verified
         </p>
@@ -38,7 +38,7 @@ export function VerifyResult({ outcome, certId }: { outcome: VerifyOutcome; cert
 
   if (outcome.kind === 'revoked') {
     return (
-      <div className="rounded-lg border border-[var(--brand-accent)] bg-white p-7">
+      <div className="rounded-lg border border-[var(--brand-accent)] bg-[var(--brand-elevated)] p-7">
         <p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--brand-accent)]">
           Revoked
         </p>
@@ -59,7 +59,7 @@ export function VerifyResult({ outcome, certId }: { outcome: VerifyOutcome; cert
   }
 
   return (
-    <div className="rounded-lg border border-[var(--brand-success)] bg-white p-7">
+    <div className="rounded-lg border border-[var(--brand-success)] bg-[var(--brand-elevated)] p-7">
       <p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--brand-success)]">
         ✓ Verified
       </p>

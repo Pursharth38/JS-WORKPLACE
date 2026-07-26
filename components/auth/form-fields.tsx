@@ -134,7 +134,7 @@ export function FormAlert({ state }: { state: { status: string; message?: string
       style={{
         borderColor: isError ? 'var(--brand-danger)' : 'var(--brand-success)',
         color: isError ? 'var(--brand-danger)' : 'var(--brand-success)',
-        background: isError ? '#fdf3f1' : '#f1f8f4',
+        background: isError ? 'var(--brand-danger-soft)' : 'var(--brand-success-soft)',
       }}
     >
       {state.message}

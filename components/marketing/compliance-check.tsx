@@ -200,9 +200,9 @@ export function ComplianceCheck() {
           {emailState === "sent" ? (
             <div
               role="status"
-              className="mt-6 rounded-[var(--radius-lg)] border border-[var(--brand-success)] bg-[#E7F5EE] p-6"
+              className="mt-6 rounded-[var(--radius-lg)] border border-[var(--brand-success)] bg-[var(--brand-success-soft)] p-6"
             >
-              <p className="text-[17px] font-semibold text-[#054F35]">
+              <p className="text-[17px] font-semibold text-[var(--brand-success)]">
                 {emailMessage}
               </p>
             </div>

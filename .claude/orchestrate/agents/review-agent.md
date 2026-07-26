@@ -56,7 +56,7 @@ grep -n "SANITY_WEBHOOK_SECRET" app/api/webhooks/sanity/route.ts
 # Expected: present
 
 # Studio is excluded from the auth matcher
-grep -n "studio" middleware.ts
+grep -n "studio" proxy.ts
 # Expected: absent from matcher (Sanity handles its own auth)
 ```
 
@@ -98,7 +98,7 @@ grep -rn "signature ===" app/api/webhooks/                       # Expected: zer
 grep -n "req.text()" app/api/webhooks/razorpay/route.ts          # Expected: present
 
 # Prisma in edge middleware
-grep -n "@/lib/db\|prisma" middleware.ts                         # Expected: zero
+grep -n "@/lib/db\|prisma" proxy.ts                         # Expected: zero
 
 # Tokens in localStorage
 grep -rn "localStorage" app/ components/ lib/                    # Expected: zero

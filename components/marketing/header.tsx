@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/cn";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Container } from "./container";
 import { PRIMARY_NAV } from "./nav-links";
 
@@ -102,6 +103,8 @@ export function Header({
           </nav>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
+
             {/*
               The learner entry point. This was missing entirely until now —
               /login and /dashboard existed and worked, but nothing on the public
@@ -186,6 +189,13 @@ export function Header({
             </ul>
 
             <div className="mt-5 space-y-2">
+              <div className="flex items-center justify-between rounded-[var(--radius-md)] border border-[var(--brand-line)] px-3.5 py-2.5">
+                <span className="text-[15px] font-medium text-[var(--brand-ink)]">
+                  Theme
+                </span>
+                <ThemeToggle />
+              </div>
+
               <Link
                 href="/book-demo"
                 className="flex h-12 items-center justify-center rounded-[var(--radius-md)] bg-[var(--brand-primary)] text-[16px] font-semibold text-white"

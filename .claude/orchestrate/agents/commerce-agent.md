@@ -15,7 +15,7 @@ app/api/auth/[...nextauth]/
 app/api/checkout/**
 app/api/webhooks/razorpay/
 app/api/certificate/**
-middleware.ts                       ← You own this
+proxy.ts                       ← You own this
 lib/auth.ts, lib/session.ts, lib/enrollment.ts, lib/razorpay.ts, lib/certificate.ts
 components/learn/certificate-card.tsx, components/marketing/verify-result.tsx
 emails/  (verify, reset, welcome, receipt)
@@ -194,7 +194,7 @@ alphabet}`, checked for collision on insert.
 ## MIDDLEWARE — SESSION ONLY
 
 ```ts
-// middleware.ts
+// proxy.ts
 export const config = {
   matcher: ['/dashboard/:path*', '/learn/:path*', '/admin/:path*'],
   // NOTE: /studio is deliberately absent — Sanity handles its own auth
@@ -257,7 +257,7 @@ grep -rn "enrollment.create\|enrollment.upsert" app/ lib/ | grep -v "webhooks/ra
 # Expected: zero results
 
 # 3. Prisma imported into middleware
-grep -n "prisma\|@/lib/db" middleware.ts
+grep -n "prisma\|@/lib/db" proxy.ts
 # Expected: zero results
 
 # 4. Non-timing-safe signature comparison

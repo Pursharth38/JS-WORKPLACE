@@ -122,7 +122,8 @@ Payments:    Razorpay Orders API + HMAC-verified webhooks
 Email:       Resend + React Email
 Object store:Cloudflare R2 (certificates, invoices, lead magnets)
 PDF:         @react-pdf/renderer (Node runtime, NOT Edge)
-Animation:   Framer Motion + lottie-react
+Animation:   `motion` (Framer Motion's successor package) + lucide-react icons.
+             lottie-react is NOT a dependency — see the note under "Frontend" below.
 Validation:  Zod at every API boundary
 Rate limit:  Upstash Redis
 Analytics:   Plausible (cookieless — avoids a DPDP consent banner)
@@ -178,6 +179,15 @@ Instagram Basic Display API. Reasons are in ARCHITECTURE.md §1.1.
 A Sanity publish webhook hits `/api/webhooks/sanity` → upserts the structural mirror → revalidates
 cache tags. Content changes never require a deploy. Get this wrong and two systems disagree about
 what a course contains.
+
+> **PLANNED, NOT YET DECIDED OR EXECUTED (raised 2026-07-26):** the client has asked whether
+> blog/course/service content editing should move off Sanity Studio entirely and into a custom
+> admin UI merged into `/admin`, on the reasoning that a second CMS login is one login too many
+> for a non-technical owner. A migration architecture is written up at
+> `.claude/documentation/CMS-MIGRATION-PLAN.md` — mapping every current Sanity-owned feature to
+> its Postgres+admin-UI equivalent, phased, with tradeoffs. **This rule (Sanity owns content) is
+> still in force until that plan is reviewed and approved.** Do not start migrating content off
+> Sanity based on this note alone.
 
 ---
 
@@ -271,13 +281,35 @@ Stream UID for a locked module.
 - No `any`, no `@ts-ignore`.
 
 **Frontend:**
-- Brand is **Deep Teal `#0F5257`** with **Amber `#C77D26`** accent on **Sand `#FBF9F5`**.
-  NO pink, NO purple, NO pastel — it reads soft and undermines the legal authority she sells.
+> **BRAND PIVOT, 2026-07-26 (client-directed) — supersedes the original Deep Teal/Amber
+> rule below.** Brand is now a warm, Apple-adjacent **cream/bronze** palette in light mode —
+> **Cream `#F7F3EC`** surface, **Ink `#1D1D1F`** text, **Bronze `#7A5D2E`** primary, **Gold
+> `#B8863D`** accent — with a matching **dark theme** (**Navy `#12151B`** surface, **bright
+> Gold `#D4A24C`** accent), toggled by `components/ui/theme-toggle.tsx` and persisted to
+> `localStorage`. Full token set and the reasoning for which colours stay constant across
+> themes vs. which flip: `app/globals.css`'s header comment. Still NO pink, NO purple — the
+> "soft undermines legal authority" reasoning survives the repalette even though the exact
+> hexes don't. Old rule, kept for history: ~~Brand is Deep Teal `#0F5257` with Amber
+> `#C77D26` accent on Sand `#FBF9F5`~~.
 - Headings **Fraunces** (serif, 600), body **Inter** 17px/1.7, measure 68ch on the Knowledge Hub.
 - YouTube uses a **lite click-to-load façade**, never the standard iframe (~1.5 MB).
-- Lottie files ≤150 KB, `IntersectionObserver`-gated, skipped under `prefers-reduced-motion`, and
-  every animation has a static accessible HTML equivalent beneath it.
-- Amber on Sand only clears 4.5:1 at ≥18px — large CTAs only, never body text.
+- The three Phase 11 explainer animations are **DOM + `motion`, not Lottie JSON** — see
+  `components/marketing/complaint-journey.tsx`'s header comment for why, and
+  `orchestrate/tasks.md` DECISIONS LOG (2026-07-26) for the full record. `IntersectionObserver`
+  (via `useInView`)-gated, skipped under `prefers-reduced-motion`, and the explanation is real
+  DOM text by construction — no separate "static accessible equivalent" to bolt on.
+- Hover/ambient motion (`components/motion/border-beam.tsx`, the Hero's orbiting background
+  circles, the "How it works" connector beams) is decoration on top of already-complete content,
+  never required to understand the page, and freezes under `prefers-reduced-motion`.
+- Gold/bronze accent contrast varies by exact shade and theme — see `app/globals.css`'s
+  per-token comments before assuming a pairing is safe; this has not had the CONTRAST-REPORT.md
+  treatment (a measured, per-pair WCAG audit) that the original palette got. Treat as an open
+  follow-up, not settled.
+
+**Local preview:** `NEXT_PUBLIC_FORCE_DEMO=true` in `.env` renders the marketing site against
+demo/placeholder content instead of the real, seeded Sanity project — for checking what a design
+change looks like without touching real content. Never set it in production. See `.env.example`
+and `sanity/env.ts`.
 
 **Self-check after every gated route:**
 ```

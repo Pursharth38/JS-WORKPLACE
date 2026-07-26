@@ -157,7 +157,7 @@ These are implemented, not stubbed. Dev C can build against them today.
 | `videoUid` / `correctOptionId` leak grep | ✅ clean |
 | Hardcoded contact details | ✅ clean |
 | Bare `NextResponse.json` in `app/api/` | ✅ clean — every route goes through `apiResponse()` |
-| Prisma imported in `middleware.ts` | ✅ clean — edge-safe, imports `auth.config` only |
+| Prisma imported in `proxy.ts` | ✅ clean — edge-safe, imports `auth.config` only |
 
 ## §1 — the 10 "borrowed" files: 6 replaced, 4 ADOPTED
 
@@ -269,11 +269,14 @@ from `sanitizeRedirect()`, which correctly rejects non-relative and protocol-rel
 
 - Dev B's §3 Prisma additions and §7 client questions stand as written. The refund-revokes-
   access question is still open with the client.
-- `ARCHITECTURE.md §5` is still missing `ModuleProgress.lastHeartbeatAt`; `data-model.md`
-  is correct. Dev A to fix — it is the clamp basis for Dev C's heartbeat.
-- `CONTRACTS.md` still needs entries for `/api/invoice/[paymentId]` and
-  `/api/certificate/[certId]/pdf`.
-- Next 16 deprecation, emitted every build: **the `middleware` file convention is
-  deprecated in favour of `proxy`.** Dev B owns `middleware.ts`. Not urgent, not silent.
-- `.env.example` contains `NEXT_PUBLIC_WHATSAPP_NUMBER`, which contradicts
-  platform-agent.md's rule that the number lives in Sanity `siteSettings`. Resolve at P1-08.
+- ~~`ARCHITECTURE.md §5` is still missing `ModuleProgress.lastHeartbeatAt`~~ — **done.** Present
+  at ARCHITECTURE.md §5 line 213 (verified during the integration-a-b → main merge, 2026-07-26).
+- ~~`CONTRACTS.md` still needs entries for `/api/invoice/[paymentId]` and
+  `/api/certificate/[certId]/pdf`~~ — **done, 2026-07-26.** Both documented under COMMERCE /
+  CERTIFICATES in CONTRACTS.md.
+- ~~Next 16 deprecation... the `middleware` file convention is deprecated in favour of
+  `proxy`~~ — **done, 2026-07-26.** `git mv middleware.ts proxy.ts`; same default + `config`
+  export shape, no behaviour change. Deprecation warning confirmed gone from `npm run build`.
+- ~~`.env.example` contains `NEXT_PUBLIC_WHATSAPP_NUMBER`~~ — **already resolved at P1-08**
+  before this note was written; `.env.example` documents the removal explicitly. This bullet
+  was stale.

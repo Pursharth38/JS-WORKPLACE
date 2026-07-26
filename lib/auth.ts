@@ -2,7 +2,7 @@
 // DEV B — NODE-ONLY half of the Auth.js v5 configuration.
 //
 // Imports Prisma and bcryptjs, so this file MUST NOT be imported by
-// `middleware.ts`. Middleware imports `lib/auth.config.ts` instead.
+// `proxy.ts`. Middleware imports `lib/auth.config.ts` instead.
 // ─────────────────────────────────────────────────────────────────────────────
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import NextAuth, { CredentialsSignin } from 'next-auth'

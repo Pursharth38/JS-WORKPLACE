@@ -14,8 +14,8 @@
 // correct — it is the clamp basis for Dev C's heartbeat, and ARCHITECTURE.md §5
 // was the document that was wrong. That has now been corrected.
 //
-// ⚠️ ONE OPEN FINDING — REFERENTIAL ACTIONS. Eight relations below declare no
-// `onDelete`, so Prisma defaults them to `Restrict`:
+// ⚠️ P1-05a — REFERENTIAL ACTIONS. Eight relations declared no `onDelete`, so
+// Prisma defaulted them to `Restrict`:
 //
 //     Enrollment.user/.course · ModuleProgress.user/.module
 //     AssessmentAttempt.user/.chapter · Certificate.user · Payment.user
@@ -24,19 +24,27 @@
 // lesson. The privacy policy at /privacy commits to honouring deletion requests,
 // so this will surface the first time someone exercises that right.
 //
-// It is NOT simply a bug, which is why Dev A has not unilaterally migrated it:
-//   · Certificate — Restrict is arguably CORRECT. A certificate must stay
-//     verifiable; the policy says we retain the minimum needed for that.
-//   · Payment — Restrict is CORRECT. Financial records are retained for tax.
-//   · ModuleProgress / AssessmentAttempt — should almost certainly Cascade.
-//     They have no independent value and retaining them blocks a lawful erasure.
-//   · Enrollment — depends on whether access history is treated as a financial
-//     record. A judgement call, not a technical one.
-//
 // OWNERSHIP: Certificate and Payment are Dev B's models; ModuleProgress and
 // AssessmentAttempt are Dev C's. Each owner decides and migrates their own.
-// Tracked as P1-05a in orchestrate/tasks.md. Do not "fix" this in one sweep —
-// cascading a financial record away is worse than the problem.
+//
+//   · Certificate — DECIDED (Dev B, 2026-07-26): explicit Restrict. A
+//     certificate must stay verifiable; the policy retains the minimum needed
+//     for that. A `/privacy` deletion request anonymizes the User row instead
+//     of cascading the delete — see lib/ (Dev B's account-deletion path, when
+//     built) — it must not attempt db.user.delete() while certificates exist.
+//   · Payment — DECIDED (Dev B, 2026-07-26): explicit Restrict. Financial
+//     records are retained for GST/tax purposes; same anonymize-not-delete
+//     path applies.
+//   · ModuleProgress / AssessmentAttempt — still OPEN, owned by Dev C. Almost
+//     certainly Cascade (no independent value once the user is gone), but not
+//     migrated here — Dev C's lane has not started and this is not Dev B's
+//     model to decide or migrate.
+//   · Enrollment — still OPEN, no clear owner assignment in team-division.md
+//     for this specific decision. Depends on whether access history is a
+//     financial record. Flagged, not decided, by this pass.
+//
+// Do not "fix" this in one sweep — cascading a financial record away is worse
+// than the problem. Tracked as P1-05a in .claude/orchestrate/tasks.md.
 // ─────────────────────────────────────────────────────────────────────────────
 
 generator client {
@@ -242,7 +250,11 @@ model Certificate {
   revokedAt    DateTime?
   revokeReason String?
 
-  user User @relation(fields: [userId], references: [id])
+  // P1-05a (Dev B decision, 2026-07-26): explicit Restrict. A certificate must
+  // stay verifiable after a `/privacy` deletion request, so the account delete
+  // is what must be blocked/handled (e.g. anonymize User, keep Certificate),
+  // never a silent cascade that deletes proof a course was completed.
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   // Idempotency is enforced by a PARTIAL unique index that Prisma cannot express
   // in schema syntax. It is created by raw SQL in the migration:
@@ -265,7 +277,10 @@ model Payment {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  // P1-05a (Dev B decision, 2026-07-26): explicit Restrict. Financial records
+  // are retained for tax purposes (GST); a deletion request must anonymize the
+  // User, not cascade away the Payment row.
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([userId, status])
 }

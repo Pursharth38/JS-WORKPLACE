@@ -3,7 +3,7 @@
 //
 // ★ NOTHING IN THIS FILE MAY IMPORT PRISMA, bcryptjs, OR ANY NODE BUILT-IN. ★
 //
-// `middleware.ts` builds its Auth.js instance from this file alone, and
+// `proxy.ts` builds its Auth.js instance from this file alone, and
 // middleware runs on the Edge runtime. The Prisma adapter and the Credentials
 // provider's `authorize()` (which hits the database and bcrypt) live in
 // `lib/auth.ts`, which is Node-only and is never imported by middleware.

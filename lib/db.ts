@@ -2,7 +2,7 @@
 // ⚠️  FILE OWNER: DEV A (task P1-06). Transcribed by DEV B to unblock offline
 //     work. Standard Prisma singleton — on merge, take Dev A's version.
 //
-//     NEVER import this file from middleware.ts. Middleware runs on Edge and
+//     NEVER import this file from proxy.ts. Middleware runs on Edge and
 //     Prisma cannot run there.
 // ─────────────────────────────────────────────────────────────────────────────
 import { PrismaClient } from '@prisma/client'

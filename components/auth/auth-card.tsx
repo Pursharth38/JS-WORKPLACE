@@ -1,4 +1,4 @@
-// DEV B — the white card every auth page sits in. Server component.
+// DEV B — the card every auth page sits in. Server component.
 export function AuthCard({
   title,
   subtitle,
@@ -9,7 +9,7 @@ export function AuthCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-lg border border-[var(--brand-line)] bg-white p-7">
+    <div className="rounded-lg border border-[var(--brand-line)] bg-[var(--brand-elevated)] p-7">
       <h1 className="mb-1.5 text-[26px]">{title}</h1>
       {subtitle && (
         <p className="mb-6 text-[15px] leading-relaxed text-[var(--brand-muted)]">{subtitle}</p>

@@ -3,6 +3,7 @@ import type { SchemaTypeDefinition } from "sanity";
 import chapter from "./chapter";
 import course from "./course";
 import faq from "./faq";
+import instagramPost from "./instagramPost";
 import module from "./module";
 import { calloutBox, ctaBand, dataTable } from "./objects";
 import poshSection from "./poshSection";
@@ -33,5 +34,6 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   service,
   faq,
   testimonial,
+  instagramPost,
   siteSettings,
 ];

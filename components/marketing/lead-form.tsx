@@ -88,12 +88,12 @@ export function LeadForm({
       <div
         role="status"
         aria-live="polite"
-        className="rounded-[var(--radius-lg)] border border-[var(--brand-success)] bg-[#E7F5EE] p-6"
+        className="rounded-[var(--radius-lg)] border border-[var(--brand-success)] bg-[var(--brand-success-soft)] p-6"
       >
-        <h2 className="font-serif text-[22px] font-semibold text-[#054F35]">
+        <h2 className="font-serif text-[22px] font-semibold text-[var(--brand-success)]">
           Thank you
         </h2>
-        <p className="mt-2 text-[16px] leading-relaxed text-[#054F35]">
+        <p className="mt-2 text-[16px] leading-relaxed text-[var(--brand-success)]">
           {message}
         </p>
       </div>

@@ -1,58 +1,160 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DESIGN TOKENS — P1-02
+   DESIGN TOKENS — P1-02, repalette 2026-07-26
 
-   ⚠️  COLOUR IS PROVISIONAL until the client picks a board (P0-03).
-   These are Board A (Deep Teal). Board B is Indigo. The file is split so that
-   switching is a values-only edit of the SEMANTIC block below — no component,
-   in any lane, references a raw hex.
+   ⚠️ BRAND PIVOT (2026-07-26, client-directed): moved off the Deep Teal/Amber
+   "legal authority" palette onto a warmer, Apple-adjacent cream/bronze system
+   with a matching dark theme. See CLAUDE.md "Frontend" for the decision record
+   and orchestrate/tasks.md DECISIONS LOG for the full rationale. The OLD
+   contrast ratios in design/colour-boards/CONTRAST-REPORT.md no longer apply —
+   this palette has not yet had a formal WCAG re-audit; the values below were
+   chosen for a large, obvious contrast margin (near-black on cream, near-white
+   on navy) rather than measured to the previous document's precision. Treat
+   that as an open follow-up, not a settled fact.
 
-   Sources: CLAUDE.md "Frontend" · platform-agent.md "DESIGN TOKENS" ·
-   DETAILED-PLAN.md §4.2–4.3 · measured ratios in
-   design/colour-boards/CONTRAST-REPORT.md
+   Structure is unchanged from P1-02: this SEMANTIC block is the only thing a
+   future palette change touches — no component references a raw hex. What's
+   new is a second value set for `[data-theme="dark"]` / system dark mode.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── SEMANTIC COLOUR — the only block P1-02 needs to touch on a board switch */
-  --brand-primary: #0f5257; /* Deep Teal  — 8.44:1 on Sand                 */
-  --brand-primary-hover: #14746f; /* Teal 600                                    */
-  --brand-primary-tint: #eaf4f3; /* Teal 50    — section tints                  */
+  /* ── SEMANTIC COLOUR — LIGHT (default) ──────────────────────────────────── */
+  /* `--brand-primary` and `--brand-primary-hover` are DELIBERATELY THEME-
+     CONSTANT (same hex in light and dark) — see the dark block below for why.
+     Do not add a dark override for these two without re-auditing every
+     `bg-[var(--brand-primary)] ... text-white` pairing in the codebase; that
+     pairing is exactly what a theme-varying primary would silently break. */
+  --brand-primary: #7a5d2e; /* deep warm bronze — safe with white text, ~6:1, in both themes */
+  --brand-primary-hover: #8f6e38;
+  --brand-primary-tint: #f3ecdd; /* pale warm gold — section tints, THEME-AWARE, see dark block */
 
-  --brand-accent: #c77d26; /* Amber 500  — 3.13:1 on Sand → ≥18px ONLY    */
-  --brand-accent-hover: #9c5d1c;
-  --brand-accent-text: #9c5d1c; /* Amber 700  — 5.00:1, for amber text <18px   */
-  --brand-accent-on: #101828; /* label ON an amber fill. NEVER white —        */
-  /* white-on-amber is 3.29:1 and fails AA.       */
+  --brand-accent: #b8863d; /* brighter gold — CTAs, stat numbers. THEME-AWARE. */
+  --brand-accent-hover: #9c6f2e;
+  --brand-accent-text: #8a6427; /* darker gold, for accent-coloured text <18px  */
+  --brand-accent-on: #1d1d1f; /* label ON an accent fill — never a hardcoded white, in either theme */
 
-  --brand-surface: #fbf9f5; /* Sand — page background, never pure white    */
-  --brand-elevated: #ffffff; /* cards sitting on Sand                       */
-  --brand-ink: #101828; /* headings, body                              */
-  --brand-muted: #475467; /* Slate — secondary text, 7.53:1 on Sand      */
-  --brand-line: #e4e7ec; /* borders                                     */
+  --brand-surface: #f7f3ec; /* warm cream — page background, never pure white */
+  --brand-elevated: #ffffff; /* cards sitting on cream                       */
+  --brand-ink: #1d1d1f; /* near-black, Apple-style — headings, body     */
+  --brand-muted: #6e6a61; /* warm grey — secondary text                   */
+  --brand-line: #e8e1d2; /* warm beige border                            */
   --brand-danger: #b42318;
+  --brand-danger-on: #ffffff; /* label ON a danger fill (button.tsx's "danger" variant). THEME-AWARE — see dark block. */
+  --brand-danger-soft: #fdecea; /* pale chip/box bg for danger — badge, toast, alerts. THEME-AWARE. */
   --brand-warning: #b54708;
+  --brand-warning-on: #ffffff; /* label ON a warning fill (DemoBanner). THEME-AWARE — see dark block. */
+  --brand-warning-soft: #fdf3e7; /* THEME-AWARE — see dark block. */
   --brand-success: #067647;
+  --brand-success-soft: #e7f5ee; /* THEME-AWARE — see dark block. */
 
-  /* Focus ring is Deep Teal, never Amber: a non-text indicator needs 3:1 and
-     Amber's 3.13:1 on Sand is too thin a margin. Teal is 8.44:1. */
   --brand-focus: var(--brand-primary);
 
-  /* ── P1-02b (done, 2026-07-25) ────────────────────────────────────────────
-     The colour-NAMED aliases that used to live here (--brand-teal, --brand-amber,
-     --brand-sand …) have been retired. Every reference across app/ and
-     components/ now uses the semantic names above.
-
-     Why it mattered: `--brand-teal` becomes a lie the moment the client picks
-     Board B (Indigo), and a variable whose name contradicts its value is how a
-     palette quietly gets improvised at build time. Do not reintroduce them. */
-
-  /* ── TYPOGRAPHY (locked — identical across both boards) ───────────────────
+  /* ── TYPOGRAPHY (unchanged by the repalette) ───────────────────────────────
      Resolves to the next/font variables set on <html> in app/layout.tsx.
      Naming a literal family here would silently fall back to Georgia, because
      next/font self-hosts under generated names. */
   --font-heading: var(--font-fraunces), ui-serif, Georgia, serif;
   --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── SEMANTIC COLOUR — DARK ───────────────────────────────────────────────
+   System preference is the default signal (no explicit choice yet); an
+   explicit `data-theme` on <html> (set by ThemeToggle, see components/ui/
+   theme-toggle.tsx) always wins in both directions.
+
+   ⚠️ `--brand-primary` is NOT overridden here, on purpose. ~15 components
+   across app/ and components/ pair it with a hardcoded `text-white` label
+   (every primary CTA button, the announcement bar, the certificate-card
+   button, …), because that was always safe against the old Deep Teal and is
+   still safe against this bronze (~6:1). Making primary swing bright gold in
+   dark mode — which is what "image 5"'s dark/gold look actually wants —
+   would put white text on a light fill on every one of those 15 components
+   and fail contrast outright. `--brand-accent` carries the bright-gold dark
+   look instead; it already routes every label through `--brand-accent-on`
+   (fixed as part of this same change, see components/ui/button.tsx and
+   commerce/checkout-button.tsx), so accent was safe to make theme-aware. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand-primary-tint: #241d12;
+
+    --brand-accent: #d4a24c;
+    --brand-accent-hover: #e3b564;
+    --brand-accent-text: #e3b564;
+    --brand-accent-on: #12151b;
+
+    --brand-surface: #12151b;
+    --brand-elevated: #1a1e27;
+    --brand-ink: #f5f1e8;
+    --brand-muted: #9a9488;
+    --brand-line: #2a2e37;
+    --brand-danger: #ff6b5c;
+    --brand-danger-on: #12151b;
+    --brand-danger-soft: #3a1e1a;
+    --brand-warning: #ffb454;
+    --brand-warning-on: #12151b;
+    --brand-warning-soft: #382712;
+    --brand-success: #4ade80;
+    --brand-success-soft: #16281f;
+  }
+}
+
+:root[data-theme="dark"] {
+  --brand-primary-tint: #241d12;
+
+  --brand-accent: #d4a24c;
+  --brand-accent-hover: #e3b564;
+  --brand-accent-text: #e3b564;
+  --brand-accent-on: #12151b;
+
+  --brand-surface: #12151b;
+  --brand-elevated: #1a1e27;
+  --brand-ink: #f5f1e8;
+  --brand-muted: #9a9488;
+  --brand-line: #2a2e37;
+  --brand-danger: #ff6b5c;
+  --brand-danger-on: #12151b;
+  --brand-danger-soft: #3a1e1a;
+  --brand-warning: #ffb454;
+  --brand-warning-on: #12151b;
+  --brand-warning-soft: #382712;
+  --brand-success: #4ade80;
+  --brand-success-soft: #16281f;
+}
+
+/* Theme-swap transition — only for the properties that actually change, and
+   only on toggle, not first paint (the no-flash script in layout.tsx sets
+   data-theme before this stylesheet's first frame, so nothing to transition
+   away from on load; this only kicks in when ThemeToggle changes it live).
+   This is the fallback path: browsers without the View Transitions API, or
+   a visitor with prefers-reduced-motion — see theme-toggle.tsx's
+   setThemeAtOrigin, which is what actually chooses between this crossfade
+   and the expanding-circle reveal below. */
+html[data-theme-transitioning] * {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease !important;
+}
+
+/* Expanding-circle theme reveal (View Transitions API). The UA's default
+   root transition is a crossfade of old/new snapshots; `animation: none`
+   here strips that so the only motion is the clip-path circle that
+   theme-toggle.tsx animates on `::view-transition-new(root)`, growing from
+   the clicked toggle. The old snapshot is left static underneath, fully
+   opaque, so the new theme visibly "expands over" it rather than fading. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 
 @theme inline {
@@ -74,13 +176,13 @@
   --color-muted: var(--brand-muted);
   --color-line: var(--brand-line);
   --color-danger: var(--brand-danger);
+  --color-danger-on: var(--brand-danger-on);
+  --color-danger-soft: var(--brand-danger-soft);
   --color-warning: var(--brand-warning);
+  --color-warning-on: var(--brand-warning-on);
+  --color-warning-soft: var(--brand-warning-soft);
   --color-success: var(--brand-success);
-
-  /* Legacy utility names Dev B may reach for */
-  --color-teal: var(--brand-primary);
-  --color-amber: var(--brand-accent);
-  --color-sand: var(--brand-surface);
+  --color-success-soft: var(--brand-success-soft);
 
   /* Type scale, 1.25 ratio — DETAILED-PLAN §4.2 */
   --text-xs: 0.75rem; /* 12 */
@@ -167,8 +269,8 @@ table,
   border-radius: var(--radius-sm);
 }
 
-/* Amber clears 4.5:1 on Sand only at ≥18px — large CTAs only, never body text.
-   The label is Ink, not white. CONTRAST-REPORT.md Finding 2. */
+/* Accent gold — large CTAs only, never body text. Label is accent-on (ink in
+   light mode, near-black in dark mode), never a raw white. */
 .cta-amber {
   background: var(--brand-accent);
   color: var(--brand-accent-on);
@@ -198,4 +300,42 @@ table,
 /* Deep anchors on the Knowledge Hub must not land under the sticky header. */
 [id] {
   scroll-margin-top: 6rem;
+}
+
+/* ── DECORATIVE KEYFRAMES ─────────────────────────────────────────────────
+   Shared so components using them (BorderBeam, the Hero's orbiting circles,
+   the HowItWorks connector beams) don't each inject their own <style> tag —
+   one instance of a keyframes rule serves every element that references it. */
+@keyframes border-beam-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(3%, -4%) scale(1.05);
+  }
+}
+
+@keyframes beam-travel {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes beam-travel-y {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }

@@ -8,6 +8,8 @@ export type Stat = {
   value: string;
   label: string;
   suffix?: string;
+  /** e.g. "₹" — StatBand itself doesn't render this; ComplianceStatBand does. */
+  prefix?: string;
 };
 
 /**

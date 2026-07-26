@@ -13,9 +13,55 @@ C = Learning Engine & Motion. Full detail: `team-division.md` at repo root.
 **State:** **DEV A IS COMPLETE** except SEO (deferred by direction) and two gstack gates that
 need a Claude Code restart. Dev A + Dev B are merged and green on `integration-a-b`:
 build (36 routes), typecheck, lint, 57 tests, and all four CI grep gates pass.
-Dev C's lane has not started.
+Dev C's Learning Engine lane (Phase 8/9 — unlock engine, video gating, assessments) has NOT
+started and is out of scope for this project's two active developers. **Phase 11 (motion &
+embeds) is now done**, per team-division.md §11's own guidance for a two-developer drop
+("merge C's motion work into A") — done this session instead by Dev B, in Dev A's stead, since
+neither A nor B was otherwise occupied with it and it does not touch the correctness core.
+**2026-07-26 session (Dev B):** pulled `origin/integration-a-b` into local `main`
+(fast-forward, unpushed pending user decision) and re-verified green: typecheck, lint, 57/57
+tests, 42-route build, forbidden-claims grep, gated-content leak grep all clean. Closed out the
+small leftover items from MERGE-NOTES.md §7: `middleware.ts` → `proxy.ts` (Next 16 deprecation,
+confirmed the build warning is gone), `CONTRACTS.md` now documents `/api/invoice/[paymentId]`
+and `/api/certificate/[certId]/pdf`, and P1-05a is half-decided — `Certificate.user` /
+`Payment.user` (Dev B's models) now declare explicit `onDelete: Restrict` (confirmed a no-op at
+the DB level via `prisma migrate diff`, so no migration needed). `ARCHITECTURE.md §5`
+`lastHeartbeatAt` and the `.env.example` WhatsApp note turned out already fixed — those two
+MERGE-NOTES.md §7 bullets were stale.
+**2026-07-26 session, part 2 (Phase 11):** built all seven P11 tasks — see the Phase 11 table
+below for the file-by-file breakdown and the DECISIONS LOG for why none of it is a literal
+Lottie JSON file. New: `components/marketing/{harassment-spectrum,workplace-protection,
+youtube-lite,insta-grid}.tsx`, `lib/youtube.ts`, `app/api/youtube/latest/route.ts`,
+`sanity/schemas/instagramPost.ts`. Wired into `app/(marketing)/page.tsx`. Full verification
+(typecheck/lint/57 tests/46-route build + both security greps) clean, plus live visual QA via
+gstack `/browse` at 1280px and 375px viewports — no overlap, no clipping, both new sections
+render correctly, and the YouTube/Instagram strip correctly renders nothing when unconfigured.
+**2026-07-26 session, part 3 (client-directed redesign):** full palette repalette (Deep
+Teal/Amber → warm cream/bronze light theme + navy/gold dark theme, see CLAUDE.md "Frontend"
+and `app/globals.css` header), a real dark mode with a `<html data-theme>` toggle
+(`components/ui/theme-toggle.tsx`) including a View Transitions API circular-reveal animation
+on flip, `components/motion/border-beam.tsx` (rotating gradient hover ring, applied to
+ServiceCard/CourseCard), a new `HowItWorks` sequential connection-diagram section
+(`components/marketing/how-it-works.tsx`) answering the "animated cards popping in one after
+another" request, a dark navy/gold `ComplianceStatBand` (statutory facts, not business metrics
+— see its own header comment on why it's exempt from the never-invent-a-number rule that
+governs StatBand), orbiting decorative motion in the Hero background, and
+`NEXT_PUBLIC_FORCE_DEMO` for previewing the redesign against placeholder content without
+touching the real seeded Sanity project. **Found and fixed a real contrast bug class while
+repaletting**: making `--brand-accent`/`--brand-danger`/`--brand-warning`/`--brand-success`
+theme-aware broke ~10 components that paired them with a hardcoded `text-white` or a hardcoded
+pale hex background — see `app/globals.css`'s `-on` and `-soft` token comments for the full
+list of what was fixed and why `--brand-primary` deliberately stays theme-constant. Also wrote
+`.claude/documentation/CMS-MIGRATION-PLAN.md` — a proposed (not approved, not started)
+architecture for moving blog/course/service content off Sanity into a custom `/admin` UI over
+Postgres, requested in the same session. `CLAUDE.md`'s "Sanity owns content" rule is unchanged
+until that plan is reviewed.
 **Dev A remaining:** P1-R and P5-R (both gstack — `/plan-design-review`, `/qa` — blocked on a
 restart), P4-05 + P12-01..04 (SEO, deferred by direction), P13-01 (needs client content).
+**Dev B remaining:** P7-R (`/cso` on the payment path, non-negotiable per CLAUDE.md — ready to
+run, not run this session), P7-06 Razorpay activation (external KYC on Razorpay's dashboard —
+not something a coding session can do), ModuleProgress/AssessmentAttempt and Enrollment halves
+of P1-05a (owner: Dev C / undecided — do not touch, see prisma/schema.prisma header).
 **Next action:** (1) send P0-03 + P0-04 to the client — everything else Dev A owns is done and
 five sign-offs are now the critical path; (2) **restart Claude Code**, then run `/qa` (P5-R) —
 that is the SHIP STAGE 1 gate and the marketing site is ready to go live behind it;
@@ -70,7 +116,7 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 | P1-03 | Layout shell: Header, Footer, WhatsAppFAB, Container | **A** | ✅ | Container, sticky Header + mobile drawer, Footer, WhatsAppFAB. All contact details from Sanity `siteSettings` — nothing hardcoded. Home moved into `(marketing)` to inherit the shell. **H1 satisfied.** Formerly blocked on P1-02. **This is the H1 Day-3 commitment.** Note B and C are *no longer hard-blocked* by it — B shipped without it and C has H3/H4. |
 | P1-04 | UI primitives (Button, Input, Select, Checkbox, Card, Badge, Modal, Toast, Skeleton, Accordion, Tabs) | **A** | ✅ | + Field, Textarea, Honeypot, ConsentCheckbox, Turnstile. Button's `accent` variant is forced to 18px (amber below that fails AA); ConsentCheckbox cannot be pre-ticked. |
 | P1-05 | Prisma schema initial + first migration | **A** | ✅ | **REVIEW DONE.** Conforms to ARCHITECTURE §5 + data-model.md, including all 5 Dev B additions. Also CORRECTED ARCHITECTURE.md §5, which was missing `ModuleProgress.lastHeartbeatAt` (Dev B flagged this; it is Dev C's clamp basis). ⚠️ One open finding → **P1-05a**. |
-| P1-05a | Referential actions: 8 relations default to `Restrict` | **B**+**C** | ⬜ | Dev A review finding. `db.user.delete()` throws for any learner with progress — and /privacy commits to honouring deletion requests. NOT a blanket fix: Certificate/Payment `Restrict` is arguably correct (verifiability, tax retention); ModuleProgress/AssessmentAttempt should almost certainly Cascade. Each owner decides and migrates their own models. Reasoning is written into prisma/schema.prisma's header. |
+| P1-05a | Referential actions: 8 relations default to `Restrict` | **B**+**C** | 🔄 | Dev A review finding. `db.user.delete()` throws for any learner with progress — and /privacy commits to honouring deletion requests. NOT a blanket fix. **B's half DECIDED 2026-07-26:** `Certificate.user` and `Payment.user` now declare explicit `onDelete: Restrict` (verifiability + GST retention) — confirmed a no-op at the DB level (`prisma migrate diff` against the old schema produced an empty script), so no migration needed. A `/privacy` deletion request must anonymize the `User` row rather than call `db.user.delete()` while certificates/payments exist — no such deletion path is built yet. **Still open:** `ModuleProgress`/`AssessmentAttempt` (Dev C's models — C's lane hasn't started) and `Enrollment` (no clear decision owner). Reasoning is written into prisma/schema.prisma's header. |
 | P1-06 | lib/response.ts apiResponse() + Zod schema folder | **A** | ✅ | **Was REVIEW after the merge.** Dev B's `response.ts`/`db.ts`/`ratelimit.ts` adopted; Dev A added `schemas/leads.ts`, `schemas/sanity-webhook.ts`, `lib/turnstile.ts`, `lib/cn.ts`, `lib/posh-groups.ts` and `rateLimit.leadsIp`. |
 | P1-07 | CI: typecheck → lint → test → build → forbidden-claims grep → Lighthouse | **A** | ✅ | CI at `.github/workflows/ci.yml`: typecheck → lint → test → build, then FOUR grep gates — forbidden claims (source **and** `.next/server`), gated-content leak, apiResponse envelope, consent pre-tick. All four verified passing locally. Lighthouse deliberately deferred to P12-04: it needs a deployed preview URL, and auditing localhost would produce numbers everyone learns to ignore. |
 | P1-08 | Branch protection, PR template, .env.example, README setup docs | **A** | ✅ | PR template with ownership/security/legal/content checklists · `.github/BRANCH_PROTECTION.md` (settings live in GitHub, so they are documented to be reproducible) · `.env.example` rewritten with what is actually optional and why · README setup + deliberate-degradations table. **Removed `NEXT_PUBLIC_WHATSAPP_NUMBER`** — an env var is just a slower hardcode; it lives in Sanity `siteSettings`. |
@@ -168,16 +214,17 @@ mode). It needs `bun`, which was also installed. Skills require a Claude Code re
 | P10-05 | /dashboard/certificates | **B** | ✅ | Download via authenticated `/api/certificate/[certId]/pdf` — R2 objects are private, never direct-linked. |
 | P10-06 | /admin — enrolments, payments, progress, revocation, lead CSV | **B** | ✅ | All guarded by `requireAdmin()` (DB re-read, not the 30-day JWT). CSV export is formula-injection-escaped. Revocation is a guarded status transition, never a delete. |
 
-## PHASE 11 — MOTION & EMBEDS  [Dev C]
+## PHASE 11 — MOTION & EMBEDS  [Dev C — done this session in Dev C's absence, see note below]
 | ID | Task | Owner | Status | Notes |
 |----|------|-------|--------|-------|
-| P11-01 | Lottie A — what counts as harassment | **C** | ⬜ | ≤150 KB |
-| P11-02 | Lottie B — complaint journey with timelines | **C** | ⬜ | Highest value; what people search |
-| P11-03 | Lottie C — who the Act protects | **C** | ⬜ | |
-| P11-04 | LottieLoop wrapper: IntersectionObserver, reduced-motion | **C** | ⬜ | |
-| P11-05 | **Static accessible HTML equivalent under each animation** | **C** | ⬜ | SEO value must be in the DOM |
-| P11-06 | YouTubeLite façade + /api/youtube/latest cached 6h | **C** | ⬜ | Never the standard iframe |
-| P11-07 | InstaGrid from Sanity post URLs | **C** | ⬜ | NOT the Basic Display API |
+| P11-01 | Lottie A — what counts as harassment | **C** | ✅ | **Built as DOM + `motion` instead of Lottie** — see DECISIONS LOG 2026-07-26. `components/marketing/harassment-spectrum.tsx`. Five acts from POSH Act §2(n), converging into a cited "Section 2(n)" hub. Visually verified via `/browse` at 1280px and 375px — clean, no overlap. |
+| P11-02 | Lottie B — complaint journey with timelines | **C** | ✅ | **Already built** by Dev A during Phase 3 (commit `7071eb8`) as `components/marketing/complaint-journey.tsx`, DOM + `motion`, live in the Hero aside. This board was never updated to reflect it until now — first deviation from the Lottie spec, and the precedent this session's A/C follow. |
+| P11-03 | Lottie C — who the Act protects | **C** | ✅ | **Built as DOM + `motion` instead of Lottie**, same reasoning as P11-01. `components/marketing/workplace-protection.tsx`. Six roles orbiting a "Workplace" hub, positioned by trigonometry (percent-based radius, so it scales at every breakpoint without recomputation) rather than a grid, so it actually reads as orbiting. Legal content hedged carefully — see the file's own header comment. Verified via `/browse` at 1280px and 375px. |
+| P11-04 | LottieLoop wrapper: IntersectionObserver, reduced-motion | **C** | ✅ | **No LottieLoop exists — by design**, following from P11-01/02/03 not being Lottie. Each animation instead uses `useInView` + `useReducedMotion` inline (same pattern as `components/motion/*`); `public/lottie/` was never created. |
+| P11-05 | **Static accessible HTML equivalent under each animation** | **C** | ✅ | Satisfied BY CONSTRUCTION, not bolted on — real DOM text/headings, not a second render path under a canvas. Same reasoning as `components/motion/index.ts`'s house rules. |
+| P11-06 | YouTubeLite façade + /api/youtube/latest cached 6h | **C** | ✅ | `lib/youtube.ts` + `app/api/youtube/latest/route.ts` (public, no auth) + `components/marketing/youtube-lite.tsx`. Click-to-load poster; real `<iframe>` (youtube-nocookie.com) only after click. 6h cache via Next's fetch Data Cache (`next: { revalidate }`), which also gives the "serve last-cached payload on failure" behaviour for free on a background-revalidation error. Degrades to an empty list (section doesn't render) when `YOUTUBE_API_KEY` / `YOUTUBE_CHANNEL_ID` are unset — added `YOUTUBE_CHANNEL_ID` to `.env.example`, matching the existing `YOUTUBE_API_KEY`. |
+| P11-07 | InstaGrid from Sanity post URLs | **C** | ✅ | New Sanity document `instagramPost` (image, permalink, caption, order) — registered in `sanity/schemas/index.ts` and `sanity/desk-structure.ts`. `getInstagramPosts()` in `lib/sanity.ts`, **no demo-content fallback** — CLAUDE.md's "never invent testimonials" extends to a grid of fake posts; empty renders nothing. `components/marketing/insta-grid.tsx`. |
+| P11-R | Home page wiring + full verification | — | ✅ | Wired into `app/(marketing)/page.tsx` per DETAILED-PLAN.md §F2 order. `npm run typecheck` / `lint` / `test` (57/57) / `build` (46 routes) all clean; both CLAUDE.md security greps clean. Visually verified live via gstack `/browse` (not Chrome MCP, per CLAUDE.md) at 1280px and 375px — no overlap, no clipping, graceful hide when YouTube/Instagram unconfigured. |
 
 ## PHASE 12 — HARDENING  [all three]
 | ID | Task | Owner | Status | Notes |
@@ -262,3 +309,4 @@ None — nothing built yet.
 | 2026-07-25 | **Fixed white-on-amber in Dev B's `.cta-amber`** | Dev B's placeholder set `color: #fff` on an amber fill — 3.29:1, fails AA. Exactly the P0-03 Finding 2 defect. Now `var(--brand-accent-on)` = Ink, 5.40:1. The class is currently unused, so this was a latent trap rather than a live bug. |
 | 2026-07-25 | Fixed fonts silently breaking across the merge | Dev B's `globals.css` set `--font-heading: 'Fraunces'` by family *name*, and 3 merged files use it via `font-[family-name:var(--font-heading)]`. next/font self-hosts under generated names and never registers `'Fraunces'`, so post-merge those headings would have silently fallen back to Georgia. `--font-heading` / `--font-body` now point at Dev A's `--font-fraunces` / `--font-inter`. |
 | 2026-07-25 | `npm audit` high-severity findings **accepted, not fixed** | 12 highs, all transitive through `next` itself (postcss, sharp) and the eslint chain (brace-expansion→minimatch). `npm audit fix --force` resolves them by installing **next@9.3.3**. Nothing is exploitable in our usage — build-time tooling, not request path. Revisit when Next ships bumped deps; do not run `--force`. |
+| 2026-07-26 | **Phase 11's three animations built as DOM + `motion`, not Lottie JSON** — extends a precedent, doesn't set a new one | `complaint-journey.tsx` (Animation B) already made this call during Phase 3, with reasoning in its header comment: real DOM text is indexable and screen-reader-readable by construction (satisfies P11-05 without a second render path), no 150 KB JSON asset to go missing, and — the load-bearing reason — there is no After Effects/LottieFiles pipeline on this team for a designer to receive a hand-off from. That board entry was never marked done, so this was easy to miss; applying it consistently to Animations A and C (rather than one Lottie + two DOM, which would look and behave inconsistently) is the more defensible outcome. `lottie-react` was deliberately NOT added as a dependency; `public/lottie/` was never created. If a real After Effects pipeline exists later, this is reversible per-animation without touching the other two. |

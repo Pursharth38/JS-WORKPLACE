@@ -128,4 +128,12 @@ export const deskStructure: StructureResolver = (S) =>
             .title("Testimonials")
             .defaultOrdering([{ field: "order", direction: "asc" }]),
         ),
+
+      S.listItem()
+        .title("Instagram grid")
+        .child(
+          S.documentTypeList("instagramPost")
+            .title("Instagram posts")
+            .defaultOrdering([{ field: "order", direction: "asc" }]),
+        ),
     ]);

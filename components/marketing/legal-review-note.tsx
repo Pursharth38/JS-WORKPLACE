@@ -10,8 +10,8 @@
  */
 export function LegalReviewNote() {
   return (
-    <aside className="mt-6 rounded-[var(--radius-md)] border-l-4 border-[var(--brand-warning)] bg-[#FDF3E7] p-4">
-      <p className="text-[15px] leading-[1.6] text-[#7A4A08]">
+    <aside className="mt-6 rounded-[var(--radius-md)] border-l-4 border-[var(--brand-warning)] bg-[var(--brand-warning-soft)] p-4">
+      <p className="text-[15px] leading-[1.6] text-[var(--brand-warning)]">
         <strong>Draft pending review.</strong> This page is a working draft
         prepared so payment processing can be activated. It has not yet been
         confirmed by the business owner or reviewed by a legal adviser.

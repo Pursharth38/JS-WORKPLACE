@@ -74,6 +74,19 @@ res  { enrollments: [{ courseId, title, slug, percentComplete, currentModuleId, 
 ```
 Progress fields come from Dev C's `getCourseProgress()`. Dev B does not recompute them.
 
+### GET /api/invoice/[paymentId]
+Guards: session. Runtime: **`nodejs`** (`@react-pdf/renderer` cannot run on Edge).
+```
+res  application/pdf (Content-Disposition: attachment)
+```
+- Added beyond the original contract during Dev B's Phase 7 build — not in the initial spec.
+- Streams the PDF through this handler rather than handing out an R2 URL, so ownership is
+  re-checked on every download. `Payment.invoiceUrl` stores an R2 object **key**, never a public URL.
+- Generated lazily on first download (not in the webhook), then cached to R2.
+- `409` if the payment exists but is not yet `PAID`. `404` collapses "not yours" and "doesn't
+  exist" into the same response — distinguishing them would confirm another user's payment id is real.
+- `Cache-Control: private, no-store` — contains personal/financial data.
+
 ---
 
 # CONTENT  — owner: Dev A
@@ -140,7 +153,17 @@ res  { scorePercent, passed, weakTopics: string[] }
 - Returns weak **topics**, never a per-question answer key.
 
 ### GET /api/youtube/latest
-Public. Cached 6h. On API failure, serves the last cached payload rather than erroring.
+Public. No auth.
+```
+res  { videos: [{ id, title, publishedAt, thumbnailUrl }] }
+```
+- Cached 6h via Next's fetch Data Cache (`next: { revalidate: 21600 }`), not a hand-rolled cache —
+  the route runs on serverless functions with no memory shared between invocations.
+- On API failure after the cache window expires, Next keeps serving the previous cached response
+  rather than surfacing the error — the "stale fallback on failure" behaviour is a property of the
+  cache, not application code. A cold cache with nothing to fall back to returns `{ videos: [] }`.
+- Degrades to `{ videos: [] }` when `YOUTUBE_API_KEY` / `YOUTUBE_CHANNEL_ID` are unset — the
+  home page's YouTube strip simply doesn't render, same pattern as an unconfigured Sanity project.
 
 ### Progress contract (consumed by Dev B — H5, Week 4)
 ```ts
@@ -174,6 +197,21 @@ res  { certId: string }
 res  { valid: boolean, learnerName, courseTitle, issuedAt, revoked: boolean }
 ```
 Returns `valid: false` for an unknown `certId` — never `404`, which would let someone enumerate.
+
+### GET /api/certificate/[certId]/pdf
+Guards: session, owner or `role === 'ADMIN'`. Runtime: **`nodejs`**.
+```
+res  application/pdf (Content-Disposition: attachment)
+```
+- Added beyond the original contract during Dev B's Phase 10 build — not in the initial spec.
+- The public surface for a certificate stays `/verify/[certId]` (facts only). This route serves
+  the actual PDF document, and only to its owner or an admin — never a direct R2 link.
+- "Not yours" and "does not exist" both return `404` — cannot be used to test whether a `certId` is real.
+- `410` if revoked.
+- Regenerates deterministically from the DB row on an R2 cache miss (the PDF is fully determined
+  by the stored `certId` / `learnerName` snapshot / `issuedAt`), so a failed upload at issue time
+  never becomes a permanently broken download.
+- `Cache-Control: private, no-store`.
 
 ---
 

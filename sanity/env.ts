@@ -12,6 +12,13 @@
  * `isSanityConfigured` is the single check every caller uses; `sanityFetch()`
  * returns the caller's fallback when it is false, so an unconfigured project
  * degrades to empty content rather than a 500 on every page.
+ *
+ * `NEXT_PUBLIC_FORCE_DEMO=true` reuses this exact same path to preview the
+ * DESIGN against placeholder content on localhost even though a real Sanity
+ * project is connected (this repo's `.env` has real, seeded content in it —
+ * unsetting `NEXT_PUBLIC_SANITY_PROJECT_ID` to see demo content would also
+ * break /studio). It does not touch Studio's own config below, only whether
+ * the marketing pages treat Sanity as configured.
  */
 
 const PLACEHOLDER_PROJECT_ID = "missing-project-id";
@@ -29,7 +36,10 @@ export const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
 export const projectId =
   process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? PLACEHOLDER_PROJECT_ID;
 
-export const isSanityConfigured = projectId !== PLACEHOLDER_PROJECT_ID;
+const forceDemo = process.env.NEXT_PUBLIC_FORCE_DEMO === "true";
+
+export const isSanityConfigured =
+  !forceDemo && projectId !== PLACEHOLDER_PROJECT_ID;
 
 /** Server-only. Used for draft previews; never exposed to the browser. */
 export const readToken = process.env.SANITY_API_READ_TOKEN ?? "";

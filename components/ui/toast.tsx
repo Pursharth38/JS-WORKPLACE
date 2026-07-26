@@ -18,8 +18,8 @@ const ToastContext = createContext<{
 } | null>(null);
 
 const TONES: Record<ToastTone, string> = {
-  success: "border-[var(--brand-success)] bg-[#E7F5EE] text-[#054F35]",
-  error: "border-[var(--brand-danger)] bg-[#FDECEA] text-[#7A1B12]",
+  success: "border-[var(--brand-success)] bg-[var(--brand-success-soft)] text-[var(--brand-success)]",
+  error: "border-[var(--brand-danger)] bg-[var(--brand-danger-soft)] text-[var(--brand-danger)]",
   info: "border-[var(--brand-primary)] bg-[var(--brand-primary-tint)] text-[var(--brand-primary)]",
 };
 

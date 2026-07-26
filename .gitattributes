@@ -12,6 +12,8 @@
 *.woff binary
 *.woff2 binary
 *.pdf binary
+*.mp4 binary
+*.webm binary
 
 # Generated. Collapse in diffs and don't count toward language stats.
 package-lock.json linguist-generated=true -diff

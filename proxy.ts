@@ -1,5 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// DEV B — edge middleware.
+// DEV B — edge proxy (renamed from `middleware.ts` 2026-07-26: Next 16
+// deprecates the `middleware` file convention in favour of `proxy` — same
+// root-level location, same default + `config` export shape, filename only).
 //
 // ★ SESSION CHECK AND REDIRECT ONLY. ★
 //

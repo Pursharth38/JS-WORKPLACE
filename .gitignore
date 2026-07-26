@@ -41,3 +41,4 @@ npm-debug.log*
 
 # Claude local overrides
 .claude/settings.local.json
+.gstack/

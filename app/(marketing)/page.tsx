@@ -1,35 +1,56 @@
 import Link from "next/link";
 
 import { BlurFade } from "@/components/motion/blur-fade";
+import { BorderBeam } from "@/components/motion/border-beam";
+import { LoopVideo } from "@/components/motion/loop-video";
 import { Reveal } from "@/components/motion/reveal";
+import { Card } from "@/components/ui/card";
 import { ComplaintJourney } from "@/components/marketing/complaint-journey";
+import { ComplianceStatBand } from "@/components/marketing/compliance-stat-band";
 import { Container } from "@/components/marketing/container";
 import { CourseCard } from "@/components/marketing/course-card";
 import { CtaBand } from "@/components/marketing/cta-band";
+import { HarassmentSpectrum } from "@/components/marketing/harassment-spectrum";
 import { Hero } from "@/components/marketing/hero";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { InstaGrid } from "@/components/marketing/insta-grid";
 import { PostCard } from "@/components/marketing/post-card";
 import { ServiceCard } from "@/components/marketing/service-card";
 import { StatBand } from "@/components/marketing/stat-band";
 import { TestimonialSection } from "@/components/marketing/testimonial-section";
+import { WorkplaceProtection } from "@/components/marketing/workplace-protection";
+import { YouTubeLite } from "@/components/marketing/youtube-lite";
 import { DEMO_STATS } from "@/lib/demo-content";
 import {
   getCourses,
+  getInstagramPosts,
   getPosts,
   getServices,
   getSiteSettings,
   getTestimonials,
   usingDemoContent,
 } from "@/lib/sanity";
+import { getLatestVideos } from "@/lib/youtube";
 
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [settings, services, posts, courses, testimonials] = await Promise.all([
+  const [
+    settings,
+    services,
+    posts,
+    courses,
+    testimonials,
+    videos,
+    instagramPosts,
+  ] = await Promise.all([
     getSiteSettings(),
     getServices(),
     getPosts(3),
     getCourses(),
     getTestimonials(),
+    getLatestVideos(3),
+    getInstagramPosts(),
   ]);
 
   /*
@@ -71,7 +92,57 @@ export default async function HomePage() {
         }
       />
 
+      {/* ── Looping explainer videos — mirror the native <video autoplay loop
+          muted playsinline> pattern, contained and framed as cards (not
+          full-bleed) rather than stray clips, each with its own heading so
+          the pair reads as two short explainers, not decoration. Same
+          Card + BorderBeam wrapping as every other card on this page, for
+          the same hover treatment. */}
+      <Container className="py-16">
+        <div className="grid gap-8 sm:grid-cols-2">
+          {[
+            {
+              src: "/videos/posh-compliance-loop.mp4",
+              poster: "/videos/posh-compliance-loop-poster.jpg",
+              heading: "How compliance comes together",
+              body: "Awareness training, a properly constituted Internal Committee, and complete workplace protection — in one picture.",
+              alt: "Animated overview of POSH compliance essentials: awareness training, a properly constituted Internal Committee, and complete workplace protection.",
+            },
+            {
+              src: "/videos/role-based-courses-loop.mp4",
+              poster: "/videos/role-based-courses-loop-poster.jpg",
+              heading: "Training built for every role",
+              body: "Employees, managers, and Internal Committee members each get a course track suited to what they actually need to know.",
+              alt: "Animated overview of role-based POSH training tracks for employees, managers, and Internal Committee members.",
+            },
+          ].map((v, i) => (
+            <BlurFade key={v.src} delay={i * 0.1}>
+              <BorderBeam className="h-full">
+                <Card className="group relative h-full p-5">
+                  <h3 className="font-serif text-[20px] font-semibold">
+                    {v.heading}
+                  </h3>
+                  <p className="mt-1.5 text-[15px] leading-[1.6] text-[var(--brand-muted)]">
+                    {v.body}
+                  </p>
+                  <LoopVideo
+                    src={v.src}
+                    poster={v.poster}
+                    alt={v.alt}
+                    className="mt-4 aspect-video w-full rounded-[var(--radius-md)] object-cover"
+                  />
+                </Card>
+              </BorderBeam>
+            </BlurFade>
+          ))}
+        </div>
+      </Container>
+
       <StatBand stats={stats} heading="In practice" />
+
+      <HarassmentSpectrum />
+
+      <WorkplaceProtection />
 
       {/* ── Knowledge Hub teaser ─────────────────────────────────────────── */}
       <Container className="py-20">
@@ -99,7 +170,13 @@ export default async function HomePage() {
               >
                 Read the guide
                 <span className="transition-transform duration-200 group-hover:translate-x-1">
-                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    aria-hidden="true"
+                  >
                     <path
                       d="M6 3l5 5-5 5"
                       stroke="currentColor"
@@ -143,6 +220,8 @@ export default async function HomePage() {
         </Container>
       )}
 
+      <ComplianceStatBand />
+
       {/* ── Self-check — explained, not just named ──────────────────────── */}
       <section className="bg-[var(--brand-primary)] py-20">
         <Container>
@@ -163,7 +242,7 @@ export default async function HomePage() {
               <div className="mt-8">
                 <Link
                   href="/posh-compliance-check"
-                  className="inline-flex h-13 items-center rounded-[var(--radius-md)] bg-[var(--brand-accent)] px-7 text-[18px] font-semibold text-[var(--brand-accent-on)] transition-colors hover:bg-[var(--brand-accent-hover)] hover:text-white"
+                  className="inline-flex h-13 items-center rounded-[var(--radius-md)] bg-[var(--brand-accent)] px-7 text-[18px] font-semibold text-[var(--brand-accent-on)] transition-colors hover:bg-[var(--brand-accent-hover)]"
                 >
                   Check where you stand
                 </Link>
@@ -196,6 +275,8 @@ export default async function HomePage() {
           </div>
         </Container>
       </section>
+
+      <HowItWorks />
 
       {courses.length > 0 && (
         <Container className="py-20">
@@ -246,6 +327,43 @@ export default async function HomePage() {
               </li>
             ))}
           </ul>
+        </Container>
+      )}
+
+      {/* ── YouTube + Instagram strip (P11-06/07) ───────────────────────── */}
+      {(videos.length > 0 || instagramPosts.length > 0) && (
+        <Container className="py-20">
+          <Reveal>
+            <h2 className="font-serif text-[31px] font-semibold md:text-[39px]">
+              Follow along
+            </h2>
+            <p className="mt-3 max-w-[62ch] text-[17px] leading-[1.7] text-[var(--brand-muted)]">
+              Short explainers and behind-the-scenes from sessions — on YouTube
+              and Instagram.
+            </p>
+          </Reveal>
+
+          {videos.length > 0 && (
+            <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {videos.map((v, i) => (
+                <li key={v.id}>
+                  <BlurFade delay={i * 0.07}>
+                    <YouTubeLite
+                      videoId={v.id}
+                      title={v.title}
+                      thumbnailUrl={v.thumbnailUrl}
+                    />
+                  </BlurFade>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {instagramPosts.length > 0 && (
+            <BlurFade delay={0.15} className="mt-8">
+              <InstaGrid posts={instagramPosts} />
+            </BlurFade>
+          )}
         </Container>
       )}
 

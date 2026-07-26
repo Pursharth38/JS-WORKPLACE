@@ -3,7 +3,7 @@
 /**
  * Sanity Studio, mounted at /studio inside the Next app.
  *
- * ⚠️ /studio is EXCLUDED from the auth middleware matcher (see middleware.ts).
+ * ⚠️ /studio is EXCLUDED from the auth middleware matcher (see proxy.ts).
  * Sanity handles its own authentication — putting our session check in front of
  * it would lock the client out of her own CMS.
  */
