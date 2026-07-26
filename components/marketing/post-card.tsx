@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
 import { BorderBeam } from "@/components/motion/border-beam";
-import { type PostSummary, urlForImage } from "@/lib/content";
+import type { PostSummary } from "@/lib/content";
 
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", {
@@ -16,11 +16,11 @@ export function PostCard({ post }: { post: PostSummary }) {
   return (
     <BorderBeam className="h-full">
       <Card className="group relative h-full overflow-hidden transition-shadow hover:shadow-[var(--shadow-md)]">
-        {post.coverImage?.asset && (
+        {post.coverImageUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={urlForImage(post.coverImage).width(640).height(360).url()}
-            alt={post.coverImage.alt ?? ""}
+            src={post.coverImageUrl}
+            alt={post.coverImageAlt ?? ""}
             width={640}
             height={360}
             className="h-44 w-full object-cover"

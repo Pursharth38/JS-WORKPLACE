@@ -155,7 +155,11 @@ export type PostSummary = {
   slug: string;
   excerpt: string;
   publishedAt: string;
-  coverImage?: SanityImage;
+  /** Fully resolved URLs (M3) — Sanity CDN or /api/images/<key>. Two sizes
+      because the card grid and the post hero crop differently. */
+  coverImageUrl?: string;
+  coverImageWideUrl?: string;
+  coverImageAlt?: string;
   category?: { title: string; slug: string };
 };
 
@@ -310,17 +314,44 @@ const POST_SUMMARY_PROJECTION = `
   "category": category->{title, "slug": slug.current}
 `;
 
-export function getPosts(limit?: number): Promise<PostSummary[]> {
+/** Raw post row before cover-image resolution (M3). */
+type RawPost<T> = Omit<T, "coverImageUrl" | "coverImageWideUrl" | "coverImageAlt"> & {
+  coverImage?: SanityImage;
+};
+
+/**
+ * Resolves a Sanity cover image into plain URLs so consumers never touch
+ * urlForImage — the same shape the Postgres-backed blog getters emit (M3).
+ */
+function resolvePostImages<T extends { coverImage?: SanityImage }>(
+  raw: T,
+): Omit<T, "coverImage"> & {
+  coverImageUrl?: string;
+  coverImageWideUrl?: string;
+  coverImageAlt?: string;
+} {
+  const { coverImage, ...rest } = raw;
+  if (!coverImage?.asset?._ref) return rest;
+  return {
+    ...rest,
+    coverImageUrl: urlForImage(coverImage).width(640).height(360).url(),
+    coverImageWideUrl: urlForImage(coverImage).width(1360).height(720).url(),
+    coverImageAlt: coverImage.alt,
+  };
+}
+
+export async function getPosts(limit?: number): Promise<PostSummary[]> {
   const slice = limit ? `[0...${limit}]` : "";
-  return sanityFetch<PostSummary[]>({
+  const raw = await sanityFetch<RawPost<PostSummary>[]>({
     query: `*[_type == "post" && defined(slug.current)] | order(publishedAt desc)${slice}{${POST_SUMMARY_PROJECTION}}`,
     tags: [TAGS.post],
     fallback: usingDemoContent ? DEMO_POSTS.slice(0, limit ?? DEMO_POSTS.length) : [],
   });
+  return raw.map(resolvePostImages);
 }
 
-export function getPostBySlug(slug: string): Promise<Post | null> {
-  return sanityFetch<Post | null>({
+export async function getPostBySlug(slug: string): Promise<Post | null> {
+  const raw = await sanityFetch<RawPost<Post> | null>({
     query: `*[_type == "post" && slug.current == $slug][0]{
       ${POST_SUMMARY_PROJECTION},
       body, tags, seoTitle, seoDescription,
@@ -330,29 +361,32 @@ export function getPostBySlug(slug: string): Promise<Post | null> {
     tags: [TAGS.post],
     fallback: null,
   });
+  return raw ? resolvePostImages(raw) : null;
 }
 
-export function getPostsByCategory(slug: string): Promise<PostSummary[]> {
-  return sanityFetch<PostSummary[]>({
+export async function getPostsByCategory(slug: string): Promise<PostSummary[]> {
+  const raw = await sanityFetch<RawPost<PostSummary>[]>({
     query: `*[_type == "post" && category->slug.current == $slug] | order(publishedAt desc){${POST_SUMMARY_PROJECTION}}`,
     params: { slug },
     tags: [TAGS.post],
     fallback: [],
   });
+  return raw.map(resolvePostImages);
 }
 
-export function getRelatedPosts(
+export async function getRelatedPosts(
   categorySlug: string | undefined,
   excludeId: string,
 ): Promise<PostSummary[]> {
-  if (!categorySlug) return Promise.resolve([]);
-  return sanityFetch<PostSummary[]>({
+  if (!categorySlug) return [];
+  const raw = await sanityFetch<RawPost<PostSummary>[]>({
     query: `*[_type == "post" && category->slug.current == $categorySlug && _id != $excludeId]
       | order(publishedAt desc)[0...3]{${POST_SUMMARY_PROJECTION}}`,
     params: { categorySlug, excludeId },
     tags: [TAGS.post],
     fallback: [],
   });
+  return raw.map(resolvePostImages);
 }
 
 export function getCategories(): Promise<Category[]> {

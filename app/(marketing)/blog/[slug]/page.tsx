@@ -8,12 +8,7 @@ import { PostCard, formatDate } from "@/components/marketing/post-card";
 import { ProseBlock } from "@/components/marketing/prose-block";
 import { ReadingProgress } from "@/components/marketing/reading-progress";
 import { readingTimeMinutes } from "@/lib/reading-time";
-import {
-  getPostBySlug,
-  getPosts,
-  getRelatedPosts,
-  urlForImage,
-} from "@/lib/content";
+import { getPostBySlug, getPosts, getRelatedPosts } from "@/lib/content";
 
 export const revalidate = 3600;
 
@@ -82,11 +77,11 @@ export default async function BlogPostPage({
             </p>
           </header>
 
-          {post.coverImage?.asset && (
+          {post.coverImageWideUrl && (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src={urlForImage(post.coverImage).width(1360).height(720).url()}
-              alt={post.coverImage.alt ?? ""}
+              src={post.coverImageWideUrl}
+              alt={post.coverImageAlt ?? ""}
               width={1360}
               height={720}
               className="mt-8 w-full rounded-[var(--radius-lg)]"
