@@ -199,6 +199,7 @@ export function SlugField({
   locked,
   lockWarning,
   hint,
+  confirmName,
 }: {
   label?: string
   name: string
@@ -208,6 +209,11 @@ export function SlugField({
   locked?: boolean
   lockWarning?: string
   hint?: string
+  /**
+   * When set, unlocking a locked field also submits this hidden checkbox-style
+   * flag ("on") — the server action's backstop that the change was deliberate.
+   */
+  confirmName?: string
 }) {
   const id = useId()
   const [value, setValue] = useState(defaultValue ?? '')
@@ -218,6 +224,9 @@ export function SlugField({
       <label htmlFor={id} className={labelCls}>
         {label}
       </label>
+      {confirmName && locked && unlocked && (
+        <input type="hidden" name={confirmName} value="on" />
+      )}
       <div className="flex gap-2">
         <input
           id={id}

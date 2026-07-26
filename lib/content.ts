@@ -11,8 +11,8 @@
 //
 // MIGRATION STATE (update this table as phases land):
 //   ✅ siteSettings   ✅ faq          ✅ testimonial   ✅ service
-//   ✅ instagramPost  ✅ post/category ⬜ poshSection  ⬜ quickReference
-//   ⬜ ctaBand        ⬜ course       ⬜ question
+//   ✅ instagramPost  ✅ post/category ✅ poshSection  ✅ quickReference
+//   ✅ ctaBand        ⬜ course       ⬜ question
 // ✅ = served by lib/content/* (Postgres once the type has rows; Sanity until
 // then — the flip rule in lib/content/simple.ts).
 //
@@ -47,14 +47,14 @@ export {
   type CourseSummary,
   type CourseDetail,
 
-  // getters still Sanity-backed (M4–M5 swap these)
+  // getters still Sanity-backed (M5 swaps these)
   SITE_SETTINGS_FALLBACK,
-  getPoshSections,
-  getQuickReferences,
-  getCtaBands,
   getCourseBySlug,
   getCourses,
 } from "@/lib/sanity";
+
+// M4 — Postgres-backed Knowledge Hub (per-type Sanity fallback until rows exist)
+export { getPoshSections, getQuickReferences, getCtaBands } from "@/lib/content/hub";
 
 // M3 — Postgres-backed blog (per-type Sanity fallback until rows exist)
 export {
