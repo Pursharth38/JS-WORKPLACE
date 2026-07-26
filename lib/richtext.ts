@@ -52,10 +52,12 @@ const linkMark = z
     attrs: z
       .object({
         href: safeHref,
-        // Tiptap's link extension adds these; accepted but normalized at render.
+        // Tiptap's link extension adds these; accepted but normalized at render
+        // (the renderer applies its own fixed target/rel policy regardless).
         target: z.string().nullish(),
         rel: z.string().nullish(),
         class: z.string().nullish(),
+        title: z.string().nullish(),
       })
       .strict(),
   })
@@ -118,7 +120,11 @@ type BlockNodeInput =
   | z.infer<typeof imageNode>
   | { type: "blockquote"; content: BlockNodeInput[] }
   | { type: "bulletList"; content: ListItemInput[] }
-  | { type: "orderedList"; content: ListItemInput[]; attrs?: { start: number } }
+  | {
+      type: "orderedList";
+      content: ListItemInput[];
+      attrs?: { start: number; type?: string | null };
+    }
   | {
       type: "calloutBox";
       attrs: { tone: "info" | "warning" | "legal"; title?: string | null };
@@ -152,7 +158,15 @@ const blockNode: z.ZodType<BlockNodeInput> = z.lazy(() =>
       .object({
         type: z.literal("orderedList"),
         content: z.array(listItemNode).min(1).max(200),
-        attrs: z.object({ start: z.number().int().min(1) }).strict().optional(),
+        // Tiptap v3 emits { start, type: null } — `type` is the HTML list
+        // numbering style attr, presentational and safe.
+        attrs: z
+          .object({
+            start: z.number().int().min(1),
+            type: z.string().nullish(),
+          })
+          .strict()
+          .optional(),
       })
       .strict(),
     z

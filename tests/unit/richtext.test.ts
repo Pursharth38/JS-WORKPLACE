@@ -168,6 +168,42 @@ describe("parseRichText — rejects what must never be stored", () => {
   });
 });
 
+describe("parseRichText — accepts Tiptap v3's exact emitted shapes", () => {
+  it("accepts link marks with the null-padded attrs the Link extension emits", () => {
+    // Verified against @tiptap/starter-kit 3.29: link attrs include
+    // target/rel/class/title, orderedList attrs include type — all nullable.
+    const input = doc([
+      {
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: "l",
+            marks: [
+              {
+                type: "link",
+                attrs: {
+                  href: "https://x.y",
+                  target: "_blank",
+                  rel: "noopener noreferrer nofollow",
+                  class: null,
+                  title: null,
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: "orderedList",
+        attrs: { start: 3, type: null },
+        content: [{ type: "listItem", content: [para("one")] }],
+      },
+    ]);
+    expect(() => parseRichText(input)).not.toThrow();
+  });
+});
+
 describe("portableTextToTiptap", () => {
   const span = (text: string, marks: string[] = []) => ({ _type: "span", text, marks });
 
