@@ -33,11 +33,15 @@ export function ImageField({
       const fd = new FormData()
       fd.append('file', file)
       const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-      const payload: { success: boolean; data: { key: string } | null } = await res.json()
+      const payload: { success: boolean; message: string; data: { key: string } | null } =
+        await res.json()
       if (payload.success && payload.data) {
         setKey(payload.data.key)
       } else {
-        setError('Upload failed — JPEG, PNG, WebP or GIF up to 5 MB.')
+        // Surface the server's actual reason (wrong type, too large, storage
+        // unconfigured) instead of a one-size-fits-all guess — "R2 env vars
+        // missing" and "use JPEG/PNG/WebP/GIF" need different next actions.
+        setError(payload.message || 'Upload failed. Please try again.')
       }
     } catch {
       setError('Upload failed — check your connection and try again.')
