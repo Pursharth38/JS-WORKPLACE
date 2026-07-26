@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { LegalReviewNote } from "@/components/marketing/legal-review-note";
-import { getSiteSettings } from "@/lib/sanity";
+import { getSiteSettings } from "@/lib/content";
 
 export const revalidate = 86400;
 

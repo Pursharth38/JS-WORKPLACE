@@ -9,7 +9,7 @@ import { Accordion, type AccordionItem } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
 import { isEnrolled } from "@/lib/enrollment";
-import { getCourseBySlug } from "@/lib/sanity";
+import { getCourseBySlug } from "@/lib/content";
 import { getSession } from "@/lib/session";
 import Link from "next/link";
 

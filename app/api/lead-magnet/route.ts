@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { sendLeadMagnetEmail, sendLeadNotification } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { apiError, apiResponse } from "@/lib/response";
-import { getSiteSettings } from "@/lib/sanity";
+import { getSiteSettings } from "@/lib/content";
 import { leadSchema } from "@/lib/schemas/leads";
 import { createSignedToken } from "@/lib/signed-link";
 import { verifyTurnstile } from "@/lib/turnstile";

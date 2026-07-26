@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
 import { BorderBeam } from "@/components/motion/border-beam";
-import { type PostSummary, urlForImage } from "@/lib/sanity";
+import { type PostSummary, urlForImage } from "@/lib/content";
 
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", {

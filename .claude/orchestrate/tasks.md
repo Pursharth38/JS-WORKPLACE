@@ -286,6 +286,9 @@ None — nothing built yet.
 ## DECISIONS LOG
 | Date | Decision | Rationale |
 |---|---|---|
+| 2026-07-26 | **CMS migration APPROVED** — execute CMS-MIGRATION-PLAN.md M1–M5 + M6 dry-run on branch `cms-migration` | User decision after reviewing the plan. Supersedes "Sanity owns content" for the migrated types, one getter at a time via `lib/content.ts`. |
+| 2026-07-26 | Rich text = **Tiptap JSON**, not sanitized HTML | Keeps CalloutBox/DataTable as real React components, eliminates the XSS surface (structured data → React renderer, no `dangerouslySetInnerHTML`, no DOMPurify to mis-configure), and makes the Portable Text migration a shape transform. Amends plan §4/§5.2. |
+| 2026-07-26 | Migration **stops before cutover** | M6's real run, Studio/webhook deletion and Sanity decommission wait for explicit user go-ahead after they use the new admin. Everything stays reversible; both systems coexist via per-type getter swaps. |
 | pre-start | B2C only for v1 | Client answer. Enrollment kept as a join table so B2B can be added later without migration. |
 | pre-start | Cloudflare Stream over S3/Mux/YouTube | ABR on Indian mobile networks; ~₹500–1500/mo at expected volume; S3 needs a transcoding pipeline; YouTube cannot be payment-gated. |
 | pre-start | Sanity full CMS | Client answer — she edits blogs, POSH content, services, and quiz questions herself. |

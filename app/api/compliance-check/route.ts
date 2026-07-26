@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { sendComplianceReportEmail, sendLeadNotification } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { apiError, apiResponse } from "@/lib/response";
-import { getSiteSettings } from "@/lib/sanity";
+import { getSiteSettings } from "@/lib/content";
 import { complianceCheckSchema } from "@/lib/schemas/compliance-check";
 import { verifyTurnstile } from "@/lib/turnstile";
 

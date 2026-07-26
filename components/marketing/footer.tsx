@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { SiteSettings } from "@/lib/sanity";
+import type { SiteSettings } from "@/lib/content";
 import { Container } from "./container";
 import { LEGAL_NAV, PRIMARY_NAV, RESOURCE_NAV } from "./nav-links";
 

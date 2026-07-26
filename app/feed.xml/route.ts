@@ -1,4 +1,4 @@
-import { getPosts, getSiteSettings } from "@/lib/sanity";
+import { getPosts, getSiteSettings } from "@/lib/content";
 
 export const revalidate = 3600;
 

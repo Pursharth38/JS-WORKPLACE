@@ -29,7 +29,7 @@ import {
   getSiteSettings,
   getTestimonials,
   usingDemoContent,
-} from "@/lib/sanity";
+} from "@/lib/content";
 import { getLatestVideos } from "@/lib/youtube";
 
 export const revalidate = 3600;

@@ -1,11 +1,21 @@
 # CMS Migration Plan — Sanity → Custom Admin over Postgres
 
-> Status: **PROPOSED, NOT APPROVED, NOT STARTED.** Written 2026-07-26 in response to a client
-> request. This document is the architecture and the feature-by-feature mapping asked for. It is
-> not an instruction to execute — see "Go / no-go" at the end.
+> Status: **APPROVED 2026-07-26 — IN PROGRESS on branch `cms-migration`.** Approved by the user
+> with two amendments to §4/§7 (recorded in tasks.md DECISIONS LOG):
 >
-> Referenced from `.claude/CLAUDE.md`'s SOURCE-OF-TRUTH SPLIT section, which is the rule this
-> plan would change if approved.
+> 1. **Rich text is stored as Tiptap JSON, not sanitized HTML.** The §4 rows that say "HTML" and
+>    the §5.2 sanitizer requirement are superseded: `body` columns hold Tiptap's structured JSON
+>    document, validated by a Zod schema on every save, and rendered by a server-side React
+>    renderer that maps node types to the existing `CalloutBox`/`DataTable` components. No
+>    `dangerouslySetInnerHTML`, no DOMPurify — structured data in, React out, so the XSS surface
+>    §5.2 worried about never exists.
+> 2. **Scope stops before cutover.** M1–M5 plus the M6 migration script WITH dry-run are built;
+>    the actual cutover (real data migration, Studio deletion, webhook deletion, Sanity
+>    decommission) waits for explicit user go-ahead after they have used the new admin. Until
+>    then Sanity remains live and `lib/content.ts` swaps per-type getters as each phase lands.
+>
+> Referenced from `.claude/CLAUDE.md`'s SOURCE-OF-TRUTH SPLIT section — that rule now reads
+> "transitioning per the amendments above" for the duration of the migration.
 
 ---
 

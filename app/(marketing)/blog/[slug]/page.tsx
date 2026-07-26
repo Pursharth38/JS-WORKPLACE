@@ -13,7 +13,7 @@ import {
   getPosts,
   getRelatedPosts,
   urlForImage,
-} from "@/lib/sanity";
+} from "@/lib/content";
 
 export const revalidate = 3600;
 

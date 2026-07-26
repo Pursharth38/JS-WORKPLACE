@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Container } from "@/components/marketing/container";
 import { NewsletterForm } from "@/components/marketing/newsletter-form";
 import { PostCard } from "@/components/marketing/post-card";
-import { getCategories, getPosts } from "@/lib/sanity";
+import { getCategories, getPosts } from "@/lib/content";
 
 export const revalidate = 3600;
 

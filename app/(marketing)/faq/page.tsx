@@ -4,7 +4,7 @@ import { Accordion, type AccordionItem } from "@/components/ui/accordion";
 import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { ProseBlock } from "@/components/marketing/prose-block";
-import { getFaqs } from "@/lib/sanity";
+import { getFaqs } from "@/lib/content";
 import Link from "next/link";
 
 export const revalidate = 3600;

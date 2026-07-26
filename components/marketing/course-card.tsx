@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
 import { BorderBeam } from "@/components/motion/border-beam";
-import type { CourseSummary } from "@/lib/sanity";
+import type { CourseSummary } from "@/lib/content";
 
 /**
  * Prices are stored in paise and rendered in rupees. The DATABASE is the price

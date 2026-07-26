@@ -1,4 +1,4 @@
-import type { Testimonial } from "@/lib/sanity";
+import type { Testimonial } from "@/lib/content";
 import { BlurFade } from "@/components/motion/blur-fade";
 import { Container } from "./container";
 

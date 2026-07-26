@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
-import { getSiteSettings } from "@/lib/sanity";
+import { getSiteSettings } from "@/lib/content";
 
 export const revalidate = 3600;
 

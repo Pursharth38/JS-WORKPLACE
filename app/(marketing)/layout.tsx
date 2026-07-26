@@ -4,7 +4,7 @@ import { DemoBanner } from "@/components/marketing/demo-banner";
 import { Footer } from "@/components/marketing/footer";
 import { Header } from "@/components/marketing/header";
 import { WhatsAppFAB } from "@/components/marketing/whatsapp-fab";
-import { getSiteSettings, usingDemoContent } from "@/lib/sanity";
+import { getSiteSettings, usingDemoContent } from "@/lib/content";
 import { getSession } from "@/lib/session";
 
 /**

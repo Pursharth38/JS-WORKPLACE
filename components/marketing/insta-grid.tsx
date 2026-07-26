@@ -1,6 +1,6 @@
 import { ExternalLink } from "lucide-react";
 
-import { type InstagramPost, urlForImage } from "@/lib/sanity";
+import { type InstagramPost, urlForImage } from "@/lib/content";
 
 /**
  * P11-07 — Sanity-managed grid of Instagram post URLs. Static images linking

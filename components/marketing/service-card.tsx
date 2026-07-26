@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { ServiceSummary } from "@/lib/sanity";
+import type { ServiceSummary } from "@/lib/content";
 import { Card } from "@/components/ui/card";
 import { BorderBeam } from "@/components/motion/border-beam";
 

@@ -11,7 +11,7 @@ import { ProseBlock } from "@/components/marketing/prose-block";
 import { ReadingProgress } from "@/components/marketing/reading-progress";
 import { TocSidebar, type TocGroup } from "@/components/marketing/toc-sidebar";
 import { POSH_GROUPS } from "@/lib/posh-groups";
-import { getCtaBands, getPoshSections, type PoshSection } from "@/lib/sanity";
+import { getCtaBands, getPoshSections, type PoshSection } from "@/lib/content";
 
 export const revalidate = 3600;
 

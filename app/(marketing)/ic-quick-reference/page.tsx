@@ -5,7 +5,7 @@ import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { LeadMagnetForm } from "@/components/marketing/lead-magnet-form";
 import { ProseBlock } from "@/components/marketing/prose-block";
-import { getQuickReferences } from "@/lib/sanity";
+import { getQuickReferences } from "@/lib/content";
 
 export const revalidate = 3600;
 

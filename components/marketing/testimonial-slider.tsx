@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import type { Testimonial } from "@/lib/sanity";
+import type { Testimonial } from "@/lib/content";
 import { Container } from "./container";
 
 /**

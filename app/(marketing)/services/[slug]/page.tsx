@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
 import { ProseBlock } from "@/components/marketing/prose-block";
-import { getServiceBySlug, getServices } from "@/lib/sanity";
+import { getServiceBySlug, getServices } from "@/lib/content";
 
 export const revalidate = 3600;
 

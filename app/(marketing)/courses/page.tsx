@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/marketing/container";
 import { CourseCard } from "@/components/marketing/course-card";
 import { CtaBand } from "@/components/marketing/cta-band";
-import { getCourses } from "@/lib/sanity";
+import { getCourses } from "@/lib/content";
 import Link from "next/link";
 
 export const revalidate = 3600;

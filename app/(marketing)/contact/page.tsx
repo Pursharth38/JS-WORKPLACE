@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { Container } from "@/components/marketing/container";
 import { LeadForm } from "@/components/marketing/lead-form";
-import { getSiteSettings } from "@/lib/sanity";
+import { getSiteSettings } from "@/lib/content";
 
 export const revalidate = 3600;
 

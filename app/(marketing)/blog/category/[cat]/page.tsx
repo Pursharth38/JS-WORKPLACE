@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Container } from "@/components/marketing/container";
 import { PostCard } from "@/components/marketing/post-card";
-import { getCategories, getPostsByCategory } from "@/lib/sanity";
+import { getCategories, getPostsByCategory } from "@/lib/content";
 
 export const revalidate = 3600;
 

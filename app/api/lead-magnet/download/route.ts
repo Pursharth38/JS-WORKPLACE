@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { ChecklistDocument } from "@/components/pdf/checklist-document";
 import { apiError, apiResponse } from "@/lib/response";
-import { getSiteSettings } from "@/lib/sanity";
+import { getSiteSettings } from "@/lib/content";
 import { verifySignedToken } from "@/lib/signed-link";
 
 // @react-pdf/renderer cannot run on Edge. next.config.ts also keeps it out of
