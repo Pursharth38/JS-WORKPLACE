@@ -51,8 +51,11 @@ export const leadSchema = z.object({
    * Honeypot. Invisible to a human, irresistible to a bot. When this arrives
    * non-empty the route returns 200 and discards — telling the bot it failed
    * just teaches it to try again without the field.
+   *
+   * NOT named `website`: password managers autofill that name for real humans,
+   * whose enquiry was then thrown away. See `Honeypot` in `components/ui/input.tsx`.
    */
-  website: z.string().max(200).optional(),
+  refCode: z.string().max(200).optional(),
 
   /** Cloudflare Turnstile token, re-verified server-side. */
   turnstileToken: z.string().optional(),

@@ -103,10 +103,17 @@ Guards: `SANITY_WEBHOOK_SECRET` header check.
 Guards: Upstash rate limit 5/hour per IP · honeypot field · Cloudflare Turnstile.
 ```
 req  { name, email, phone?, organization?, employeeCount?, serviceInterest?, message?,
-       source: 'demo'|'checklist'|'assessment'|'newsletter', consentGiven: boolean, website?: string }
+       source: 'demo'|'checklist'|'assessment'|'newsletter', consentGiven: boolean, refCode?: string }
 res  { id: string }
 ```
-- `website` is the honeypot. If filled, return `200 Received` and discard silently.
+- `refCode` is the honeypot. If filled, return `200 Received`, log a warning, and
+  discard silently. **It must never be named `website`** (or `url`, `company`,
+  `address`, `phone`) — renamed from `website` on 2026-07-26 because password
+  managers treat that name as a vault field and Chrome autofills it, so real
+  humans had their enquiries discarded behind a success-shaped response. The same
+  field name and rule apply to `/api/lead-magnet`, `/api/compliance-check` and
+  `signupAction`. Log every hit: the discard is invisible to the sender by
+  design, which makes a misfire indistinguishable from a working form.
 - `consentGiven: false` → `400`. The checkbox must render **unticked** (DPDP).
 - Notification email is fire-and-forget; never block the response on it.
 

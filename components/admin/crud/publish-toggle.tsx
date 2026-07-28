@@ -10,16 +10,22 @@ export function PublishToggle({
   id,
   published,
   action,
+  disabled = false,
+  disabledReason,
 }: {
   id: string;
   published: boolean;
   /** Server action: flip this row's isPublished. */
   action: (id: string) => Promise<void>;
+  /** Blocks the flip in the UI. The server action must refuse it too. */
+  disabled?: boolean;
+  disabledReason?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
   const toggle = async () => {
+    if (disabled) return;
     setBusy(true);
     try {
       await action(id);
@@ -29,24 +35,22 @@ export function PublishToggle({
     }
   };
 
+  const label = disabled
+    ? (disabledReason ?? "Locked")
+    : published
+      ? "Published — click to unpublish"
+      : "Draft — click to publish";
+
   return (
     <button
       type="button"
       onClick={toggle}
-      disabled={busy}
+      disabled={busy || disabled}
       role="switch"
       aria-checked={published}
-      aria-label={
-        published
-          ? "Published — click to unpublish"
-          : "Draft — click to publish"
-      }
-      title={
-        published
-          ? "Published — click to unpublish"
-          : "Draft — click to publish"
-      }
-      className="inline-flex shrink-0 items-center gap-2 rounded-full px-2.5 py-1 text-[12px] font-medium transition-opacity disabled:opacity-50"
+      aria-label={label}
+      title={label}
+      className="inline-flex shrink-0 items-center gap-2 rounded-full px-2.5 py-1 text-[12px] font-medium transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
       style={
         published
           ? {

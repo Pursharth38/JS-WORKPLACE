@@ -1,5 +1,6 @@
 import type { PortableTextBlock } from "@portabletext/react";
 
+import type { MarqueeLogo } from "@/components/marketing/logo-marquee";
 import type {
   CourseSummary,
   Faq,
@@ -80,6 +81,55 @@ export const DEMO_STATS = [
   { value: "[00]", label: "Internal Committees set up" },
   { value: "[00]", label: "Years of practice" },
 ] as const;
+
+/**
+ * Credential chips under the About section, same convention and same reason as
+ * DEMO_STATS: visible "[00]" placeholders, only ever rendered in demo mode.
+ *
+ * The design these came from shipped "10+ Years Experience / 500+ Workshops /
+ * 50+ Companies Trained" as unverified placeholder copy. A configured
+ * production site with no real figures shows no chips at all — see lib/about.ts.
+ */
+export const DEMO_ABOUT_PILLS = [
+  "[00]+ years of practice",
+  "[00]+ sessions delivered",
+  "[00]+ organisations trained",
+] as const;
+
+/**
+ * Placeholder logos for the two-row marquee (components/marketing/logo-marquee.tsx).
+ *
+ * ⚠️ EVERY NAME BELOW IS INVENTED, and that is the point.
+ *
+ * The design this section copies is eLearnPOSH's "Trusted by Leading
+ * Organizations" wall, carrying THEIR clients — TCS, TATA, Lenovo, GE, The
+ * Economist. Putting real marks here would claim a competitor's customers as
+ * ours: a false client claim under CLAUDE.md and a trademark problem on top of
+ * it. These stand-ins exist only so the row's spacing, weight and speed can be
+ * judged at realistic proportions.
+ *
+ * Replacing them needs TWO things from the client, not one: the logo file, and
+ * written permission to display it. Without both, delete the section from
+ * app/(marketing)/page.tsx rather than shipping these.
+ */
+export const DEMO_CLIENT_LOGOS = [
+  [
+    { name: "Northwind Systems", mark: "chevron" },
+    { name: "Meridian Group", mark: "orbit" },
+    { name: "Cobalt Works", mark: "diamond" },
+    { name: "Lumen Labs", mark: "spark" },
+    { name: "Harbour & Co", mark: "arch" },
+    { name: "Quanta Retail", mark: "grid" },
+  ],
+  [
+    { name: "Tidewater", mark: "wave" },
+    { name: "Prism Health", mark: "prism" },
+    { name: "Vantage Foods", mark: "hex" },
+    { name: "Ardent Motors", mark: "ring" },
+    { name: "Solstice Bank", mark: "stack" },
+    { name: "Kestrel Tech", mark: "blade" },
+  ],
+] as const satisfies readonly (readonly MarqueeLogo[])[];
 
 export const DEMO_SERVICES: ServiceSummary[] = [
   {

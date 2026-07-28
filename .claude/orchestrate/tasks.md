@@ -73,6 +73,68 @@ section records what Dev A actually did, including three deliberate deviations.
 **Environment note:** gstack was missing and is now installed globally (`~/.claude/skills/gstack`, team
 mode). It needs `bun`, which was also installed. Skills require a Claude Code restart to register.
 
+**2026-07-28 session (admin publish toggles + entry animation + About section):** three
+client-directed changes on `integration-a-b`.
+1. **Publish toggles.** `/admin/courses`, `/admin/faq` and `/admin/testimonials` showed a static
+   `PublishBadge` where `/admin/blog` had a working switch. Added a `togglePublish` server action
+   to each (`toggleCoursePublish` on courses, to avoid colliding with the chapter/module exports
+   in the same file) and swapped in `PublishToggle`. `PublishToggle` gained `disabled` +
+   `disabledReason`: a testimonial with no written permission on file cannot be published from the
+   list, and the server action refuses it independently — the list view bypasses the form, so the
+   consent rule `saveTestimonial` enforces had to be restated on that path.
+2. **Entry animation** (`components/marketing/site-intro.tsx` + the `SITE INTRO CURTAIN` block in
+   `app/globals.css`), ported from the `Pursharth38/JS-workplace-wellness` Vite prototype's
+   `Loader.jsx`. Mounted in `app/(marketing)/layout.tsx` — public pages only, never over
+   `/dashboard` or `/learn`. **Rebuilt as pure CSS on a server component.** The prototype gated the
+   entire router behind `{loaderDone && <Routes/>}`, so a 3.2s JS timer withheld every pixel of
+   content from users and crawlers alike and a failed bundle meant a permanently blank page. Here
+   the page server-renders underneath from the first byte and the curtain is `pointer-events: none`
+   + `aria-hidden` decoration lifted by an `animation-fill-mode: forwards` keyframe — no JS can fail
+   to un-render it. Colour comes from `color-mix()` over the semantic tokens, so the mesh follows
+   light/dark automatically instead of pinning one theme's hexes. `prefers-reduced-motion` removes
+   it entirely; a `sessionStorage` script in `app/layout.tsx` (same shape and rationale as the
+   existing theme no-flash script) stamps `data-intro="seen"` so it plays once per visit.
+3. **About section** (`components/marketing/about-intro.tsx`, copy in `lib/about.ts`), ported from
+   the same prototype's `About.jsx` — portrait, biography, credential chips, on the home page and
+   as the `<h1>` block of `/about`. Photo: the prototype's `public/jyoti.jpg`, which is actually a
+   **PNG with alpha** despite the extension; copied in as `public/jyoti-solaria.png` so Next serves
+   the right `Content-Type`. Choreography (photo from the left, text from the right a beat later,
+   chips staggering, desktop-only parallax) is the prototype's; the implementation is `motion` +
+   `useInView`/`useScroll`, **not** GSAP + ScrollTrigger — CLAUDE.md pins the animation library and
+   a second scroll-animation runtime would be the largest dependency on the marketing bundle.
+   **The prototype's copy was deliberately NOT imported:** "India's Leading PoSH Law Expert",
+   "certified PoSH law practitioner", and the chips "10+ Years Experience / 500+ Workshops / 50+
+   Companies Trained" were all tagged `COPY: client to review` in that repo, i.e. never verified,
+   and shipping them would invent credentials and trained-employee counts against CLAUDE.md §1.
+   `lib/about.ts` carries the already-reviewed /about wording in the prototype's three-paragraph
+   shape, and chips render only under `NEXT_PUBLIC_FORCE_DEMO` as visible `[00]` placeholders —
+   the same convention as `DEMO_STATS`. Real headline figures still block on P0-04.
+4. **Logo marquee** (`components/marketing/logo-marquee.tsx`, marks in `logo-mark.tsx`, styles in
+   `app/globals.css` under `LOGO MARQUEE`), on the home page between the Hero and the About
+   section. Two rows scrolling in opposite directions, continuous and seamless, from a recording
+   of **eLearnPOSH's** "Trusted by Leading Organizations" wall. Pure CSS again — a JS ticker would
+   run a rAF loop forever on the busiest page on the site. **The logos are invented placeholders**
+   (`DEMO_CLIENT_LOGOS`): the reference wall carries TCS, TATA, Lenovo, GE Appliances and The
+   Economist, i.e. the competitor's clients, and reproducing them would assert their customers as
+   ours — a false client claim under CLAUDE.md and a trademark problem besides. The heading and
+   subheading are our own wording, not a paraphrase of theirs. **This block must not go live as
+   placeholders**: before launch, either swap in logos the client has written permission to
+   display, or delete the section from `app/(marketing)/page.tsx`. The one non-obvious
+   implementation detail is the four-copy track: with N copies of a group of width g the track
+   slides by g, so the row only stays covered while `(N-1)·g >= viewport`. Two copies (the usual
+   recipe) needs one row of logos to be wider than the screen, which fails on an ultrawide and
+   shows a gap before the loop snaps back; four holds to `g >= viewport/3`. The keyframe
+   percentage is always `-(100/N)%` and must be changed with the copy count.
+   Verified: typecheck, lint, full production build, both security greps, and `curl` against the
+   dev server (curtain SSR'd with the right step count, About section present on both pages,
+   portrait served and optimised, marquee rendering 2 rows × 4 groups with the 6 clones
+   `aria-hidden`). **Not visually confirmed** — gstack `/browse` will not start on this machine,
+   see the gstack memory note.
+   Process note: running `next build` while `next dev` holds the same `.next` starved the dev
+   server badly enough to look hung (multi-minute stalls, `curl` timing out). It recovered on its
+   own once the build finished. Prefer verifying against the dev server, and run the production
+   build last.
+
 **2026-07-26 session, part 4 (CMS migration, branch `cms-migration`):** executed
 CMS-MIGRATION-PLAN.md phases M0–M5 plus M6-prep, per the user's approval and the two amendments
 recorded above in the DECISIONS LOG (Tiptap JSON storage, not sanitized HTML; stop before
@@ -344,6 +406,10 @@ None — nothing built yet.
 ## DECISIONS LOG
 | Date | Decision | Rationale |
 |---|---|---|
+| 2026-07-26 | **Honeypot field renamed `website` → `refCode`** across all 5 forms, 3 schemas, 3 routes + `signupAction`; every hit now logged | Found from a live report: a real self-check submission returned a green "Received" and vanished. `Received` is only ever returned by the honeypot branch, and no `Lead` row was written — confirming the trap fired on a human. `website` is a first-class password-manager vault field and a Chrome autofill category, so 1Password/LastPass/Bitwarden filled the hidden input; `autocomplete="off"` does not stop them. Added `data-1p-ignore`/`data-lpignore`/`data-bwignore`/`data-form-type="other"` as belt-and-braces. Regression guard: `tests/unit/honeypot.test.ts` (verified it fails when the old name/`.max(0)` is reintroduced). |
+| 2026-07-26 | **`signupSchema` honeypot loosened from `.max(0)` to `.max(200).optional()`** | Two bugs in one line. `.max(0)` rejected a filled honeypot at the *validation* layer, so (a) `signupAction`'s own honeypot branch was unreachable dead code, and (b) any human whose password manager filled the field got a generic "Invalid input" and **could not create an account at all** — a hard conversion blocker on the paid product. The route, not the schema, must decide, so the reply stays indistinguishable from success and teaches a bot nothing. |
+| 2026-07-26 | **Explicit `replyTo` on every email**, defaulting to `settings.email`; `sendLeadNotification` replies to the *enquirer* | `EMAIL_FROM` is `noreply@`, which has no mailbox — replies to a report, receipt or verification mail were silently lost. Resolved from site settings (already `unstable_cache`d, so no per-send query) so the client can change it in `/admin` without a deploy, with an `EMAIL_REPLY_TO` env override for CI/preview. Wrapped so a settings failure degrades to no Reply-To: `lib/email.ts`'s contract is that delivery is fail-soft. Diagnosis originally from Dev B; implemented here at his request. |
+| 2026-07-26 | **`jsworkplacewellness.com` verified in Resend; `EMAIL_FROM` off the sandbox sender** | `onboarding@resend.dev` only ever delivers to the Resend account owner's own inbox, so every send to anyone else was rejected — a feature that looked like it worked and didn't. DKIM (`resend._domainkey`) + SPF (`send`) + MX (`send` → `feedback-smtp.ap-northeast-1.amazonses.com`) confirmed live in public DNS. Kept GoDaddy's pre-existing `_dmarc` (`p=quarantine; adkim=r; aspf=r`) rather than adding Resend's — two `_dmarc` records invalidate DMARC entirely, and both mechanisms align as-is. **Open:** the Resend account is still on a developer's email; production should move to a client-owned account, which means redoing the DNS (DKIM keys are per-account). |
 | 2026-07-26 | **CMS migration APPROVED** — execute CMS-MIGRATION-PLAN.md M1–M5 + M6 dry-run on branch `cms-migration` | User decision after reviewing the plan. Supersedes "Sanity owns content" for the migrated types, one getter at a time via `lib/content.ts`. |
 | 2026-07-26 | Rich text = **Tiptap JSON**, not sanitized HTML | Keeps CalloutBox/DataTable as real React components, eliminates the XSS surface (structured data → React renderer, no `dangerouslySetInnerHTML`, no DOMPurify to mis-configure), and makes the Portable Text migration a shape transform. Amends plan §4/§5.2. |
 | 2026-07-26 | Migration **stops before cutover** | M6's real run, Studio/webhook deletion and Sanity decommission wait for explicit user go-ahead after they use the new admin. Everything stays reversible; both systems coexist via per-type getter swaps. |

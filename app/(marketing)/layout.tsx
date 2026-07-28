@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { DemoBanner } from "@/components/marketing/demo-banner";
 import { Footer } from "@/components/marketing/footer";
 import { Header } from "@/components/marketing/header";
+import { SiteIntro } from "@/components/marketing/site-intro";
 import { WhatsAppFAB } from "@/components/marketing/whatsapp-fab";
 import { getSiteSettings, usingDemoContent } from "@/lib/content";
 import { getSession } from "@/lib/session";
@@ -27,6 +28,10 @@ export default async function MarketingLayout({
 
   return (
     <>
+      {/* Public pages only. A curtain over /dashboard or /learn would sit
+          between a paying learner and the module they came back to finish. */}
+      <SiteIntro wordmark={settings.businessName} />
+
       <a href="#main" className="skip-link">
         Skip to content
       </a>

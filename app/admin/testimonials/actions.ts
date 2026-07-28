@@ -80,6 +80,26 @@ export async function deleteTestimonial(id: string): Promise<void> {
   redirect('/admin/testimonials')
 }
 
+/**
+ * Flips Published/Draft from the list view. Refuses to publish an entry with no
+ * written permission on file — same rule saveTestimonial enforces, restated
+ * here because this path never goes through the form.
+ */
+export async function togglePublish(id: string): Promise<void> {
+  if (!(await requireAdmin())) return
+  const row = await db.testimonial.findUnique({
+    where: { id },
+    select: { isPublished: true, consentOnFile: true },
+  })
+  if (!row) return
+  if (!row.isPublished && !row.consentOnFile) {
+    console.warn('[admin:testimonial:publish] refused — no consent on file', { id })
+    return
+  }
+  await db.testimonial.update({ where: { id }, data: { isPublished: !row.isPublished } })
+  bust()
+}
+
 export async function moveTestimonial(id: string, direction: 'up' | 'down'): Promise<void> {
   if (!(await requireAdmin())) return
   const rows = await db.testimonial.findMany({ select: { id: true, order: true } })

@@ -22,7 +22,8 @@ export const complianceCheckSchema = z.object({
     ),
 
   consentGiven: z.coerce.boolean(),
-  website: z.string().max(200).optional(),
+  /** Honeypot — never `website`, which password managers autofill. */
+  refCode: z.string().max(200).optional(),
   turnstileToken: z.string().optional(),
 });
 

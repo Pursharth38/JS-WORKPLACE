@@ -305,6 +305,13 @@ Stream UID for a locked module.
   per-token comments before assuming a pairing is safe; this has not had the CONTRAST-REPORT.md
   treatment (a measured, per-pair WCAG audit) that the original palette got. Treat as an open
   follow-up, not settled.
+- **The entry curtain (`components/marketing/site-intro.tsx`) must never gate rendering.** It is a
+  server component + CSS keyframes on purpose: the page server-renders underneath it from the
+  first byte, and it lifts itself with `animation-fill-mode: forwards`. Do not "improve" it into a
+  client component that holds children behind a timer or a `loaderDone` flag — that is the exact
+  pattern it was rewritten to avoid, and it costs LCP, crawlability and every no-JS visitor. It is
+  mounted in the marketing layout only; a curtain over `/dashboard` or `/learn` sits between a
+  paying learner and their module.
 
 **Local preview:** `NEXT_PUBLIC_FORCE_DEMO=true` in `.env` renders the marketing site against
 demo/placeholder content instead of the real, seeded Sanity project — for checking what a design

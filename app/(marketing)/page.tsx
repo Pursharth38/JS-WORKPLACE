@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AboutIntro } from "@/components/marketing/about-intro";
 import { BlurFade } from "@/components/motion/blur-fade";
 import { BorderBeam } from "@/components/motion/border-beam";
 import { LoopVideo } from "@/components/motion/loop-video";
@@ -14,13 +15,19 @@ import { HarassmentSpectrum } from "@/components/marketing/harassment-spectrum";
 import { Hero } from "@/components/marketing/hero";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { InstaGrid } from "@/components/marketing/insta-grid";
+import { LogoMarquee } from "@/components/marketing/logo-marquee";
 import { PostCard } from "@/components/marketing/post-card";
 import { ServiceCard } from "@/components/marketing/service-card";
 import { StatBand } from "@/components/marketing/stat-band";
 import { TestimonialSection } from "@/components/marketing/testimonial-section";
 import { WorkplaceProtection } from "@/components/marketing/workplace-protection";
 import { YouTubeLite } from "@/components/marketing/youtube-lite";
-import { DEMO_STATS } from "@/lib/demo-content";
+import { ABOUT_HEADING, ABOUT_PHOTO, aboutParagraphs } from "@/lib/about";
+import {
+  DEMO_ABOUT_PILLS,
+  DEMO_CLIENT_LOGOS,
+  DEMO_STATS,
+} from "@/lib/demo-content";
 import {
   getCourses,
   getInstagramPosts,
@@ -90,6 +97,31 @@ export default async function HomePage() {
             <ComplaintJourney className="mt-6" />
           </div>
         }
+      />
+
+      {/* ── Logo wall ────────────────────────────────────────────────────
+          ⚠️ PLACEHOLDER LOGOS. Every name in DEMO_CLIENT_LOGOS is invented —
+          see the warning on that constant and on logo-marquee.tsx. Rendered
+          unconditionally (not gated on demo mode) at the client's explicit
+          request, so the motion can be reviewed on the real page. Before
+          launch this needs real logos WITH written permission to display
+          them, or the whole block deleted. It must not go live as-is. */}
+      <LogoMarquee
+        heading="Organisations we work with"
+        subheading="POSH awareness sessions, Internal Committee training and policy support, across sectors."
+        rows={DEMO_CLIENT_LOGOS}
+      />
+
+      {/* Straight after the hero, as in the design this section comes from —
+          a trainer's practice sells on the trainer, and the portrait is the
+          first thing that makes the page feel like a person rather than a
+          compliance vendor. Copy and chips: lib/about.ts. */}
+      <AboutIntro
+        heading={ABOUT_HEADING}
+        paragraphs={aboutParagraphs(settings.businessName)}
+        photo={ABOUT_PHOTO}
+        pills={usingDemoContent ? DEMO_ABOUT_PILLS : []}
+        action={{ label: "More about how we work", href: "/about" }}
       />
 
       {/* ── Looping explainer videos — mirror the native <video autoplay loop

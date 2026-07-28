@@ -90,6 +90,17 @@ export function Textarea({
  *
  * Hidden with off-screen positioning rather than `display:none` — some bots
  * skip `display:none` fields specifically because they know it is a trap.
+ *
+ * ⚠️ The field is `refCode`, NOT `website`, and that is deliberate — do not
+ * "tidy" it back. It was named `website` until 2026-07-26, which silently ate
+ * real submissions: `website` is a first-class field in every password-manager
+ * vault schema and a Chrome autofill category, so 1Password/LastPass/Bitwarden
+ * filled this hidden input for ordinary humans and their enquiry was discarded
+ * as spam behind a green "Received" banner. `autocomplete="off"` does not stop
+ * a password manager. The `data-*-ignore` attributes below are the documented
+ * opt-outs for each manager; the neutral name is what makes them unnecessary.
+ * Any rename must avoid autofill-recognised names (website, url, company,
+ * address, phone, name, email).
  */
 export function Honeypot() {
   return (
@@ -97,14 +108,18 @@ export function Honeypot() {
       aria-hidden="true"
       className="absolute left-[-9999px] top-0 h-px w-px overflow-hidden"
     >
-      <label htmlFor="website">Website (leave blank)</label>
+      <label htmlFor="refCode">Reference code (leave blank)</label>
       <input
-        id="website"
-        name="website"
+        id="refCode"
+        name="refCode"
         type="text"
         tabIndex={-1}
         autoComplete="off"
         defaultValue=""
+        data-1p-ignore="true"
+        data-lpignore="true"
+        data-bwignore="true"
+        data-form-type="other"
       />
     </div>
   );

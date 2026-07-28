@@ -71,8 +71,12 @@ export async function POST(req: NextRequest) {
     const parsed = leadSchema.safeParse(body)
     if (!parsed.success) return apiResponse(400, 'Invalid input')
 
-    // honeypot — a filled hidden field means a bot
-    if (parsed.data.website) return apiResponse(200, 'Received')
+    // honeypot — a filled hidden field means a bot. NEVER name it `website`:
+    // password managers autofill that and real humans get silently discarded.
+    if (parsed.data.refCode) {
+      console.warn('[api/leads] honeypot filled — discarding as bot')
+      return apiResponse(200, 'Received')
+    }
 
     if (!parsed.data.consentGiven) return apiResponse(400, 'Consent required')
 

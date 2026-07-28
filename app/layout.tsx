@@ -24,6 +24,31 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 
+/**
+ * Intro-curtain suppressor. Same shape and same reason as the theme script: it
+ * must run before first paint, because deciding *after* paint would mean the
+ * curtain flashes up and is yanked away — worse than either outcome.
+ *
+ * `sessionStorage`, not `localStorage`: the entry animation should greet a
+ * visitor once when they arrive and then stay out of the way for the rest of
+ * that visit, but still play for tomorrow's visit. It sets the flag on the very
+ * first paint, so a reload two seconds later already skips it.
+ *
+ * Purely an enhancement — components/marketing/site-intro.tsx explains what the
+ * no-JS path looks like (the curtain plays every load, and still lifts).
+ */
+const INTRO_INIT_SCRIPT = `
+(function () {
+  try {
+    if (sessionStorage.getItem('intro-seen')) {
+      document.documentElement.setAttribute('data-intro', 'seen');
+    } else {
+      sessionStorage.setItem('intro-seen', '1');
+    }
+  } catch (e) {}
+})();
+`;
+
 /* Both faces are self-hosted by next/font at build time — no render-blocking
    request to fonts.googleapis.com, and no third-party cookie surface.
    globals.css maps --font-heading / --font-body onto these two variables. */
@@ -71,6 +96,11 @@ export default function RootLayout({
           id="theme-init"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+        <Script
+          id="intro-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: INTRO_INIT_SCRIPT }}
         />
       </head>
       <body>{children}</body>

@@ -31,7 +31,7 @@ export function NewsletterForm() {
         body: JSON.stringify({
           name: String(fd.get("name") ?? ""),
           email: String(fd.get("email") ?? ""),
-          website: String(fd.get("website") ?? ""),
+          refCode: String(fd.get("refCode") ?? ""),
           consentGiven: fd.get("consentGiven") === "on",
           source: "newsletter",
         }),

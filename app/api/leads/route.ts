@@ -37,7 +37,12 @@ export async function POST(req: NextRequest) {
 
     // Honeypot: a human never sees this field. Return success and drop it —
     // an error response just teaches the bot to omit the field next time.
-    if (data.website && data.website.length > 0) {
+    // Logged because the discard is invisible to the sender by design, so a
+    // misfire looks exactly like a working form (see the 2026-07-26 rename).
+    if (data.refCode && data.refCode.length > 0) {
+      console.warn("[api/leads] honeypot filled — discarding as bot", {
+        source: data.source,
+      });
       return apiResponse(200, "Received");
     }
 

@@ -75,6 +75,15 @@ export async function deleteFaq(id: string): Promise<void> {
   redirect('/admin/faq')
 }
 
+/** Flips Published/Draft from the list view — no need to open the full editor. */
+export async function togglePublish(id: string): Promise<void> {
+  if (!(await requireAdmin())) return
+  const row = await db.faq.findUnique({ where: { id }, select: { isPublished: true } })
+  if (!row) return
+  await db.faq.update({ where: { id }, data: { isPublished: !row.isPublished } })
+  bust()
+}
+
 export async function moveFaq(id: string, direction: 'up' | 'down'): Promise<void> {
   if (!(await requireAdmin())) return
   const row = await db.faq.findUnique({ where: { id }, select: { category: true } })

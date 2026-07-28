@@ -66,7 +66,7 @@ export async function signupAction(_prev: ActionState, formData: FormData): Prom
     password: formData.get('password'),
     phone: formData.get('phone') ?? undefined,
     consentGiven: formData.get('consentGiven') === 'on' || formData.get('consentGiven') === 'true',
-    website: formData.get('website') ?? '',
+    refCode: formData.get('refCode') ?? '',
   })
 
   if (!parsed.success) {
@@ -76,11 +76,14 @@ export async function signupAction(_prev: ActionState, formData: FormData): Prom
     return { status: 'error', message: first?.message ?? 'Please check the form and try again.' }
   }
 
-  const { name, email, password, phone, website } = parsed.data
+  const { name, email, password, phone, refCode } = parsed.data
 
   // Honeypot: a real user never sees this field. Return the same success shape
-  // a human gets so the bot cannot tell it was filtered.
-  if (website) {
+  // a human gets so the bot cannot tell it was filtered. Logged because a
+  // misfire here silently blocks a real signup, and until 2026-07-26 that is
+  // exactly what happened — see the note in `signupSchema`.
+  if (refCode) {
+    console.warn('[signup] honeypot filled — discarding submission as bot traffic')
     return { status: 'success', message: 'Check your inbox to confirm your email address.' }
   }
 
