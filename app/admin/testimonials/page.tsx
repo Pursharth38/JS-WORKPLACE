@@ -2,14 +2,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import {
-  AdminEmpty,
-  AdminPageHeader,
-  PublishBadge,
-} from '@/components/admin/crud/list-page'
+import { AdminEmpty, AdminPageHeader } from '@/components/admin/crud/list-page'
+import { PublishToggle } from '@/components/admin/crud/publish-toggle'
 import { ReorderButtons } from '@/components/admin/crud/reorder-buttons'
 import { db } from '@/lib/db'
-import { moveTestimonial } from './actions'
+import { moveTestimonial, togglePublish } from './actions'
 
 export const metadata: Metadata = { title: 'Testimonials' }
 export const dynamic = 'force-dynamic'
@@ -69,7 +66,14 @@ export default async function AdminTestimonialsPage() {
                   No consent
                 </span>
               )}
-              <PublishBadge published={t.isPublished} />
+              <PublishToggle
+                id={t.id}
+                published={t.isPublished}
+                action={togglePublish}
+                // No written permission on file → can't go live from here.
+                disabled={!t.consentOnFile && !t.isPublished}
+                disabledReason="Add written permission on file before publishing"
+              />
             </li>
           ))}
         </ul>

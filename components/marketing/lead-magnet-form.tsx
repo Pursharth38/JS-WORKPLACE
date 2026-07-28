@@ -37,7 +37,7 @@ export function LeadMagnetForm({ compact = false }: { compact?: boolean }) {
           name: String(fd.get("name") ?? ""),
           email: String(fd.get("email") ?? ""),
           organization: String(fd.get("organization") ?? ""),
-          website: String(fd.get("website") ?? ""),
+          refCode: String(fd.get("refCode") ?? ""),
           consentGiven: fd.get("consentGiven") === "on",
           turnstileToken: String(fd.get("cf-turnstile-response") ?? ""),
           source: "checklist",

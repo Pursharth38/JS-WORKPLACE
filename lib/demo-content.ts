@@ -81,6 +81,20 @@ export const DEMO_STATS = [
   { value: "[00]", label: "Years of practice" },
 ] as const;
 
+/**
+ * Credential chips under the About section, same convention and same reason as
+ * DEMO_STATS: visible "[00]" placeholders, only ever rendered in demo mode.
+ *
+ * The design these came from shipped "10+ Years Experience / 500+ Workshops /
+ * 50+ Companies Trained" as unverified placeholder copy. A configured
+ * production site with no real figures shows no chips at all — see lib/about.ts.
+ */
+export const DEMO_ABOUT_PILLS = [
+  "[00]+ years of practice",
+  "[00]+ sessions delivered",
+  "[00]+ organisations trained",
+] as const;
+
 export const DEMO_SERVICES: ServiceSummary[] = [
   {
     _id: "demo-svc-1",

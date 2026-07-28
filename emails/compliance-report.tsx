@@ -4,7 +4,7 @@
 //    an employer they are "compliant" on the strength of eight questions would
 //    be both wrong and a liability for the client. The wording is deliberately
 //    "here is what to look at next", never "you are compliant".
-import { Button, Text } from "@react-email/components";
+import { Button, Link, Text } from "@react-email/components";
 import * as React from "react";
 
 import {
@@ -20,12 +20,21 @@ export function ComplianceReport({
   bandLabel,
   gaps,
   demoUrl,
+  checklistUrl,
 }: {
   name: string;
   scorePercent: number;
   bandLabel: string;
   gaps: string[];
   demoUrl: string;
+  /**
+   * Signed, expiring link to the checklist PDF (same token mechanism and same
+   * `/api/lead-magnet/download` route as the gated lead magnet).
+   *
+   * Optional so the email still renders if the token could not be minted —
+   * losing the attachment must never cost the recipient their result.
+   */
+  checklistUrl?: string | undefined;
 }) {
   return (
     <EmailLayout
@@ -72,6 +81,27 @@ export function ComplianceReport({
           That is a good sign, though it is worth confirming with a proper review.
         </Text>
       )}
+
+      {/*
+        The checklist comes BEFORE the demo CTA on purpose: it is the thing the
+        reader can act on unaided, and leading with the ask before the useful
+        artifact reads as a sales funnel rather than help. The demo button stays
+        the primary (styled) action — per CLAUDE.md the site is a lead-generation
+        engine first — but it is not the only thing on offer.
+      */}
+      {checklistUrl ? (
+        <Text style={textStyle}>
+          To work through the gaps above point by point, here is the full
+          checklist as a PDF:{" "}
+          <Link
+            href={checklistUrl}
+            style={{ color: "#0F5257", fontWeight: 600 }}
+          >
+            Download the POSH compliance checklist
+          </Link>
+          . The link works for 7 days.
+        </Text>
+      ) : null}
 
       <Text style={{ margin: "0 0 24px" }}>
         <Button href={demoUrl} style={buttonStyle}>

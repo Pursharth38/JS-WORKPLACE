@@ -3,13 +3,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { ReorderButtons } from '@/components/admin/crud/reorder-buttons'
-import {
-  AdminEmpty,
-  AdminPageHeader,
-  PublishBadge,
-} from '@/components/admin/crud/list-page'
+import { AdminEmpty, AdminPageHeader } from '@/components/admin/crud/list-page'
+import { PublishToggle } from '@/components/admin/crud/publish-toggle'
 import { db } from '@/lib/db'
-import { moveFaq } from './actions'
+import { moveFaq, togglePublish } from './actions'
 
 export const metadata: Metadata = { title: 'FAQ' }
 export const dynamic = 'force-dynamic'
@@ -63,7 +60,11 @@ export default async function AdminFaqPage() {
                   >
                     {f.question}
                   </Link>
-                  <PublishBadge published={f.isPublished} />
+                  <PublishToggle
+                    id={f.id}
+                    published={f.isPublished}
+                    action={togglePublish}
+                  />
                 </li>
               ))}
             </ul>

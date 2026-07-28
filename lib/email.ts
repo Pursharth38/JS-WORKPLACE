@@ -17,6 +17,7 @@ import { Receipt } from '@/emails/receipt'
 import { ResetPassword } from '@/emails/reset-password'
 import { VerifyEmail } from '@/emails/verify-email'
 import { Welcome } from '@/emails/welcome'
+import { getSiteSettings } from '@/lib/content'
 
 const apiKey = process.env.RESEND_API_KEY
 const resend = apiKey ? new Resend(apiKey) : null
@@ -24,10 +25,45 @@ const resend = apiKey ? new Resend(apiKey) : null
 const FROM = process.env.EMAIL_FROM ?? 'JS Workplace Wellness <noreply@jsworkplacewellness.com>'
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
+/**
+ * Reply-To for every outgoing email.
+ *
+ * FROM is a `noreply@` address with no mailbox behind it — DKIM signing is what
+ * authorises the send, not an inbox. Without an explicit Reply-To, anyone who
+ * hits reply on a report, receipt or verification mail writes into a void and
+ * hears nothing back. That is the single most likely way to lose a warm lead.
+ *
+ * Resolved from site settings so the client can change the destination without
+ * a deploy (`getSiteSettings` is `unstable_cache`-wrapped, so this costs no
+ * real query per send). `EMAIL_REPLY_TO` overrides it for environments with no
+ * database — CI, preview builds.
+ *
+ * Never throws: this module's contract (see file header) is that delivery is
+ * fail-soft, so a settings lookup failing must degrade to "no Reply-To" rather
+ * than swallow the email.
+ */
+async function defaultReplyTo(): Promise<string | undefined> {
+  if (process.env.EMAIL_REPLY_TO) return process.env.EMAIL_REPLY_TO
+
+  try {
+    const settings = await getSiteSettings()
+    return settings.email || undefined
+  } catch (err) {
+    console.warn('[email] could not resolve Reply-To from site settings', err)
+    return undefined
+  }
+}
+
 async function send(args: {
   to: string
   subject: string
   react: React.ReactElement
+  /**
+   * Overrides the site-settings Reply-To. Pass the visitor's own address on
+   * notifications sent TO the client, so replying reaches the person who
+   * enquired rather than her own inbox.
+   */
+  replyTo?: string
   /** Printed to the server log when RESEND_API_KEY is absent, so local dev works. */
   devHint?: string
 }): Promise<boolean> {
@@ -42,11 +78,15 @@ async function send(args: {
   }
 
   try {
+    const replyTo = args.replyTo ?? (await defaultReplyTo())
+
     const { error } = await resend.emails.send({
       from: FROM,
       to: args.to,
       subject: args.subject,
       react: args.react,
+      // Omitted entirely when unresolved — Resend rejects an empty string.
+      ...(replyTo ? { replyTo } : {}),
     })
     if (error) {
       console.error('[email] resend rejected send', { to: args.to, error })
@@ -143,6 +183,9 @@ export async function sendLeadNotification(args: {
   return send({
     to: args.to,
     subject: `New enquiry — ${args.name}${args.organization ? ` (${args.organization})` : ''}`,
+    // This one goes TO the client, so Reply-To is the enquirer — hitting reply
+    // answers the lead directly instead of looping back to her own inbox.
+    replyTo: args.email,
     react: React.createElement(LeadNotification, {
       name: args.name,
       email: args.email,
@@ -173,13 +216,21 @@ export async function sendLeadMagnetEmail(args: {
   })
 }
 
-/** Emails the result of the 8-question self-check (E3). */
+/**
+ * Emails the result of the 8-question self-check (E3).
+ *
+ * `checklistUrl` carries the same signed download link the gated lead magnet
+ * uses, so someone who completes the self-check gets the checklist PDF without
+ * having to fill a second form for it. Optional: if the token could not be
+ * minted, the result still goes out without it.
+ */
 export async function sendComplianceReportEmail(args: {
   to: string
   name: string
   scorePercent: number
   bandLabel: string
   gaps: string[]
+  checklistUrl?: string | undefined
 }): Promise<boolean> {
   return send({
     to: args.to,
@@ -190,6 +241,7 @@ export async function sendComplianceReportEmail(args: {
       bandLabel: args.bandLabel,
       gaps: args.gaps,
       demoUrl: `${SITE}/book-demo`,
+      checklistUrl: args.checklistUrl,
     }),
   })
 }

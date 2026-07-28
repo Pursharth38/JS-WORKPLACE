@@ -6,7 +6,14 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   resolve: {
-    alias: { '@': path.resolve(__dirname, './') },
+    alias: {
+      '@': path.resolve(__dirname, './'),
+      // `server-only` is resolved by Next at build time, not installed as a
+      // package, so any `lib/*` module carrying that guard cannot load here.
+      // See tests/stubs/server-only.ts — `next build` still enforces the real
+      // client-bundle check, this only unblocks the node test runner.
+      'server-only': path.resolve(__dirname, './tests/stubs/server-only.ts'),
+    },
   },
   test: {
     environment: 'node',

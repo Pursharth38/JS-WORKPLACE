@@ -105,20 +105,32 @@ export function ConsentCheckbox({
   );
 }
 
-/** Invisible to humans, irresistible to bots. Paired with the `website` field in signupSchema. */
+/**
+ * Invisible to humans, irresistible to bots. Paired with the `refCode` field in
+ * signupSchema.
+ *
+ * ⚠️ Named `refCode`, not `website` — see the long note on `Honeypot` in
+ * `components/ui/input.tsx`. On this form the old name was worse than a lost
+ * lead: `signupSchema` rejected any non-empty value, so a password manager
+ * filling it blocked account creation outright.
+ */
 export function Honeypot() {
   return (
     <div
       aria-hidden="true"
       className="absolute left-[-9999px] h-0 w-0 overflow-hidden"
     >
-      <label htmlFor="website">Leave this field empty</label>
+      <label htmlFor="refCode">Leave this field empty</label>
       <input
-        id="website"
-        name="website"
+        id="refCode"
+        name="refCode"
         type="text"
         tabIndex={-1}
         autoComplete="off"
+        data-1p-ignore="true"
+        data-lpignore="true"
+        data-bwignore="true"
+        data-form-type="other"
       />
     </div>
   );

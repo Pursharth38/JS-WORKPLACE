@@ -2,12 +2,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import {
-  AdminEmpty,
-  AdminPageHeader,
-  PublishBadge,
-} from '@/components/admin/crud/list-page'
+import { AdminEmpty, AdminPageHeader } from '@/components/admin/crud/list-page'
+import { PublishToggle } from '@/components/admin/crud/publish-toggle'
 import { db } from '@/lib/db'
+import { toggleCoursePublish } from './actions'
 
 export const metadata: Metadata = { title: 'Courses' }
 export const dynamic = 'force-dynamic'
@@ -63,7 +61,11 @@ export default async function AdminCoursesPage() {
                   {c.summary === null ? ' · content still in Sanity' : ''}
                 </span>
               </Link>
-              <PublishBadge published={c.isPublished} />
+              <PublishToggle
+                id={c.id}
+                published={c.isPublished}
+                action={toggleCoursePublish}
+              />
             </li>
           ))}
         </ul>

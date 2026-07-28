@@ -32,7 +32,10 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
-    if (data.website && data.website.length > 0) {
+    // Honeypot — silent discard by design, so log it. A misfire here costs a
+    // lead magnet download and looks like success (see the 2026-07-26 rename).
+    if (data.refCode && data.refCode.length > 0) {
+      console.warn("[api/lead-magnet] honeypot filled — discarding as bot");
       return apiResponse(200, "Received");
     }
 

@@ -106,6 +106,15 @@ export async function saveCourse(_prev: CrudState, fd: FormData): Promise<CrudSt
   return { status: 'success', message: 'Saved.' }
 }
 
+/** Flips Published/Draft from the list view — no need to open the full editor. */
+export async function toggleCoursePublish(id: string): Promise<void> {
+  if (!(await requireAdmin())) return
+  const row = await db.course.findUnique({ where: { id }, select: { isPublished: true } })
+  if (!row) return
+  await db.course.update({ where: { id }, data: { isPublished: !row.isPublished } })
+  bust(id)
+}
+
 /* ── Chapter ──────────────────────────────────────────────────────────────── */
 
 const chapterSchema = z.object({

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AboutIntro } from "@/components/marketing/about-intro";
 import { BlurFade } from "@/components/motion/blur-fade";
 import { BorderBeam } from "@/components/motion/border-beam";
 import { LoopVideo } from "@/components/motion/loop-video";
@@ -20,7 +21,8 @@ import { StatBand } from "@/components/marketing/stat-band";
 import { TestimonialSection } from "@/components/marketing/testimonial-section";
 import { WorkplaceProtection } from "@/components/marketing/workplace-protection";
 import { YouTubeLite } from "@/components/marketing/youtube-lite";
-import { DEMO_STATS } from "@/lib/demo-content";
+import { ABOUT_HEADING, ABOUT_PHOTO, aboutParagraphs } from "@/lib/about";
+import { DEMO_ABOUT_PILLS, DEMO_STATS } from "@/lib/demo-content";
 import {
   getCourses,
   getInstagramPosts,
@@ -90,6 +92,18 @@ export default async function HomePage() {
             <ComplaintJourney className="mt-6" />
           </div>
         }
+      />
+
+      {/* Straight after the hero, as in the design this section comes from —
+          a trainer's practice sells on the trainer, and the portrait is the
+          first thing that makes the page feel like a person rather than a
+          compliance vendor. Copy and chips: lib/about.ts. */}
+      <AboutIntro
+        heading={ABOUT_HEADING}
+        paragraphs={aboutParagraphs(settings.businessName)}
+        photo={ABOUT_PHOTO}
+        pills={usingDemoContent ? DEMO_ABOUT_PILLS : []}
+        action={{ label: "More about how we work", href: "/about" }}
       />
 
       {/* ── Looping explainer videos — mirror the native <video autoplay loop

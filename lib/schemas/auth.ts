@@ -43,8 +43,19 @@ export const signupSchema = z.object({
   consentGiven: z.literal(true, {
     errorMap: () => ({ message: 'Please accept the privacy policy to continue' }),
   }),
-  // Honeypot. Bots fill it; humans never see it.
-  website: z.string().max(0).optional().or(z.literal('')),
+  /**
+   * Honeypot. Bots fill it; humans never see it.
+   *
+   * Permissive ON PURPOSE. This was `z.string().max(0)`, which rejected any
+   * non-empty value at the validation layer — two bugs in one: it made
+   * `signupAction`'s own honeypot branch unreachable dead code, and it failed
+   * signup with a generic "Invalid input" for any human whose password manager
+   * filled the field. Accept the value and let the action decide, so the reply
+   * is indistinguishable from success and a bot learns nothing.
+   *
+   * NOT named `website` — see `Honeypot` in `components/auth/form-fields.tsx`.
+   */
+  refCode: z.string().max(200).optional(),
 })
 
 export const loginSchema = z.object({

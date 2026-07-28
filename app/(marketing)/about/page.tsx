@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 
+import { AboutIntro } from "@/components/marketing/about-intro";
 import { Container } from "@/components/marketing/container";
 import { CtaBand } from "@/components/marketing/cta-band";
-import { getSiteSettings } from "@/lib/content";
+import { ABOUT_HEADING, ABOUT_PHOTO, aboutParagraphs } from "@/lib/about";
+import { getSiteSettings, usingDemoContent } from "@/lib/content";
+import { DEMO_ABOUT_PILLS } from "@/lib/demo-content";
 
 export const revalidate = 3600;
 
@@ -30,38 +33,19 @@ export default async function AboutPage() {
 
   return (
     <>
+      {/* The biography, the portrait and the chips all live in this section
+          now — it carries the page's <h1>, so the prose below picks up at
+          "Credentials" rather than repeating what it already said. */}
+      <AboutIntro
+        as="h1"
+        heading={ABOUT_HEADING}
+        paragraphs={aboutParagraphs(settings.businessName)}
+        photo={ABOUT_PHOTO}
+        pills={usingDemoContent ? DEMO_ABOUT_PILLS : []}
+      />
+
       <Container className="py-14" measure>
-        <h1 className="font-serif text-[39px] font-semibold">About</h1>
-
-        <p className="mt-5 text-[19px] leading-[1.6] text-[var(--brand-muted)]">
-          {settings.businessName} works with Indian organisations on the
-          Prevention of Sexual Harassment Act — awareness training that people
-          actually absorb, Internal Committees that can run a proper inquiry,
-          and policies that hold up when they are tested.
-        </p>
-
-        <h2 className="mt-12 font-serif text-[31px] font-semibold">
-          How we work
-        </h2>
-        <p className="mt-4 text-[17px] leading-[1.7]">
-          Compliance training has a reputation for being a box-ticking exercise
-          that everyone sits through and nobody remembers. That is a real
-          problem, because the Act only works if the people covered by it
-          understand what it protects them from and what the process actually
-          involves.
-        </p>
-        <p className="mt-4 text-[17px] leading-[1.7]">
-          Sessions are built around situations people recognise from their own
-          workplaces, with time for the questions that only come up once the
-          formal part is over. Internal Committee training goes further into
-          procedure — how to receive a complaint, how to run an inquiry within
-          the statutory timelines, and how to write a report that survives an
-          appeal.
-        </p>
-
-        <h2 className="mt-12 font-serif text-[31px] font-semibold">
-          Credentials
-        </h2>
+        <h2 className="font-serif text-[31px] font-semibold">Credentials</h2>
         <p className="mt-4 rounded-[var(--radius-md)] border border-dashed border-[var(--brand-line)] bg-[var(--brand-elevated)] p-5 text-[16px] leading-[1.7] text-[var(--brand-muted)]">
           {/* Placeholder — replaced with the client's real, verifiable
               credentials during content load (P13-01). Deliberately visible

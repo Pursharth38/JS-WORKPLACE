@@ -7,6 +7,7 @@ import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { apiError, apiResponse } from "@/lib/response";
 import { getSiteSettings } from "@/lib/content";
 import { complianceCheckSchema } from "@/lib/schemas/compliance-check";
+import { createSignedToken } from "@/lib/signed-link";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
@@ -37,7 +38,13 @@ export async function POST(req: NextRequest) {
 
     const data = parsed.data;
 
-    if (data.website && data.website.length > 0) {
+    // Honeypot. Logged, not silent: this branch returns a success-shaped 200 to
+    // a human as readily as to a bot, and until 2026-07-26 the field was named
+    // `website` — which password managers autofill — so real self-checks were
+    // discarded behind a green "Received" with no trace anywhere. If this line
+    // starts appearing for genuine visitors, the honeypot is misfiring again.
+    if (data.refCode && data.refCode.length > 0) {
+      console.warn("[api/compliance-check] honeypot filled — discarding as bot");
       return apiResponse(200, "Received");
     }
 
@@ -80,12 +87,33 @@ export async function POST(req: NextRequest) {
     // replied "Sent" unconditionally, even when Resend rejected the send —
     // which it always does outside the account owner's own inbox until a
     // domain is verified. That looked like a working feature and wasn't one.)
+    // Someone who has just answered eight questions has earned the checklist —
+    // making them fill the lead-magnet form again for a PDF they already
+    // qualified for is friction with no upside. Same signed token, same
+    // `/api/lead-magnet/download` route, so there is one gating mechanism and
+    // one PDF, rendered on demand from `QUESTIONS` (never a stale stored file).
+    //
+    // Wrapped: `createSignedToken` throws when no signing secret is configured,
+    // and a missing checklist link must not cost the visitor their result.
+    let checklistUrl: string | undefined;
+    try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+      const token = createSignedToken(data.email.toLowerCase());
+      checklistUrl = `${siteUrl}/api/lead-magnet/download?token=${encodeURIComponent(token)}`;
+    } catch (err) {
+      console.warn(
+        "[api/compliance-check] could not mint checklist link — sending result without it",
+        err,
+      );
+    }
+
     const emailSent = await sendComplianceReportEmail({
       to: data.email,
       name: data.name,
       scorePercent: result.scorePercent,
       bandLabel: result.bandLabel,
       gaps: result.gaps,
+      checklistUrl,
     });
 
     // The internal notification to the client stays fire-and-forget — it's
