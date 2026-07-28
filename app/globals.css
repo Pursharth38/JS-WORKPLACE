@@ -546,3 +546,109 @@ html[data-intro="seen"] .site-intro {
     border-right-color: transparent;
   }
 }
+
+/* ── LOGO MARQUEE ─────────────────────────────────────────────────────────
+   components/marketing/logo-marquee.tsx — two rows of client logos scrolling
+   continuously in OPPOSITE directions (row 1 right-to-left, row 2 left-to-
+   right), matching the reference the client sent.
+
+   Seamless because the track holds the same group of logos FOUR times and
+   travels exactly -25% of its own width: at the end of the cycle logo #1 of
+   copy 2 sits precisely where logo #1 of copy 1 started, so the reset is
+   invisible. Every group carries its own trailing gap, which keeps the spacing
+   even across the seam — the usual cause of a visible "hitch" once per loop.
+
+   WHY FOUR COPIES AND NOT TWO. With N copies of a group of width g, the track
+   is N*g wide and slides by g, so the window is only covered for the whole
+   cycle when (N-1)*g >= viewport. Two copies means one row of logos must
+   itself be wider than the screen — true at 1440px, false on a 2560px
+   ultrawide, where the row would visibly run out and leave a gap before
+   snapping back. Four copies holds down to g >= viewport/3, which covers every
+   display this site will realistically meet, for the cost of a few duplicated
+   <li>s that are hidden from assistive tech anyway. Changing the copy count
+   means changing the keyframe's percentage to match: it is always -(100/N)%.
+
+   Pure CSS, like the intro curtain, for the same reason: a JS-driven ticker
+   costs a rAF loop running forever on a marketing page, and this needs none. */
+
+.logo-marquee {
+  position: relative;
+  overflow: hidden;
+  /* Softens both edges into the page instead of slicing logos off mid-word.
+     The reference cuts hard at the viewport edge; the fade reads calmer on a
+     warm surface and costs nothing. Remove both lines to match it exactly. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 7%,
+    #000 93%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 7%,
+    #000 93%,
+    transparent
+  );
+}
+
+.logo-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: logo-marquee-scroll var(--marquee-duration, 34s) linear infinite;
+}
+
+/* Row 2 runs the other way. `animation-direction` rather than a second
+   keyframe block, so both rows stay locked to one definition of a cycle. */
+.logo-marquee--reverse .logo-marquee__track {
+  animation-direction: reverse;
+}
+
+/* Hovering holds a row still long enough to actually read a logo. */
+.logo-marquee:hover .logo-marquee__track {
+  animation-play-state: paused;
+}
+
+.logo-marquee__group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: clamp(2.75rem, 5.5vw, 5rem);
+  padding-right: clamp(2.75rem, 5.5vw, 5rem);
+}
+
+/* -25% == exactly one group width, because the track holds four of them. */
+@keyframes logo-marquee-scroll {
+  to {
+    transform: translateX(-25%);
+  }
+}
+
+/* Reduced motion gets the same logos as a centred, wrapped, static row — the
+   information survives, the movement does not. The global reduced-motion rule
+   above would otherwise freeze the track mid-travel at -50%, leaving the row
+   visually cropped. */
+@media (prefers-reduced-motion: reduce) {
+  .logo-marquee {
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .logo-marquee__track {
+    width: 100%;
+    animation: none;
+  }
+
+  .logo-marquee__group {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-right: 0;
+    gap: 2.5rem;
+  }
+
+  .logo-marquee__group--clone {
+    display: none;
+  }
+}

@@ -109,10 +109,31 @@ client-directed changes on `integration-a-b`.
    `lib/about.ts` carries the already-reviewed /about wording in the prototype's three-paragraph
    shape, and chips render only under `NEXT_PUBLIC_FORCE_DEMO` as visible `[00]` placeholders —
    the same convention as `DEMO_STATS`. Real headline figures still block on P0-04.
+4. **Logo marquee** (`components/marketing/logo-marquee.tsx`, marks in `logo-mark.tsx`, styles in
+   `app/globals.css` under `LOGO MARQUEE`), on the home page between the Hero and the About
+   section. Two rows scrolling in opposite directions, continuous and seamless, from a recording
+   of **eLearnPOSH's** "Trusted by Leading Organizations" wall. Pure CSS again — a JS ticker would
+   run a rAF loop forever on the busiest page on the site. **The logos are invented placeholders**
+   (`DEMO_CLIENT_LOGOS`): the reference wall carries TCS, TATA, Lenovo, GE Appliances and The
+   Economist, i.e. the competitor's clients, and reproducing them would assert their customers as
+   ours — a false client claim under CLAUDE.md and a trademark problem besides. The heading and
+   subheading are our own wording, not a paraphrase of theirs. **This block must not go live as
+   placeholders**: before launch, either swap in logos the client has written permission to
+   display, or delete the section from `app/(marketing)/page.tsx`. The one non-obvious
+   implementation detail is the four-copy track: with N copies of a group of width g the track
+   slides by g, so the row only stays covered while `(N-1)·g >= viewport`. Two copies (the usual
+   recipe) needs one row of logos to be wider than the screen, which fails on an ultrawide and
+   shows a gap before the loop snaps back; four holds to `g >= viewport/3`. The keyframe
+   percentage is always `-(100/N)%` and must be changed with the copy count.
    Verified: typecheck, lint, full production build, both security greps, and `curl` against the
    dev server (curtain SSR'd with the right step count, About section present on both pages,
-   portrait served and optimised). **Not visually confirmed** — gstack `/browse` will not start on
-   this machine, see the gstack memory note.
+   portrait served and optimised, marquee rendering 2 rows × 4 groups with the 6 clones
+   `aria-hidden`). **Not visually confirmed** — gstack `/browse` will not start on this machine,
+   see the gstack memory note.
+   Process note: running `next build` while `next dev` holds the same `.next` starved the dev
+   server badly enough to look hung (multi-minute stalls, `curl` timing out). It recovered on its
+   own once the build finished. Prefer verifying against the dev server, and run the production
+   build last.
 
 **2026-07-26 session, part 4 (CMS migration, branch `cms-migration`):** executed
 CMS-MIGRATION-PLAN.md phases M0–M5 plus M6-prep, per the user's approval and the two amendments
