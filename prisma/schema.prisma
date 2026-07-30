@@ -53,7 +53,16 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // Pooled endpoint (Neon `-pooler`, PgBouncer transaction mode). Every runtime
+  // query goes through here — serverless functions open many short-lived
+  // connections and would exhaust the direct endpoint.
   url      = env("DATABASE_URL")
+  // Direct endpoint. `prisma migrate` and `db push` only. Migrations take a
+  // Postgres advisory lock and run DDL inside a transaction; through PgBouncer
+  // each statement can land on a different backend, so the lock is acquired on
+  // one connection and released on another and the migration hangs rather than
+  // failing cleanly. Prisma never uses this at runtime.
+  directUrl = env("DIRECT_URL")
 }
 
 // ── IDENTITY ────────────────────────────────────────────────────────────────

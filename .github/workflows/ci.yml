@@ -18,6 +18,11 @@ env:
   # DATABASE_URL is NOT a placeholder any more — it points at the postgres
   # service container below, and the credentials must stay in step with it.
   DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
+  # schema.prisma declares `directUrl = env("DIRECT_URL")` so that migrations run
+  # against Neon's un-pooled endpoint in the real environments. The service
+  # container below has no PgBouncer in front of it, so here the two are simply
+  # the same string — but the var must exist or Prisma fails to resolve it.
+  DIRECT_URL: postgresql://user:pass@localhost:5432/db?schema=public
   NEXTAUTH_SECRET: ci-placeholder-secret-not-used-anywhere-real
   NEXTAUTH_URL: http://localhost:3000
   NEXT_PUBLIC_SITE_URL: http://localhost:3000
