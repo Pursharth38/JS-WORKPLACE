@@ -321,10 +321,10 @@ and `sanity/env.ts`.
 **Self-check after every gated route:**
 ```
 grep -rnE "videoUid|correctOptionId" app/ components/ lib/ --include=*.tsx --include=*.ts \
-  | grep -vE "lib/unlock|api/video|api/assessment|api/webhooks/sanity|lib/schemas/sanity-webhook" \
+  | grep -vE "lib/unlock|api/video|api/assessment|api/webhooks/sanity|lib/schemas/sanity-webhook|app/admin/courses|components/admin/module-form" \
   | grep -vE '^[^:]+:[0-9]+: *(\*|//|/\*)'
 ```
-Any hit outside the **five** authorised files is a leak. Fix before ✅.
+Any hit outside the **seven** authorised files is a leak. Fix before ✅.
 
 | Authorised file | Why | Owner |
 |---|---|---|
@@ -333,12 +333,26 @@ Any hit outside the **five** authorised files is a leak. Fix before ✅.
 | `app/api/assessment/*` | grades server-side and strips `correctOptionId` | C |
 | `app/api/webhooks/sanity` | writes `videoUid` **into** Postgres — this is the structural mirror | A |
 | `lib/schemas/sanity-webhook.ts` | the Zod schema for that payload | A |
+| `app/admin/courses/*` | the CMS migration's replacement for that webhook — an admin authors `videoUid` straight into the mirror | B |
+| `components/admin/module-form.tsx` | the form field that authoring needs | B |
 
-> The last two were added on 2026-07-25 when the Sanity sync landed; the original
+> Rows 4–5 were added on 2026-07-25 when the Sanity sync landed; the original
 > three-file list predated it. Widening this allowlist weakens a security gate, so any
 > further addition needs the same written justification. Comment lines are stripped so a
 > comment *explaining* the rule does not trip it. **CI enforces exactly this list** —
 > `.github/workflows/ci.yml`, "Gated-content leak check".
+>
+> **Rows 6–7 were added on 2026-07-30**, when the CMS migration (M0–M6) moved course
+> authoring out of Sanity Studio and into `/admin`. They do the same job row 4 does — write
+> a uid **into** the structural mirror — through a new door. This gate exists to stop a
+> **locked** module's uid reaching a **learner**; these are write paths behind
+> `requireAdmin()`, enforced in `app/admin/layout.tsx` on every render (a fresh database
+> role read, not the 30-day JWT) and re-checked inside each Server Action, because a layout
+> guard protects reads and not writes.
+>
+> Both patterns are deliberately narrow. **Do not relax them to a bare `app/admin` or
+> `components/admin`** — that hands a blanket exemption to every future admin screen,
+> including ones with no business touching a Stream uid.
 
 ---
 

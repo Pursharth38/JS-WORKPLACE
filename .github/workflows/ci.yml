@@ -89,10 +89,27 @@ jobs:
       #   api/webhooks/sanity     writes videoUid INTO Postgres — this is the    [A]
       #                           structural mirror and the whole point of it
       #   lib/schemas/sanity-webhook  the Zod schema for that payload            [A]
+      #   app/admin/courses       the CMS migration's replacement for the Sanity  [B]
+      #                           webhook: an ADMIN authoring videoUid straight
+      #                           into the structural mirror. Same job, new door.
+      #   components/admin/module-form  the form field that authoring needs       [B]
       #
       # The last two were added when the Sanity sync landed; CLAUDE.md's original
       # three-file list predates it. Widening an allowlist weakens the gate, so
       # the justification is written down rather than left implicit.
+      #
+      # The admin pair was added 2026-07-30 when the CMS migration (M0–M6) moved
+      # course authoring out of Sanity Studio and into /admin. This is a WRITE
+      # path, not a read path — the gate exists to stop a LOCKED module's uid
+      # reaching a LEARNER, and every one of these files sits behind
+      # requireAdmin(), enforced in app/admin/layout.tsx on each render (a fresh
+      # database role read, not the 30-day JWT) and re-checked inside each Server
+      # Action, because a layout guard protects reads and not writes.
+      #
+      # These two patterns are deliberately narrow. Do NOT relax them to a bare
+      # "app/admin" or "components/admin" — that would hand a blanket exemption
+      # to every future admin screen, including ones that have no business
+      # touching a Stream uid.
       #
       # Comment lines are stripped: a comment explaining this rule should not
       # trip the rule.
@@ -102,7 +119,7 @@ jobs:
           echo "Scanning for videoUid / correctOptionId outside authorised files…"
           HITS=$(grep -rnE "videoUid|correctOptionId" app/ components/ lib/ \
                    --include=*.ts --include=*.tsx 2>/dev/null \
-                 | grep -vE "lib/unlock|api/video|api/assessment|api/webhooks/sanity|lib/schemas/sanity-webhook" \
+                 | grep -vE "lib/unlock|api/video|api/assessment|api/webhooks/sanity|lib/schemas/sanity-webhook|app/admin/courses|components/admin/module-form" \
                  | grep -vE '^[^:]+:[0-9]+: *(\*|//|/\*)' || true)
           if [ -n "$HITS" ]; then
             echo "$HITS"

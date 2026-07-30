@@ -12,7 +12,7 @@
 // MIGRATION STATE (update this table as phases land):
 //   ✅ siteSettings   ✅ faq          ✅ testimonial   ✅ service
 //   ✅ instagramPost  ✅ post/category ✅ poshSection  ✅ quickReference
-//   ✅ ctaBand        ⬜ course       ⬜ question
+//   ✅ ctaBand        ✅ course       ⬜ question
 // ✅ = served by lib/content/* (Postgres once the type has rows; Sanity until
 // then — the flip rule in lib/content/simple.ts).
 //
