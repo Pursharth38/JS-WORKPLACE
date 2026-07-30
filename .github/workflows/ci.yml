@@ -11,9 +11,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Placeholder values so `next build` can run without real secrets. Nothing here
-  # reaches a real service: Sanity degrades to empty content when the project id
-  # is absent, and no test in this suite makes a network call.
+  # Placeholder secrets so `next build` can run without touching a real service.
+  # No test here makes a network call, and Sanity degrades to empty content when
+  # the project id is absent (sanity/env.ts, isSanityConfigured).
+  #
+  # DATABASE_URL is NOT a placeholder any more — it points at the postgres
+  # service container below, and the credentials must stay in step with it.
   DATABASE_URL: postgresql://user:pass@localhost:5432/db?schema=public
   NEXTAUTH_SECRET: ci-placeholder-secret-not-used-anywhere-real
   NEXTAUTH_URL: http://localhost:3000
@@ -24,6 +27,36 @@ jobs:
     name: typecheck · lint · test · build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
+    # The build needs a REAL database as of the CMS migration (M0–M6). Content
+    # moved from Sanity to Postgres, so `next build` now runs Prisma queries
+    # while collecting page data — generateStaticParams on /blog/category/[cat],
+    # /blog/[slug] and /services/[slug] all read content at build time.
+    #
+    # A dead DATABASE_URL used to be survivable because the only content source
+    # was Sanity, which degrades to empty when unconfigured. Postgres does not
+    # degrade: it refuses the connection and the build fails collecting page data.
+    #
+    # The database stays EMPTY on purpose. Zero rows is exactly the condition the
+    # flip rule in lib/content/* checks for, so an empty database sends every
+    # getter down the Sanity fallback path — which means CI keeps proving that
+    # fallback still works, instead of only ever exercising the Postgres branch.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: pass
+          POSTGRES_DB: db
+        ports:
+          - 5432:5432
+        # Without a health check the first Prisma call races container startup
+        # and fails intermittently — the worst kind of red build.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +73,13 @@ jobs:
       # because every db.* call is typed from the generated client.
       - name: Generate Prisma client
         run: npx prisma generate
+
+      # Creates the schema in the service container so `next build` can query it.
+      # `migrate deploy` applies committed migrations only — it never generates a
+      # new one, so a schema.prisma edit that was never turned into a migration
+      # fails here rather than silently working in CI and breaking on deploy.
+      - name: Apply migrations
+        run: npx prisma migrate deploy
 
       - name: Typecheck
         run: npm run typecheck
