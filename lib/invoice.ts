@@ -9,14 +9,33 @@ import { InvoiceDocument, type InvoiceData } from '@/components/pdf/invoice-docu
 import { db } from '@/lib/db'
 import { isR2Configured, putObject } from '@/lib/r2'
 
+// The financial year is a fact about India, not about wherever the server runs.
+// Vercel and GitHub Actions both run UTC, so `getFullYear()`/`getMonth()` — which
+// read the HOST timezone — put a payment made at 02:00 IST on 1 April back into
+// the outgoing year, because in UTC it is still 20:30 on 31 March. That is a
+// silent one-invoice-per-year corruption that only appears in the 00:00–05:30 IST
+// window, i.e. never on an Indian developer's laptop and always in production.
+// Pin the arithmetic to IST and the host timezone stops mattering.
+const IST = 'Asia/Kolkata'
+
+// en-CA formats as YYYY-MM-DD, which is stable to slice. Intl carries the real
+// tz database; do not swap this for a hardcoded +5:30 offset elsewhere.
+const IST_PARTS = new Intl.DateTimeFormat('en-CA', {
+  timeZone: IST,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
 /**
- * Indian financial year: 1 April – 31 March. A payment on 31 March 2027 belongs
- * to FY 2026-27; one on 1 April 2027 starts FY 2027-28. Getting this wrong makes
- * the invoice series restart in the middle of a filing period.
+ * Indian financial year: 1 April – 31 March, evaluated in IST regardless of
+ * server timezone. A payment on 31 March 2027 belongs to FY 2026-27; one on
+ * 1 April 2027 starts FY 2027-28. Getting this wrong makes the invoice series
+ * restart in the middle of a filing period.
  */
 export function financialYearFor(date: Date): string {
-  const year = date.getFullYear()
-  const startYear = date.getMonth() >= 3 ? year : year - 1 // getMonth() 3 === April
+  const [year, month] = IST_PARTS.format(date).split('-').map(Number)
+  const startYear = month >= 4 ? year : year - 1 // month is 1-based here, 4 === April
   return `${startYear}-${String((startYear + 1) % 100).padStart(2, '0')}`
 }
 
