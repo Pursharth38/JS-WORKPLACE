@@ -15,6 +15,11 @@ import { requireSession } from '@/lib/session'
 
 export const runtime = 'nodejs'
 
+// See the note in app/api/lead-magnet/download/route.ts: @react-pdf/renderer
+// cold starts can exceed the 10s Hobby default. 60s is the Hobby ceiling and
+// only bills for time actually used.
+export const maxDuration = 60
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ certId: string }> },

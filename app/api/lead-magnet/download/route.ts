@@ -11,6 +11,15 @@ import { verifySignedToken } from "@/lib/signed-link";
 // the server bundle via serverExternalPackages.
 export const runtime = "nodejs";
 
+// The default function timeout on Vercel Hobby is 10s. A warm render of this
+// checklist is well under a second, but @react-pdf/renderer is a heavy import
+// and a COLD start (font registration + PDF engine init) can exceed 10s on the
+// smaller Hobby instance — which surfaces as an intermittent 504 on the first
+// download after an idle period, not as a reproducible failure. 60s is the
+// Hobby ceiling; this costs nothing when the render is fast, because Vercel
+// bills actual duration, not the limit.
+export const maxDuration = 60;
+
 /**
  * Serves the checklist PDF against a signed, expiring token.
  *
