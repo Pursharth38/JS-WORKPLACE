@@ -34,8 +34,14 @@ const IST_PARTS = new Intl.DateTimeFormat('en-CA', {
  * restart in the middle of a filing period.
  */
 export function financialYearFor(date: Date): string {
-  const [year, month] = IST_PARTS.format(date).split('-').map(Number)
-  const startYear = month >= 4 ? year : year - 1 // month is 1-based here, 4 === April
+  // Read the fixed-width YYYY-MM-DD by offset rather than destructuring a
+  // split(): under noUncheckedIndexedAccess an indexed element is possibly
+  // undefined, whereas slice() is typed to return a string. Same result, and it
+  // does not need a non-null assertion to satisfy the compiler.
+  const ymd = IST_PARTS.format(date)
+  const year = Number(ymd.slice(0, 4))
+  const month = Number(ymd.slice(5, 7)) // 1-based, so 4 === April
+  const startYear = month >= 4 ? year : year - 1
   return `${startYear}-${String((startYear + 1) % 100).padStart(2, '0')}`
 }
 
