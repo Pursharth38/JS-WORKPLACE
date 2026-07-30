@@ -83,9 +83,12 @@ mandates it, and the employer pays. If a phase must be cut, cut LMS polish befor
    serialization. Grading happens only in `/assessment/submit`. Responses return score and topic-level
    feedback — never a per-question answer key.
 
-6. **CONTENT IS THE CLIENT'S, NOT OURS.** Anything she would reasonably want to change lives in Sanity:
-   copy, blog, services, POSH sections, quiz questions, testimonials, contact details. Hardcoded strings
-   that should be CMS-managed are a review failure.
+6. **CONTENT IS THE CLIENT'S, NOT OURS.** Anything she would reasonably want to change is CMS-managed
+   and editable by her without a deploy: copy, blog, services, POSH sections, quiz questions,
+   testimonials, contact details. Hardcoded strings that should be CMS-managed are a review failure.
+   Since the CMS migration that store is **Postgres, authored in `/admin`** — except `question`, still
+   in Sanity. Read via `lib/content.ts`; see SOURCE-OF-TRUTH SPLIT. The principle is the durable part;
+   which store backs it is an implementation detail that has already changed once.
 
 7. **ORIGINAL CONTENT ONLY.** Never copy text from elearnposh.com or any competitor. Duplicate content
    does not rank and is copyright exposure. We mirror information *architecture*, never wording.
@@ -116,7 +119,9 @@ domain and integrates at defined contract points. Full detail: `team-division.md
 Framework:   Next.js 16 (App Router) + React 19 + TypeScript (strict) + Tailwind v4
 Auth:        Auth.js v5 — credentials + Google OAuth, JWT sessions, httpOnly cookies
 Database:    PostgreSQL (Neon serverless) + Prisma ORM
-CMS:         Sanity v6 + next-sanity 13, Studio embedded at /studio
+CMS:         Postgres + custom /admin UI (Tiptap rich text) for every migrated type.
+             Sanity v6 + next-sanity 13 at /studio survives for `question` only —
+             on its way out, not the default. See SOURCE-OF-TRUTH SPLIT.
 Video:       Cloudflare Stream, signed playback tokens (≤5 min TTL)
 Payments:    Razorpay Orders API + HMAC-verified webhooks
 Email:       Resend + React Email
@@ -171,23 +176,32 @@ Instagram Basic Display API. Reasons are in ARCHITECTURE.md §1.1.
 
 ## SOURCE-OF-TRUTH SPLIT (most important concept in the system)
 
-- **Sanity owns content** — titles, body copy, quiz question text, options, correct answers, ordering.
-- **Postgres owns state and identity** — users, enrolments, payments, progress, attempts, certificates.
-- **Postgres mirrors only the structural IDs needed to enforce gating** — `Course`, `Chapter`, `Module`
-  rows carrying `sanityId`, `order`, `videoUid`. Nothing else.
+- **Postgres owns content, state and identity** — blog, services, POSH sections, FAQ, testimonials,
+  site settings, course copy; plus users, enrolments, payments, progress, attempts, certificates.
+  Content is authored in `/admin`.
+- **Sanity still owns `question` only** — quiz question text, options, correct answers. That is the
+  last un-migrated type.
+- **`Course`/`Chapter`/`Module` rows carry the structural IDs gating needs** — `sanityId`, `order`,
+  `videoUid`.
 
-A Sanity publish webhook hits `/api/webhooks/sanity` → upserts the structural mirror → revalidates
-cache tags. Content changes never require a deploy. Get this wrong and two systems disagree about
-what a course contains.
+**Read content through the façade `lib/content.ts` — never `lib/sanity.ts` directly.** Its header
+carries the live per-type migration table; **trust that table over this section**, it is next to the
+code and moves with it.
 
-> **PLANNED, NOT YET DECIDED OR EXECUTED (raised 2026-07-26):** the client has asked whether
-> blog/course/service content editing should move off Sanity Studio entirely and into a custom
-> admin UI merged into `/admin`, on the reasoning that a second CMS login is one login too many
-> for a non-technical owner. A migration architecture is written up at
-> `.claude/documentation/CMS-MIGRATION-PLAN.md` — mapping every current Sanity-owned feature to
-> its Postgres+admin-UI equivalent, phased, with tradeoffs. **This rule (Sanity owns content) is
-> still in force until that plan is reviewed and approved.** Do not start migrating content off
-> Sanity based on this note alone.
+> **MIGRATION APPROVED AND EXECUTED — this section is the tail end of a rewrite (updated 2026-07-30).**
+> The client asked that content editing move off Sanity Studio into `/admin`, because a second CMS
+> login is one login too many for a non-technical owner. Approved in commit `160b3c1` (M0); phases
+> **M1–M6 have landed**. Plan: `.claude/documentation/CMS-MIGRATION-PLAN.md`.
+>
+> Both systems are live until `question` flips, so the split still matters — the boundary has just
+> moved nearly all the way over. **At cutover**, `lib/sanity.ts`, `/studio`, `/api/webhooks/sanity`
+> and `lib/schemas/sanity-webhook.ts` all collapse away; rewrite this section to "Postgres owns
+> content and state" and drop rows 4–5 from the leak-gate allowlist below, since the files they
+> authorise will no longer exist.
+>
+> Old rule, kept for history: ~~Sanity owns content. A Sanity publish webhook hits
+> `/api/webhooks/sanity` → upserts the structural mirror → revalidates cache tags.~~ The webhook
+> still exists and still works, but it is no longer how content arrives for any migrated type.
 
 ---
 
@@ -277,7 +291,8 @@ Stream UID for a locked module.
 **Architecture:**
 - Business logic in route handlers and `lib/`; auth in Auth.js config and middleware; components render.
 - Zod validation on every API boundary — no exceptions.
-- Content the client would want to edit belongs in Sanity, not in JSX.
+- Content the client would want to edit belongs in the CMS, not in JSX — Postgres via `/admin` for
+  every migrated type, Sanity for `question`. Always read it through `lib/content.ts`.
 - No `any`, no `@ts-ignore`.
 
 **Frontend:**
